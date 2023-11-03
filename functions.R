@@ -29,6 +29,15 @@ lastsixmonths=function(ras,diffdate,filename="6months.tif"){
   aggregate(classify(ras,rcl=rclmat,others=NA),40,fun="sum",na.rm=T,filename=filename,overwrite=T)
   }
 }
+lastthreemonths=function(ras,diffdate,filename="3months.tif"){
+  if(!file.exists(filename)){
+    m=c(20000+diffdate-90,19999+diffdate,1,
+        30000+diffdate-90,29999+diffdate,1,
+        40000+diffdate-90,39999+diffdate,1)
+    rclmat <- matrix(m, ncol=3, byrow=TRUE)
+    aggregate(classify(ras,rcl=rclmat,others=NA),40,fun="sum",na.rm=T,filename=filename,overwrite=T)
+  }
+}
 twelvetosixmonths=function(ras,diffdate,filename="12-6months.tif"){
   if(!file.exists(filename)){
   m=c(20000+diffdate-365,19999+diffdate-182,1,
@@ -85,21 +94,9 @@ dateras=function(ras,diffdate,filename="dateras.tif"){
   ras[]=sin(diffdate/(365/(2*pi)))
   writeRaster(ras,filename)
 }
-edgedetection_nomask=function(inputfile,filename="edgedensity_withmask.tif"){
-  if(file.exists(filename)){
-  pastdef=rast(inputfile)
-  gradient_magnitude=boundaries(pastdef,filename="boundaries.tif",overwrite=T)
-  aggregate(gradient_magnitude,40,fun="sum",na.rm=T,filename=filename,overwrite=T)
-  }
-}
-
-edgedetection_withmask=function(ras,diffdate,filename="edgedensity.tif"){
+edgedetection_withmask=function(deforestationfile,maskfile,diffdate,filename="edgedensity.tif"){
   if(!file.exists(filename)){
-  m=c(20000,19999+diffdate,1,
-      30000,29999+diffdate,1,
-      40000,39999+diffdate,1)
-  rclmat <- matrix(m, ncol=3, byrow=TRUE)
-  pastdef=classify(x=ras,rcl=rclmat,others=0)
+  pastdef=rast(maskfile)-rast(deforestationfile)
   sobel_x <- matrix(c(-1, 0, 1, -2, 0, 2, -1, 0, 1), nrow = 3, byrow = TRUE)
   sobel_y <- matrix(c(-1, -2, -1, 0, 0, 0, 1, 2, 1), nrow = 3, byrow = TRUE)
   cat(Sys.time())
