@@ -1,6 +1,6 @@
 #######processors#####
 
-labels=function(ras,diffdate,filename="groundtruth.tif"){
+labels=function(ras,diffdate,filename){
   if(!file.exists(filename)){
   m=c(20000+diffdate,20000+diffdate+183,1,
       30000+diffdate,30000+diffdate+183,1,
@@ -10,7 +10,7 @@ labels=function(ras,diffdate,filename="groundtruth.tif"){
   }
 }
 
-mean_confidence=function(ras,diffdate,filename="confidence.tif"){
+mean_confidence=function(ras,diffdate,filename){
   if(!file.exists(filename)){
   m=c(20000+diffdate-365,19999+diffdate,1,
       30000+diffdate-365,29999+diffdate,2,
@@ -20,7 +20,7 @@ mean_confidence=function(ras,diffdate,filename="confidence.tif"){
   }
 }
 
-lastsixmonths=function(ras,diffdate,filename="6months.tif"){
+lastsixmonths=function(ras,diffdate,filename){
   if(!file.exists(filename)){
   m=c(20000+diffdate-180,19999+diffdate,1,
       30000+diffdate-180,29999+diffdate,1,
@@ -29,7 +29,7 @@ lastsixmonths=function(ras,diffdate,filename="6months.tif"){
   aggregate(classify(ras,rcl=rclmat,others=NA),40,fun="sum",na.rm=T,filename=filename,overwrite=T)
   }
 }
-lastthreemonths=function(ras,diffdate,filename="3months.tif"){
+lastthreemonths=function(ras,diffdate,filename){
   if(!file.exists(filename)){
     m=c(20000+diffdate-90,19999+diffdate,1,
         30000+diffdate-90,29999+diffdate,1,
@@ -38,7 +38,7 @@ lastthreemonths=function(ras,diffdate,filename="3months.tif"){
     aggregate(classify(ras,rcl=rclmat,others=NA),40,fun="sum",na.rm=T,filename=filename,overwrite=T)
   }
 }
-twelvetosixmonths=function(ras,diffdate,filename="12-6months.tif"){
+twelvetosixmonths=function(ras,diffdate,filename){
   if(!file.exists(filename)){
   m=c(20000+diffdate-365,19999+diffdate-182,1,
       30000+diffdate-365,29999+diffdate-182,1,
@@ -47,30 +47,33 @@ twelvetosixmonths=function(ras,diffdate,filename="12-6months.tif"){
   aggregate(classify(ras,rcl=rclmat,others=NA),40,fun="sum",na.rm=T,filename=filename,overwrite=T)
   }
 }
-forestmask=function(file,ras,filename="forestmask.tif"){
+forestmask=function(file,ras,filename){
   if(!file.exists(filename)){
   mask=rast(file,win=ext(ras))
-  newmask=project(mask,ras,filename="reprojected_mask.tif",overwrite=T)
+  tempfile=gsub(".tif","temp.tif",filename)
+  newmask=project(mask,ras,filename=tempfile,overwrite=T)
   aggregate(newmask,40,fun="sum",na.rm=T,filename=filename,overwrite=T)
   }
 }
-totaldeforestation=function(ras,diffdate,filename="totaldeforestation.tif",filename2="latestdeforestation.tif"){
+totaldeforestation=function(ras,diffdate,filename){
   if(!file.exists(filename)){
   m=c(20000,19999+diffdate,1,
       30000,29999+diffdate,1,
       40000,39999+diffdate,1)
   rclmat <- matrix(m, ncol=3, byrow=TRUE)
-  ras=classify(ras,rcl=rclmat,others=0,filename="totaldeforestation_rough.tif")
+  tempfile=gsub(".tif","temp.tif",filename)
+  ras=classify(ras,rcl=rclmat,others=0,filename=tempfile,overwrite=T)
   aggregate(ras,40,fun="sum",na.rm=T,filename=filename,overwrite=T)
+  file.remove(tempfile)
   }
 }
-latestdeforestation=function(ras,diffdate,filename="latestdeforestation.tif"){
+latestdeforestation=function(ras,diffdate,filename){
   if(!file.exists(filename)){
 aggregate(diffdate-(ras%%10000),40,fun="max",na.rm=T,filename=filename,overwrite=T)
   }
 }
 
-smoothed_deforestation=function(inputfile,window_matrix,filename="deforestation_smoothed.tif"){
+smoothed_deforestation=function(inputfile,window_matrix,filename){
   if(!file.exists(filename)){
   smoothed=focal(rast(inputfile)>0,w=window_matrix/sum(window_matrix),na.policy="omit",
                  na.rm=T,filename=filename,overwrite=T)
@@ -94,22 +97,20 @@ dateras=function(ras,diffdate,filename="dateras.tif"){
   ras[]=sin(diffdate/(365/(2*pi)))
   writeRaster(ras,filename)
 }
-edgedetection_withmask=function(deforestationfile,maskfile,diffdate,filename="edgedensity.tif"){
+edgedetection_withmask=function(deforestationfile,maskfile=NA,diffdate,filename="edgedensity.tif"){
   if(!file.exists(filename)){
   pastdef=rast(maskfile)-rast(deforestationfile)
-  sobel_x <- matrix(c(-1, 0, 1, -2, 0, 2, -1, 0, 1), nrow = 3, byrow = TRUE)
-  sobel_y <- matrix(c(-1, -2, -1, 0, 0, 0, 1, 2, 1), nrow = 3, byrow = TRUE)
-  cat(Sys.time())
-  cat("\n")
-  # Apply the Sobel filter using the focal function for both X and Y directions
-  sobel_x_result <- focal(pastdef, w = matrix(sobel_x, nrow = 3), focalFun = sum)
-  sobel_y_result <- focal(pastdef, w = matrix(sobel_y, nrow = 3), focalFun = sum)
-  cat(Sys.time())
-  cat("\n")
+  # sobel_x <- matrix(c(-1, 0, 1, -2, 0, 2, -1, 0, 1), nrow = 3, byrow = TRUE)
+  # sobel_y <- matrix(c(-1, -2, -1, 0, 0, 0, 1, 2, 1), nrow = 3, byrow = TRUE)
+  # cat(Sys.time())
+  # cat("\n")
+  # # Apply the Sobel filter using the focal function for both X and Y directions
+  # sobel_x_result <- focal(pastdef, w = matrix(sobel_x, nrow = 3), focalFun = sum)
+  # sobel_y_result <- focal(pastdef, w = matrix(sobel_y, nrow = 3), focalFun = sum)
+  # cat(Sys.time())
+  # cat("\n")
   # Calculate the gradient magnitude
-  gradient_magnitude <- sqrt(sobel_x_result ^ 2 + sobel_y_result ^ 2)
-  cat(Sys.time())
-  cat("\n")
+  gradient_magnitude <- boundaries(pastdef,filename="boundaries_rough.tif",overwrite=T)
   aggregate(gradient_magnitude,40,fun="sum",na.rm=T,filename=filename,overwrite=T)
   }
 }
