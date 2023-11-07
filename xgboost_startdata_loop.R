@@ -12,46 +12,54 @@
 
 library(terra)
 library(xgboost)
-setwd("C:/data/xgboost_test/preprocessed/")
-source("C:/data/xgboost_test/helpers/functions.R")
+setwd("D:/ff-dev/results/")
+source("C:/Users/EagleView/Documents/GitHub/ForestForesight/functions.R")
 #####split extent in parts######
-files=list.files("C:/data/accuracy_analysis/origs/",pattern ="tif",full.names = T)
-files=files[-grep("BOR",files)]
-files=files[-grep("LAO",files)]
-ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
-ffdates=ffdates[1:26]
+files=list.files("D:/ff-dev/alerts/",pattern ="tif",full.names = T)
+firstindices=c("D:/ff-dev/alerts/20N_080W.tif", "D:/ff-dev/alerts/10N_080W.tif", "D:/ff-dev/alerts/00N_080W.tif", "D:/ff-dev/alerts/10N_070W.tif"
+                                ,"D:/ff-dev/alerts/00N_070W.tif", "D:/ff-dev/alerts/10S_080W.tif")
+files=files[c(which(files %in% firstindices),which(!files %in% firstindices))]
+cl <- makeCluster(6)
 
-polis=vect("C:/data/xgboost_test/helpers/srtmindices.json")
-polis$name=gsub(pattern = "C:/users/jonas/Downloads/",replacement="C:/data/xgboost_test/srtms/",polis$name)
 
-for(file in files){
+# polis=vect("C:/Users/EagleView/Documents/GitHub/ForestForesight/srtmindices.json")
+# polis$name=gsub(pattern = "C:/users/jonas/Downloads/",replacement="C:/data/xgboost_test/srtms/",polis$name)
+
+run_preprocess=function(file){
+  library(terra)
+  setwd("D:/ff-dev/results/")
+  files=list.files("D:/ff-dev/alerts/",pattern ="tif",full.names = T)
+  source("C:/Users/EagleView/Documents/GitHub/ForestForesight/functions.R")
+  ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
+  ffdates=rev(ffdates[1:29])
   rasname=createrasname(file)
-  exts=splitintoparts(file,4)
-  for(extnum in seq(length(exts))){
+  extnum=NA
+  #exts=splitintoparts(file,4)
+  #for(extnum in seq(length(exts))){
     print(rasname)
     print(extnum)
-    ras=rast(file,win=exts[[extnum]])
-    srtmpols=crop(polis,ext(ras))
-    if(length(srtmpols$name)>1){srtm=merge(sprc(srtmpols$name))}else{srtm=rast(srtmpols$name)}
-    if(!file.exists(createfilename(rasname,layer="elevation",number = extnum))){
-      srtm=project(srtm,ras,method="bilinear",filename="elevation_rough2.tif",overwrite=T)
-    }
-    
-    if(!file.exists(createfilename(rasname,layer="slope",number = extnum))){
-      terrain(srtm,filename="slope_rough.tif",overwrite=T)
-      aggregate(rast("slope_rough.tif"),40,fun="mean",na.rm=T,filename=createfilename(rasname,layer="slope",number = extnum),overwrite=T)
-      file.remove("slope_rough.tif")
-    }
-    if(!file.exists(createfilename(rasname,layer="roughness",number = extnum))){
-      terrain(srtm,v="roughness",filename="roughness_rough.tif",overwrite=T)
-      aggregate(rast("roughness_rough.tif"),40,fun="mean",na.rm=T,filename=createfilename(rasname,layer="roughness",number = extnum),overwrite=T)
-      file.remove("roughness_rough.tif")
-    }
-    if(!file.exists(createfilename(rasname,layer="elevation",number = extnum))){
-      aggregate(rast("elevation_rough2.tif"),40,fun="mean",na.rm=T,filename=createfilename(rasname,layer="elevation",number = extnum),overwrite=T)
-    }
-    ####forest mask#####
-    forestmask("C:/users/jonas/Downloads/SouthAmerica_2001_primary.tif",ras,filename=createfilename(rasname,layer="forestmask"))
+    ras=rast(file)
+    # srtmpols=crop(polis,ext(ras))
+    # if(length(srtmpols$name)>1){srtm=merge(sprc(srtmpols$name))}else{srtm=rast(srtmpols$name)}
+    # if(!file.exists(createfilename(rasname,layer="elevation",number = extnum))){
+    #   srtm=project(srtm,ras,method="bilinear",filename="elevation_rough2.tif",overwrite=T)
+    # }
+    # 
+    # if(!file.exists(createfilename(rasname,layer="slope",number = extnum))){
+    #   terrain(srtm,filename="slope_rough.tif",overwrite=T)
+    #   aggregate(rast("slope_rough.tif"),40,fun="mean",na.rm=T,filename=createfilename(rasname,layer="slope",number = extnum),overwrite=T)
+    #   file.remove("slope_rough.tif")
+    # }
+    # if(!file.exists(createfilename(rasname,layer="roughness",number = extnum))){
+    #   terrain(srtm,v="roughness",filename="roughness_rough.tif",overwrite=T)
+    #   aggregate(rast("roughness_rough.tif"),40,fun="mean",na.rm=T,filename=createfilename(rasname,layer="roughness",number = extnum),overwrite=T)
+    #   file.remove("roughness_rough.tif")
+    # }
+    # if(!file.exists(createfilename(rasname,layer="elevation",number = extnum))){
+    #   aggregate(rast("elevation_rough2.tif"),40,fun="mean",na.rm=T,filename=createfilename(rasname,layer="elevation",number = extnum),overwrite=T)
+    # }
+    # ####forest mask#####
+    # forestmask("C:/users/jonas/Downloads/SouthAmerica_2001_primary.tif",ras,filename=createfilename(rasname,layer="forestmask"))
     #####loop over parameters that are monthly bound#######
     for(ffdate in ffdates){
       print(ffdate)
@@ -60,22 +68,21 @@ for(file in files){
       labels(ras=ras,diffdate=diffdate,createfilename(rasname,layer="groundtruth",date=ffdate,number = extnum))
       #average confidence
       mean_confidence(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="confidence",date=ffdate,number = extnum))
-      #last six months and last three months
+      #last six months
       lastsixmonths(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="6months",date=ffdate,number = extnum))
       lastthreemonths(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="3months",date=ffdate,number = extnum))
       #6 to 12 months ago, for seasonality
       twelvetosixmonths(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="12to6months",date=ffdate,number = extnum))
       #total past deforestation (since 2020)
-      deforestationfile=createfilename(rasname,layer="totaldeforestation",date=ffdate,number = extnum)
-      totaldeforestation(ras=ras,diffdate=diffdate,filename=deforestationfile)
+      totaldeforestation(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="totaldeforestation",date=ffdate,number = extnum))
       patchsize(ras,matrixcreator(21),filename=createfilename(rasname,layer="patchsize",date=ffdate,number = extnum))
       #smoothed total deforestation
-      smoothed_deforestation(inputfile=deforestationfile,window_matrix = matrixcreator(11),filename=createfilename(rasname,layer="smtotaldeforestation",date=ffdate,number = extnum))
+      smoothed_deforestation(inputfile=createfilename(rasname,layer="totaldeforestation",date=ffdate,number = extnum),window_matrix = matrixcreator(11),filename=createfilename(rasname,layer="smtotaldeforestation",date=ffdate,number = extnum))
       #smoothed last six months
       smoothed_6months(inputfile=createfilename(rasname,layer="6months",date=ffdate,number = extnum),window_matrix = matrixcreator(11),filename=createfilename(rasname,layer="sm6months",date=ffdate,number = extnum))
       #####edge filter######
-      edgedetection_withmask(ras,diffdate,filename=createfilename(rasname,layer="edgeswithmask",date=ffdate,number = extnum))
-      edgedetection_withmask()
+      #edgedetection_withmask(deforestationfile = "totaldeforestation_rough.tif",diffdate,filename=createfilename(rasname,layer="edgesnomask",date=ffdate,number = extnum))
+      
       
       #create training, validation and test data
       
@@ -84,7 +91,7 @@ for(file in files){
       #             "forestmask.tif","slope.tif","roughness.tif","elevation.tif","latestdeforestation.tif","groundtruth.tif")
       # rasstack=rast(alllayers)
       # writeRaster(rasstack,paste0("stack",ffdate,"_",extnum,".tif"),overwrite=T)
-    }
+    #}
   }
 }
 # ######method 1: random sample###########
