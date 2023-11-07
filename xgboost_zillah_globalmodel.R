@@ -1,17 +1,25 @@
-alllayers=c("12-6months.tif","6months.tif","confidence.tif","deforestation_smoothed.tif",
-            "deforestation_smoothed6months.tif","totaldeforestation.tif","edgedensity_withmask.tif","edgedensity.tif",
-            "forestmask.tif","slope.tif","roughness.tif","elevation.tif","latestdeforestation.tif","groundtruth.tif")
-rasstack=rast(alllayers)
-writeRaster(rasstack,paste0("stack",ffdate,"_",extnum,".tif"),overwrite=T)
-######method 1: random sample###########
-files=list.files(pattern="stack")
+
+# open packages 
+library(terra)
+library(xgboost)
+
+source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
+files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
+
+static_files= files[-grep("01.",files)]
+data = c("2023-2-01","2023-3-01")
+
 start=T
-for(file in files){
-  rasstack=rast(file)
-  dts=spatSample(rasstack,size=ncol(rasstack)*nrow(rasstack),xy=T,method="regular")
-  names(dts)=c("x","y",gsub(".tif","",alllayers))
+for(i in data){
+  dynamic_files = files[grep(i,files)]
+  rasstack = rast(c(dynamic_files, static_files))
+  dts=as.matrix(rasstack)
+  #dts=spatSample(rasstack,size=ncol(rasstack)*nrow(rasstack),xy=T,method="regular", values=FALSE)
   if(start){fulldts=dts}else{fulldts=rbind(fulldts,dts)}
 }
+
+
+######method 1: random sample###########
 
 dts=fulldts
 write.table(dts,"helpers/powerbicsv.csv",dec=",",sep=";",row.names=F)
@@ -33,6 +41,7 @@ dts=dts[-remove_indices,]
 label_s=label_s[-remove_indices]
 label_s=as.matrix(label_s)
 label_s[label_s>1]=1
+
 #boost and predict
 eta=0.1
 subsample=0.9
