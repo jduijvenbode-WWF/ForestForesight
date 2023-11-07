@@ -127,8 +127,7 @@ createfilename=function(rasname,date=NA,layer,number=NA){
   return(filename)
 }
 createrasname=function(ras){
-  extent=ext(rast(ras))
-  rasname=paste0(if(extent[1]<0){"W"}else{"E"},abs(extent[1]),if(extent[2]<0){"S"}else{"N"},abs(extent[2]))
+  rasname=gsub(".tif","",basename(ras))
   return(rasname)
 }
 
