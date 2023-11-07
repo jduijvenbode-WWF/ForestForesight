@@ -15,20 +15,23 @@ library(xgboost)
 setwd("D:/ff-dev/results/")
 source("C:/Users/EagleView/Documents/GitHub/ForestForesight/functions.R")
 #####split extent in parts######
-files=rev(list.files("D:/ff-dev/alerts/",pattern ="tif",full.names = T))
-
+files=list.files("D:/ff-dev/alerts/",pattern ="tif",full.names = T)
+firstindices=c("D:/ff-dev/alerts/20N_080W.tif", "D:/ff-dev/alerts/10N_080W.tif", "D:/ff-dev/alerts/00N_080W.tif", "D:/ff-dev/alerts/10N_070W.tif"
+                                ,"D:/ff-dev/alerts/00N_070W.tif", "D:/ff-dev/alerts/10S_080W.tif")
+files=files[c(which(files %in% firstindices),which(!files %in% firstindices))]
+cl <- makeCluster(6)
 
 
 # polis=vect("C:/Users/EagleView/Documents/GitHub/ForestForesight/srtmindices.json")
 # polis$name=gsub(pattern = "C:/users/jonas/Downloads/",replacement="C:/data/xgboost_test/srtms/",polis$name)
 
-for(file in files){
+run_preprocess=function(file){
   library(terra)
   setwd("D:/ff-dev/results/")
   files=list.files("D:/ff-dev/alerts/",pattern ="tif",full.names = T)
   source("C:/Users/EagleView/Documents/GitHub/ForestForesight/functions.R")
   ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
-  ffdates=ffdates[1:29]
+  ffdates=rev(ffdates[1:29])
   rasname=createrasname(file)
   extnum=NA
   #exts=splitintoparts(file,4)
