@@ -60,20 +60,22 @@ for(file in files){
       labels(ras=ras,diffdate=diffdate,createfilename(rasname,layer="groundtruth",date=ffdate,number = extnum))
       #average confidence
       mean_confidence(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="confidence",date=ffdate,number = extnum))
-      #last six months
+      #last six months and last three months
       lastsixmonths(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="6months",date=ffdate,number = extnum))
+      lastthreemonths(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="3months",date=ffdate,number = extnum))
       #6 to 12 months ago, for seasonality
       twelvetosixmonths(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="12to6months",date=ffdate,number = extnum))
       #total past deforestation (since 2020)
-      totaldeforestation(ras=ras,diffdate=diffdate,filename=createfilename(rasname,layer="totaldeforestation",date=ffdate,number = extnum))
+      deforestationfile=createfilename(rasname,layer="totaldeforestation",date=ffdate,number = extnum)
+      totaldeforestation(ras=ras,diffdate=diffdate,filename=deforestationfile)
       patchsize(ras,matrixcreator(21),filename=createfilename(rasname,layer="patchsize",date=ffdate,number = extnum))
       #smoothed total deforestation
-      smoothed_deforestation(inputfile=createfilename(rasname,layer="totaldeforestation",date=ffdate,number = extnum),window_matrix = matrixcreator(11),filename=createfilename(rasname,layer="smtotaldeforestation",date=ffdate,number = extnum))
+      smoothed_deforestation(inputfile=deforestationfile,window_matrix = matrixcreator(11),filename=createfilename(rasname,layer="smtotaldeforestation",date=ffdate,number = extnum))
       #smoothed last six months
       smoothed_6months(inputfile=createfilename(rasname,layer="6months",date=ffdate,number = extnum),window_matrix = matrixcreator(11),filename=createfilename(rasname,layer="sm6months",date=ffdate,number = extnum))
       #####edge filter######
       edgedetection_withmask(ras,diffdate,filename=createfilename(rasname,layer="edgeswithmask",date=ffdate,number = extnum))
-      
+      edgedetection_withmask()
       
       #create training, validation and test data
       
