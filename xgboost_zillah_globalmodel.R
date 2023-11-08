@@ -8,7 +8,7 @@ library(xgboost)
 source("C:/data/xgboost_test/helpers/functions.R")
 files=list.files("C:/Users/jonas/Downloads/10N_080W", pattern ="tif",full.names = T)
 static_files= files[-grep("01.",files)]
-data = c("2023-2-01","2023-3-01")
+data = c("2022-1-01","2023-4-01")
 
 start=T
 for(i in data){
@@ -17,23 +17,22 @@ for(i in data){
   dts=as.matrix(rasstack)
   coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
   dts=cbind(coords,dts)
-  date=substr(dynamic_files[1],tail(gregexpr("_",dynamic_files[1])[[1]],1)+1,nchar(dynamic_files[1])-4)
-  dts=cbind(dts,rep(abs(round(as.numeric(as.Date(date))%%365.25)-183),nrow(dts)))
-  colnames(dts)=c("x","y",gsub(".tif","",c(gsub(paste0("_",date),"",basename(dynamic_files)), basename(static_files))),"yearday_relative")
-  
+  dts=cbind(dts,rep(abs(round(as.numeric(as.Date(i))%%365.25)-183),nrow(dts)))
+  dts=cbind(dts,rep(as.numeric(as.Date(i)),nrow(dts)))
+  print(unique(dts[,17]))
+  colnames(dts)=c("x","y",gsub(".tif","",c(gsub(paste0("_",date),"",basename(dynamic_files)), basename(static_files))),"yearday_relative","date")
   #dts=spatSample(rasstack,size=ncol(rasstack)*nrow(rasstack),xy=T,method="regular", values=FALSE)
-  if(start){fulldts=dts}else{fulldts=rbind(fulldts,dts)}
-}
+  if(start){
+    fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
+  }
 
 
 ######method 1: random sample###########
 
 dts=fulldts
-#write.table(dts,"helpers/powerbicsv.csv",dec=",",sep=";",row.names=F)
-#dts[is.na(dts)]=0
+dts[is.na(dts)]=0
 groundtruth_index=which(colnames(dts)=="groundtruth")
 label=dts[,groundtruth_index]
-label[which(is.na(label))]=0
 dts=dts[,-groundtruth_index]
 dts_backup=dts
 label_backup=label
@@ -44,15 +43,16 @@ testdts=testdts
 dts=dts[-testsamples,]
 test_label=label[testsamples]
 label=label[-testsamples]
-dts[is.na(dts)]=0
+
+#filter too many true negatives
 filterindex=which(colnames(dts)=="smtotaldeforestation")
 deforestation_count=sum(dts[,filterindex]>0)
 nonforestindices=which(dts[,filterindex]==0)
 remove_indices=sample(nonforestindices,length(nonforestindices)-deforestation_count)
 dts=dts[-remove_indices,]
 label=label[-remove_indices]
-label=as.matrix(label)
 label[label>1]=1
+dts=dts[,-which(colnames(dts)=="date")]
 
 #boost and predict
 eta=0.1
@@ -86,43 +86,59 @@ cat(paste("threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nr
 
 
 ######method 2: other date###########
-files=list.files(pattern="stack")
-files=files[-grep("2022",files)]
-start=T
-for(file in files){
-  rasstack=rast(file)
-  dts=spatSample(rasstack,size=ncol(rasstack)*nrow(rasstack),xy=T,method="regular")
-  names(dts)=c("x","y",gsub(".tif","",alllayers))
-  if(start){fulldts=dts}else{fulldts=rbind(fulldts,dts)}
-}
-
 dts=fulldts
-#write.table(dts,"helperspowerbicsv.csv",dec=",",sep=";",row.names=F)
 dts[is.na(dts)]=0
-label_s=dts$groundtruth
-dts$groundtruth=NULL
-dts$latestdeforestation=NULL
+groundtruth_index=which(colnames(dts)=="groundtruth")
+label=dts[,groundtruth_index]
+dts=dts[,-groundtruth_index]
+dts_backup=dts
+label_backup=label
 #sample test data and exclude test data from training data
-dts=as.matrix(dts)
-label_s=as.matrix(label_s)
-label_s[label_s>1]=1
+testsamples=which(dts[,which(colnames(dts)=="date")]==19448)
+testdts=dts[testsamples,]
+testdts=testdts
+dts=dts[-testsamples,]
+test_label=label[testsamples]
+label=label[-testsamples]
+
+#filter too many true negatives
+filterindex=which(colnames(dts)=="smtotaldeforestation")
+deforestation_count=sum(dts[,filterindex]>0)
+nonforestindices=which(dts[,filterindex]==0)
+remove_indices=sample(nonforestindices,length(nonforestindices)-deforestation_count)
+dts=dts[-remove_indices,]
+label=label[-remove_indices]
+label[label>1]=1
+dts=dts[,-which(colnames(dts)=="date")]
 #boost and predict
 eta=0.1
 subsample=0.9
-nrounds=1000
+nrounds=500
 depth=9
 
-bst <- xgboost(data = dts, label = label_s,
+bst <- xgboost(data = dts, label = label,
                max_depth = depth, eta = eta,subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
                objective = "binary:logistic",eval_metric="aucpr",verbose = F)
 
-pred_train <- predict(bst, dts)
-falsepositives=which((2*(pred_train>0.5)-label_s)==1)
-deforestation_count=sum(rowSums(dts[,3:8])>0)
-nonforestindices=which(rowSums(dts[,3:8])==0)
-remove_indices=sample(nonforestindices,length(nonforestindices)-deforestation_count+length(falsepositives))
-dts=dts[-remove_indices,]
-label_s=label_s[-remove_indices]
+pred <- predict(bst, testdts)
+
+startF05=0
+for(i in quantile(pred,seq(0.4,1,0.01))){
+  a=table((pred > i)*2+(test_label>0))
+  UA=round(a[4]/(a[3]+a[4]),2)
+  PA=round(a[4]/(a[2]+a[4]),2)
+  F05=round(1.25*UA*PA/(0.25*UA+PA),2)
+  if(!is.na(F05)){
+    if(F05>startF05){
+      threshold=i
+      startF05=F05
+      sUA=UA
+      sPA=PA
+    }}
+  
+}
+cat(paste("threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"))
+
 
 #####test part#####
 files=list.files(pattern="stack")
