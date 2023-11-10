@@ -2,11 +2,15 @@
 # open packages 
 library(terra)
 library(xgboost)
+if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
+  source("C:/data/xgboost_test/helpers/functions.R")
+  files=list.files("C:/Users/jonas/Downloads/10N_080W", pattern ="tif",full.names = T)
+}else{
+  source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
+  files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
+}
 
-source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
-files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
-#source("C:/data/xgboost_test/helpers/functions.R")
-#files=list.files("C:/Users/jonas/Downloads/10N_080W", pattern ="tif",full.names = T)
+
 static_files= files[-grep("01.",files)]
 data = c("2022-1-01","2022-4-01","2022-7-01","2022-10-01","2022-11-01","2023-1-01","2023-2-01","2023-4-01")
 
@@ -151,13 +155,14 @@ for(datenum in seq(8)){
 
 ######method 2: other date B: xgb.train###########
 
-evalerrorF05 <- function(preds, dtrain) {
+evalerrorF05 <- function(preds, dts_matrix) {
   # Check for NAs in preds and labels
-  if (any(is.na(preds)) || any(is.na(getinfo(dtrain, "label")))) {
+  if (any(is.na(preds)) || any(is.na(getinfo(dts_matrix, "label")))) {
     stop("NA values detected in preds or labels.")
   }
   i <- 0.5
-  labels <- getinfo(dtrain, "label")
+  cat(length(labels))
+  labels <- getinfo(dts_matrix, "label")
   a <- table((preds > i) * 2 + (labels > 0))
   UA=a[4]/(a[3]+a[4])
   PA=a[4]/(a[2]+a[4])
