@@ -30,7 +30,7 @@ for(i in ffdates){
 }
 unidates=sort(unique(dts[,ncol(dts)]))
 fulldts[is.na(fulldts)]=0
-for(datenum in c(29)){
+datenum=29
   dts=fulldts
 
   groundtruth_index=which(colnames(dts)=="groundtruth")
@@ -52,15 +52,15 @@ for(datenum in c(29)){
   testdts=testdts[,-which(colnames(testdts)=="date")]
   #boost and predict
   eta=0.1
-  
+  for(remove in seq(19)){
   for(depth in c(5)){
     for(subsample in c(0.6)){
       for(nrounds in c(200)){
-        bst <- xgboost(data = dts, label = label,
+        bst <- xgboost(data = dts[,-remove], label = label,
                        max_depth = depth, eta = eta,subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
                        objective = "binary:logistic",eval_metric="aucpr",verbose = F)
         
-        pred <- predict(bst, testdts)
+        pred <- predict(bst, testdts[,-remove])
         
         startF05=0
         for(i in seq(0.25,0.65,0.01)){
