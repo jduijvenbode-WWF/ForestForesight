@@ -160,9 +160,9 @@ evalerrorF05 <- function(preds, dts_matrix) {
   if (any(is.na(preds)) || any(is.na(getinfo(dts_matrix, "label")))) {
     stop("NA values detected in preds or labels.")
   }
-  i <- 0.5
-  cat(length(labels))
+  i <- 0.1
   labels <- getinfo(dts_matrix, "label")
+  cat(max(preds))
   a <- table((preds > i) * 2 + (labels > 0))
   UA=a[4]/(a[3]+a[4])
   PA=a[4]/(a[2]+a[4])
