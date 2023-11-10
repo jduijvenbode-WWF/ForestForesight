@@ -24,13 +24,13 @@ for(i in ffdates){
   dts=cbind(dts,rep(as.numeric(as.Date(i)),nrow(dts)))
   colnames(dts)=c("x","y",gsub(".tif","",c(gsub(paste0("_",filedate),"",basename(dynamic_files)), basename(static_files))),"yearday_relative","date")
   dts=dts[-which(dts[,which(colnames(dts)=="smtotaldeforestation")]==0),]
-  dts=dts[sample(seq(nrow(dts)),round(nrow(dts)/3)),]
+  dts=dts[sample(seq(nrow(dts)),round(nrow(dts)/10)),]
   if(start){
     fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
 }
 unidates=sort(unique(dts[,ncol(dts)]))
 fulldts[is.na(fulldts)]=0
-for(datenum in seq(12,length(unidates))){
+for(datenum in c(29)){
   dts=fulldts
 
   groundtruth_index=which(colnames(dts)=="groundtruth")
