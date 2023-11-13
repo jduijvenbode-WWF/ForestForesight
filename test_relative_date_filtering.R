@@ -23,24 +23,23 @@ for(i in ffdates){
   dts=cbind(dts,rep(abs(round(as.numeric(as.Date(i))%%365.25)-183),nrow(dts)))
   dts=cbind(dts,rep(as.numeric(as.Date(i)),nrow(dts)))
   colnames(dts)=c("x","y",gsub(".tif","",c(gsub(paste0("_",filedate),"",basename(dynamic_files)), basename(static_files))),"yearday_relative","date")
-  dts=dts[-which(dts[,which(colnames(dts)=="smtotaldeforestation")]==0),]
-  dts=dts[sample(seq(nrow(dts)),round(nrow(dts)/10)),]
+  dts=dts[-which(dts[,"smtotaldeforestation"]==0),]
+  dts=dts[sample(seq(nrow(dts)),round(nrow(dts)/3)),]
   if(start){
     fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
 }
 unidates=sort(unique(dts[,ncol(dts)]))
 fulldts[is.na(fulldts)]=0
-datenum=29
+for(datenum in seq(13,29)){
   dts=fulldts
-
   groundtruth_index=which(colnames(dts)=="groundtruth")
-  label=dts[,groundtruth_index]
+  label=dts[,"groundtruth"]
   dts=dts[,-groundtruth_index]
   dts_backup=dts
   label_backup=label
   #sample test data and exclude test data from training data
   testsamples=which(dts[,which(colnames(dts)=="date")]==as.numeric(as.Date(ffdates[datenum])))
-  trainsamples=which(dts[,which(colnames(dts)=="date")]<as.numeric(as.Date(ffdates[datenum-5])))
+  trainsamples=which((dts[,which(colnames(dts)=="date")]<as.numeric(as.Date(ffdates[datenum-5])))&(dts[,which(colnames(dts)=="date")]>as.numeric(as.Date(ffdates[datenum-12]))))
   testdts=dts[testsamples,]
   dts=dts[trainsamples,]
   test_label=label[testsamples]
@@ -52,7 +51,6 @@ datenum=29
   testdts=testdts[,-which(colnames(testdts)=="date")]
   #boost and predict
   eta=0.1
-  for(remove in seq(19)){
   for(depth in c(5)){
     for(subsample in c(0.6)){
       for(nrounds in c(200)){
@@ -63,7 +61,7 @@ datenum=29
         pred <- predict(bst, testdts[,-remove])
         
         startF05=0
-        for(i in seq(0.25,0.65,0.01)){
+        for(i in seq(0.45,0.55,0.01)){
           a=table((pred > i)*2+(test_label>0))
           UA=a[4]/(a[3]+a[4])
           PA=a[4]/(a[2]+a[4])
@@ -83,3 +81,5 @@ datenum=29
     }
   }
 }
+
+  
