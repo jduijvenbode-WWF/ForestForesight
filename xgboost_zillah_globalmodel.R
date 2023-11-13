@@ -17,7 +17,7 @@ data = c("2022-1-01","2022-4-01","2022-7-01","2022-10-01","2022-11-01","2023-1-0
 start=T
 for(i in data){
   dynamic_files = files[grep(i,files)]
-  rasstack = rast(c(dynamic_files, static_files)) # win argument resulted in error 
+  rasstack = rast(c(dynamic_files, static_files),extent=ext(rast(dynamic_files[1]))-3) # win argument resulted in error 
   rasstack = crop(rasstack,ext(rast(rasstack))-3) # used crop instead 
   dts=as.matrix(rasstack)
   coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
@@ -160,28 +160,20 @@ evalerrorF05 <- function(preds, dts_matrix) {
   if (any(is.na(preds)) || any(is.na(getinfo(dts_matrix, "label")))) {
     stop("NA values detected in preds or labels.")
   }
-  i <- 0.1
+  i <- 0.5
   labels <- getinfo(dts_matrix, "label")
-  cat(max(preds))
+  #cat(max(preds))
   a <- table((preds > i) * 2 + (labels > 0))
-  UA=a[4]/(a[3]+a[4])
-  PA=a[4]/(a[2]+a[4])
-  F05 <- 1.25 * UA * PA / max(0.25 * UA + PA)  
-  
-  # Debugging prints
-  cat("Type of preds:", class(preds), "\n")
-  cat("Dimensions of preds:", dim(preds), "\n")
-  
-  cat("Type of labels:", class(labels), "\n")
-  cat("Dimensions of labels:", dim(labels), "\n")
-  
-  cat("a:", a, "\n" )
-  cat("UA:", UA, "\n")
-  cat("PA:", PA, "\n")
-  cat("F05:", F05, "\n")
-  
+  if (length(a)==4){
+    UA<<-a[4]/(a[3]+a[4])
+    PA<<-a[4]/(a[2]+a[4])
+    F05<<- 1.25 * UA * PA / (0.25 * UA + PA)  
+  }else{
+    F05 = 0
+  }
   return(list(metric = "error F05", value = as.numeric(F05)))
 }
+
 
 for(datenum in seq(8)){
   dts=fulldts
@@ -217,18 +209,22 @@ for(datenum in seq(8)){
   
   
   #boost and predict
-  eta=0.1
+  eta=0.4
   
   for(depth in c(5)){
     for(subsample in c(0.6)){
       for(nrounds in c(200)){
         bst <- xgb.train(data = dts_matrix,
-                       max_depth = depth, eta = eta, subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
+                       max_depth = depth, eta = eta, subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 10,
                        objective = "binary:logistic", feval= evalerrorF05 , maximize= TRUE, verbose = 1, watchlist= watchlist)
         
-        #pred <- predict(bst, testdts)
+        pred <- predict(bst, testdts)
+        a=table((pred > 0.5)*2+(test_label>0))
+        UA=a[4]/(a[3]+a[4])
+        PA=a[4]/(a[2]+a[4])
+        F05=round(1.25*UA*PA/(0.25*UA+PA),2)
         
-        cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"))
+        cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*UA,", PA:",100*PA,"F05:",F05,"\n"))
         #        cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"),file="C:/data/results.txt",append=T)
       }
     }
