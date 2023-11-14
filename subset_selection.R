@@ -60,17 +60,21 @@ for(datenum in seq(2)){
   dts=dts[,-which(colnames(dts)=="date")]
   testdts=testdts[,-which(colnames(testdts)=="date")]
   #boost and predict
-  eta=0.4
-  depth  = 5
+  eta=0.3
+  depth  = 4
   subsample=0.6
-  nrounds = 200
+  nrounds = 100
   F05_max= 0 
-  for(i in seq(dim(dts)[2])){
-    dts_2 = dts[,-i]
-    bst <- xgboost(data = dts_2, label = label, max_depth = depth, 
+  dts_2 = dts
+  testdts_2= testdts
+  while(dim(dts_2)[2]>1){
+  for(i in seq(dim(dts_2)[2])){
+    dts_temp = dts_2[,-i]
+    testdts_temp = testdts_2[,-i] 
+    bst <- xgboost(data = dts_temp, label = label, max_depth = depth, 
                  eta = eta,subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
-                 objective = "binary:logistic",eval_metric="aucpr",verbose = F)
-    pred <- predict(bst, testdts)
+                 objective = "binary:logistic",eval_metric="aucpr",verbose = T)
+    pred <- predict(bst, testdts_temp)
     a=table((pred > 0.55)*2+(test_label>0))
     UA=a[4]/(a[3]+a[4])
     PA=a[4]/(a[2]+a[4])
@@ -79,8 +83,11 @@ for(datenum in seq(2)){
       del = i
       F05_max=F05
     }
-    cat(paste("removed",colnames(dts)[2],"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",F05=,"\n"))
-        #        cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"),file="C:/data/results.txt",append=T)
+    cat(paste("removed",colnames(dts_2)[i],"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*UA,", PA:",100*PA,"F05:",F05,"\n"))
   }
   cat(paste("Attribute to remove : ",colnames(dts)[del] ))
+  dts_2=dts_2[,-del]
+  testdts_2 = testdts_2[,-del] 
+  
+  }
 }
