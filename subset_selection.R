@@ -64,16 +64,16 @@ for(datenum in seq(2)){
   depth  = 4
   subsample=0.6
   nrounds = 100
-  F05_max= 0 
   dts_2 = dts
   testdts_2= testdts
   while(dim(dts_2)[2]>1){
+    F05_max= 0 
   for(i in seq(dim(dts_2)[2])){
     dts_temp = dts_2[,-i]
     testdts_temp = testdts_2[,-i] 
     bst <- xgboost(data = dts_temp, label = label, max_depth = depth, 
                  eta = eta,subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
-                 objective = "binary:logistic",eval_metric="aucpr",verbose = T)
+                 objective = "binary:logistic",eval_metric="aucpr",verbose = F)
     pred <- predict(bst, testdts_temp)
     a=table((pred > 0.55)*2+(test_label>0))
     UA=a[4]/(a[3]+a[4])
@@ -83,9 +83,10 @@ for(datenum in seq(2)){
       del = i
       F05_max=F05
     }
-    cat(paste("removed",colnames(dts_2)[i],"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*UA,", PA:",100*PA,"F05:",F05,"\n"))
+    cat(paste("removed",colnames(dts_2)[i],"UA:",round(UA,2),", PA:",round(PA,2),"F05:",round(F05,2),"\n"))
+    cat(paste("removed",colnames(dts_2)[i],"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",round(UA,2),", PA:",round(PA,2),"F05:",round(F05,2),"\n"),file="/Users/temp/Documents/GitHub/ForestForesight/subset_results.txt",append=T)
   }
-  cat(paste("Attribute to remove : ",colnames(dts)[del] ))
+  cat(paste("Attribute to remove : ",colnames(dts_2)[del],"F05 max:", F05_max ,"\n" ))
   dts_2=dts_2[,-del]
   testdts_2 = testdts_2[,-del] 
   
