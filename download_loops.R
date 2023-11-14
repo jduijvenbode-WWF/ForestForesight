@@ -7,6 +7,18 @@ for(file in files){
   b=httr::GET(file)
   writeBin(b$content,filename)
 }
+
+library(httr)
+files=read.csv("D:/ff-dev/gain.txt",header=F)$V1
+dir.create("D:/ff-dev/forestgain_2000_2012")
+setwd("D:/ff-dev/forestgain_2000_2012")
+for(file in files){
+  a=gregexpr("gain_",file)[[1]]
+  filename=substr(file,a[1]+5,nchar(file))
+  b=httr::GET(file)
+  writeBin(b$content,filename)
+}
+
 library(terra)
 IA=vect("../integratedalerts.geojson")
 setwd("../alerts/")
