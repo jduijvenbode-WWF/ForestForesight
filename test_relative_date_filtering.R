@@ -9,7 +9,7 @@ source("C:/data/xgboost_test/helpers/functions.R")
 files=list.files("C:/Users/jonas/Downloads/10N_080W", pattern ="tif",full.names = T)
 static_files= files[-grep("01.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
-ffdates=ffdates[1:29]
+ffdates=ffdates[1:29][c(15,25)]
 
 start=T
 for(i in ffdates){
@@ -23,14 +23,14 @@ for(i in ffdates){
   dts=cbind(dts,rep(abs(round(as.numeric(as.Date(i))%%365.25)-183),nrow(dts)))
   dts=cbind(dts,rep(as.numeric(as.Date(i)),nrow(dts)))
   colnames(dts)=c("x","y",gsub(".tif","",c(gsub(paste0("_",filedate),"",basename(dynamic_files)), basename(static_files))),"yearday_relative","date")
-  dts=dts[-which(dts[,"smtotaldeforestation"]==0),]
-  dts=dts[sample(seq(nrow(dts)),round(nrow(dts)/3)),]
+  # dts=dts[-which(dts[,"smtotaldeforestation"]==0),]
+  # dts=dts[sample(seq(nrow(dts)),round(nrow(dts)/3)),]
   if(start){
     fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
 }
 unidates=sort(unique(dts[,ncol(dts)]))
 fulldts[is.na(fulldts)]=0
-for(datenum in seq(13,29)){
+for(datenum in c(27)){
   dts=fulldts
   groundtruth_index=which(colnames(dts)=="groundtruth")
   label=dts[,"groundtruth"]
@@ -38,8 +38,8 @@ for(datenum in seq(13,29)){
   dts_backup=dts
   label_backup=label
   #sample test data and exclude test data from training data
-  testsamples=which(dts[,which(colnames(dts)=="date")]==as.numeric(as.Date(ffdates[datenum])))
-  trainsamples=which((dts[,which(colnames(dts)=="date")]<as.numeric(as.Date(ffdates[datenum-5])))&(dts[,which(colnames(dts)=="date")]>as.numeric(as.Date(ffdates[datenum-12]))))
+  testsamples=which(dts[,"date"]==max(dts[,"date"]))
+  trainsamples=which(dts[,"date"]!=max(dts[,"date"]))
   testdts=dts[testsamples,]
   dts=dts[trainsamples,]
   test_label=label[testsamples]
@@ -53,12 +53,12 @@ for(datenum in seq(13,29)){
   eta=0.1
   for(depth in c(5)){
     for(subsample in c(0.6)){
-      for(nrounds in c(200)){
-        bst <- xgboost(data = dts[,-remove], label = label,
+      for(nrounds in c(1)){
+        bst <- xgboost(data = dts, label = label,
                        max_depth = depth, eta = eta,subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
-                       objective = "binary:logistic",eval_metric="aucpr",verbose = F)
+                       objective = "binary:logistic",feval=,verbose = F)
         
-        pred <- predict(bst, testdts[,-remove])
+        pred <- predict(bst, testdts)
         
         startF05=0
         for(i in seq(0.45,0.55,0.01)){
