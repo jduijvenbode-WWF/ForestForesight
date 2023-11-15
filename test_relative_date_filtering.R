@@ -11,8 +11,9 @@ static_files= files[-grep("01.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 ffdates=ffdates[1:29][c(15,25)]
 
-start=T
-for(j in seq(0,10,2.5)){
+
+
+  start=T
   for(i in ffdates){
     
     dynamic_files = files[grep(i,files)]
@@ -27,7 +28,7 @@ for(j in seq(0,10,2.5)){
     colnames(dts)=c("x","y",gsub(".tif","",c(gsub(paste0("_",filedate),"",basename(dynamic_files)), basename(static_files))),"yearday_relative","date")
     # dts=dts[-which(dts[,"smtotaldeforestation"]==0),]
     # dts=dts[sample(seq(nrow(dts)),round(nrow(dts)/3)),]
-    dts=dts[which((dts[,'x']<j)&(dts[,'x']>(j-2.5))),]
+
     if(start){
       fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
   }
@@ -59,9 +60,9 @@ for(j in seq(0,10,2.5)){
   depth=5
   subsample=0.9
   nrounds=200
-  bst <- xgboost(data = dts_matrix,
-                 max_depth = depth, eta = eta,subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
-                 objective = "binary:logistic",feval=evalerrorF05,maximize= TRUE,verbose = T,watchlist=watchlist)
+  bst <- xgb.train(data = dts_matrix,
+                   max_depth = depth, eta = eta, subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 10,
+                   objective = "binary:logistic", feval= evalerrorF05 , maximize= TRUE, verbose = 1, watchlist= watchlist)
   
   pred <- predict(bst, testdts)
   
@@ -83,4 +84,5 @@ for(j in seq(0,10,2.5)){
   cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"))
   cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"),file="C:/data/results.txt",append=T)
   
-}
+
+
