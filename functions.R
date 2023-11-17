@@ -160,3 +160,25 @@ matrixcreator=function(size){
   }
   return(window_matrix)
 }
+
+
+
+#######evaluation functions########
+evalerrorF05 <- function(preds, dts_matrix) {
+  # Check for NAs in preds and labels
+  if (any(is.na(preds)) || any(is.na(getinfo(dts_matrix, "label")))) {
+    stop("NA values detected in preds or labels.")
+  }
+  i <- 0.5
+  labels <- getinfo(dts_matrix, "label")
+  #cat(max(preds))
+  a <- table((preds > i) * 2 + (labels > 0))
+  if (length(a)==4){
+    UA<<-a[4]/(a[3]+a[4])
+    PA<<-a[4]/(a[2]+a[4])
+    F05<<- round(1.25 * UA * PA / (0.25 * UA + PA),3)
+  }else{
+    F05 = 0
+  }
+  return(list(metric = "error F05", value = as.numeric(F05)))
+}
