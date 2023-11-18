@@ -52,7 +52,6 @@ def process_geotiff(input_file, output_file,relative_date):
             res_row_offset=row_offset//40
             print(res_row_offset,res_col_offset,result_array.shape)
             result_array[res_row_offset:(res_row_offset+(result_array.shape[0]//2)),res_col_offset:(res_col_offset+(result_array.shape[1]//2))]=data
-        output_file = input_file.replace(".tif", f"_{output_suffix}")
         with rasterio.open(output_file, 'w', driver='GTiff', width=width, height=height, count=1, dtype=src.dtypes[0], crs=src.crs, transform=src.transform) as dst:
             dst.write(result_array.reshape(1,result_array.shape[0],result_array.shape[1]))
 
