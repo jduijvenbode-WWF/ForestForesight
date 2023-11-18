@@ -1,8 +1,6 @@
 import rasterio
 from rasterio.windows import Window
 import numpy as np
-import sys
-from scipy.ndimage import maximum_filter
 import argparse
 
 
