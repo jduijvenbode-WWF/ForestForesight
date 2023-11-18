@@ -9,7 +9,7 @@ source("C:/data/xgboost_test/helpers/functions.R")
 files=list.files("C:/Users/jonas/Downloads/10N_080W", pattern ="tif",full.names = T)
 static_files= files[-grep("01.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
-ffdates=ffdates[1:29][c(15,25)]
+ffdates=ffdates[1:29][c(24,29)]
 
 
 
@@ -54,7 +54,9 @@ ffdates=ffdates[1:29][c(15,25)]
   testdts=testdts[,-which(colnames(testdts)=="date")]
   #boost and predict
   dts_matrix= xgb.DMatrix(dts, label=label)
+  dts_matrix= xgb.DMatrix(dts[,-which(colnames(dts)=="nightlights")], label=label)
   test_matrix= xgb.DMatrix(testdts, label=test_label)
+  test_matrix= xgb.DMatrix(testdts[,-which(colnames(testdts)=="nightlights")], label=test_label)
   watchlist = list(train = dts_matrix, eval = test_matrix)
   eta=0.1
   depth=5
@@ -84,5 +86,8 @@ ffdates=ffdates[1:29][c(15,25)]
   cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"))
   cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"),file="C:/data/results.txt",append=T)
   
-
+preds=pred
+testset=testdts
+testset=testset[which(preds>0.5),]
+res=res(rasstack)[1]
 
