@@ -3,6 +3,9 @@ from rasterio.windows import Window
 import numpy as np
 import sys
 from scipy.ndimage import maximum_filter
+import argparse
+
+
 
 def aggregate_by_40_max(input_array):
 
@@ -12,7 +15,7 @@ def aggregate_by_40_max(input_array):
 
 
 
-def process_geotiff(input_file, output_suffix="_processed.tif"):
+def process_geotiff(input_file, output_file,relative_date):
     # Open the GeoTIFF file
     with rasterio.open(input_file) as src:
         # Get the dimensions of the raster
@@ -41,7 +44,7 @@ def process_geotiff(input_file, output_suffix="_processed.tif"):
             data = np.remainder(np.nan_to_num(data), 10000)
 
             # Replace values lower than 0 with 0
-            data[data > int(sys.argv[1])] = 0
+            data[data > int(relative_date)] = 0
 
             data=aggregate_by_40_max(data)
             
@@ -57,7 +60,15 @@ def process_geotiff(input_file, output_suffix="_processed.tif"):
 
 
 if __name__ == "__main__":
+    # Create a command-line argument parser
+    parser = argparse.ArgumentParser(description="Apply Sobel filter to a geotiff image.")
+    parser.add_argument("input_image", help="Path to the input geotiff image")
+    parser.add_argument("output_image", help="Path to the output geotiff image")
+    parser.add_argument("relative_date", help="relative date")
+    args = parser.parse_args()
     print("Start")
     # Replace 'your_geotiff_file.tif' with the actual file path
-    input_geotiff = 'C:/data/testpython.tif'
-    process_geotiff(input_geotiff)
+    input_geotiff =  args.input_image
+    output_geotiff = args.output_image
+    reldate=args.relative_date
+    process_geotiff(input_geotiff,output_geotiff,reldate)
