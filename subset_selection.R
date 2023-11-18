@@ -32,7 +32,7 @@ for(i in data){
 }
 
 
-######method 2: other date A: xgboost###########
+###### Subsset selection substraction ###########
 for(datenum in seq(2)){
   dts=fulldts
   dts=dts[,-which(colnames(dts)=="yearday_relative")]
@@ -91,4 +91,39 @@ for(datenum in seq(2)){
   testdts_2 = testdts_2[,-del] 
   
   }
+}
+
+
+###### Subset selection addition###########
+
+dts_left = dts
+dts_new = matrix(nrow=dim(dts)[1], ncol=0)
+dts_test_left = testdts
+dts_test_new = matrix(nrow=dim(testdts)[1], ncol=0)
+while(dim(dts_left)[2]>0){
+  F05_max= 0 
+  for(i in seq(dim(dts_left)[2])){
+    dts_temp = cbind(dts_new, dts_left[,i])
+    testdts_temp = cbind(dts_test_new, dts_test_left[,i])
+    bst <- xgboost(data = dts_temp, label = label, max_depth = depth, 
+                   eta = eta,subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
+                   objective = "binary:logistic",eval_metric="aucpr",verbose = F)
+    pred <- predict(bst, testdts_temp)
+    a=table((pred > 0.55)*2+(test_label>0))
+    UA=a[4]/(a[3]+a[4])
+    PA=a[4]/(a[2]+a[4])
+    F05=1.25*UA*PA/(0.25*UA+PA)
+    if (is.na(F05)){F05=0}
+    if(F05>F05_max){
+      add = i
+      F05_max=F05
+    }
+    cat(paste("added",colnames(dts_left)[i],"UA:",round(UA,2),", PA:",round(PA,2),"F05:",round(F05,2),"\n"))
+    #cat(paste("added",colnames(dts_2)[i],"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",round(UA,2),", PA:",round(PA,2),"F05:",round(F05,2),"\n"),file="/Users/temp/Documents/GitHub/ForestForesight/subset_results.txt",append=T)
+  }
+  cat(paste("Attribute to add : ",colnames(dts_left)[add],"F05 max:", F05_max ,"\n" ))
+  dts_new=cbind(dts_new, dts_left[,add])
+  dts_left =dts_left[,-add] 
+  dts_test_new = cbind(dts_test_new, dts_test_left[,add])
+  dts_test_left = dts_test_left[,-add]
 }
