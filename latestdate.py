@@ -16,6 +16,7 @@ def aggregate_by_40_max(input_array):
 def process_geotiff(input_file, output_file,relative_date):
     # Open the GeoTIFF file
     with rasterio.open(input_file) as src:
+        newtransform=src.transform*src.transform.scale(40,40)
         # Get the dimensions of the raster
         width = src.width
         height = src.height
@@ -42,7 +43,8 @@ def process_geotiff(input_file, output_file,relative_date):
             data = np.remainder(np.nan_to_num(data), 10000)
 
             # Replace values lower than 0 with 0
-            data[data > int(relative_date)] = 0
+            np.subtract(relative_date, data, out=data, where=data>0)
+            np.maximum(data,0,out=data)
 
             data=aggregate_by_40_max(data)
             
@@ -52,7 +54,7 @@ def process_geotiff(input_file, output_file,relative_date):
             res_row_offset=row_offset//40
             print(res_row_offset,res_col_offset,result_array.shape)
             result_array[res_row_offset:(res_row_offset+(result_array.shape[0]//2)),res_col_offset:(res_col_offset+(result_array.shape[1]//2))]=data
-        with rasterio.open(output_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=src.transform) as dst:
+        with rasterio.open(output_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
             dst.write(result_array.reshape(1,result_array.shape[0],result_array.shape[1]))
 
 
@@ -67,5 +69,5 @@ if __name__ == "__main__":
     # Replace 'your_geotiff_file.tif' with the actual file path
     input_geotiff =  args.input_image
     output_geotiff = args.output_image
-    reldate=args.relative_date
+    reldate=int(args.relative_date)
     process_geotiff(input_geotiff,output_geotiff,reldate)
