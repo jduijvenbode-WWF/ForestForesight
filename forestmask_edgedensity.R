@@ -1,3 +1,4 @@
+library(terra)
 files=list.files("C:/users/jonas/downloads/forestloss_2000_2022/",full.names=T)
 firstindices=c("C:/users/jonas/downloads/forestloss_2000_2022/20N_080W.tif", "C:/users/jonas/downloads/forestloss_2000_2022/10N_080W.tif", "C:/users/jonas/downloads/forestloss_2000_2022/00N_080W.tif", "C:/users/jonas/downloads/forestloss_2000_2022/10N_070W.tif"
                ,"C:/users/jonas/downloads/forestloss_2000_2022/00N_070W.tif", "C:/users/jonas/downloads/forestloss_2000_2022/10S_080W.tif")
