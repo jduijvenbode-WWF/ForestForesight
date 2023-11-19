@@ -73,37 +73,37 @@ def process_geotiff(input_file, output_file,relative_date):
             groundtruth[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date+182))&(data>relative_date)).astype(int),fun="max")
 
         latest_deforestation_file=output_file.replace("layer","latestdeforestation")        
-        if !os.path.isfile(latest_deforestation_file):
+        if not os.path.isfile(latest_deforestation_file):
             with rasterio.open(latest_deforestation_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                 dst.write(latest_deforestation.reshape(1,latest_deforestation.shape[0],latest_deforestation.shape[1]))
 
         threemonths_file=output_file.replace("layer","3months")
-        if !os.path.isfile(threemonths_file):
+        if not os.path.isfile(threemonths_file):
             with rasterio.open(threemonths_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                 dst.write(threemonths.reshape(1,threemonths.shape[0],threemonths.shape[1]))
 
         sixmonths_file=output_file.replace("layer","6months")
-        if !os.path.isfile(sixmonths_file):
+        if not os.path.isfile(sixmonths_file):
             with rasterio.open(threemonths_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                 dst.write(sixmonths.reshape(1,sixmonths.shape[0],sixmonths.shape[1]))
 
         twelvetosixmonths_file=output_file.replace("layer","12-6months")
-        if !os.path.isfile(twelvetosixmonths_file):
+        if not os.path.isfile(twelvetosixmonths_file):
             with rasterio.open(twelvetosixmonths_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                 dst.write(twelvetosixmonths.reshape(1,twelvetosixmonths.shape[0],twelvetosixmonths.shape[1]))
 
         totaldeforestation_file=output_file.replace("layer","totaldeforestation")
-        if !os.path.isfile(totaldeforestation_file):
+        if not os.path.isfile(totaldeforestation_file):
             with rasterio.open(totaldeforestation_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                 dst.write(totaldeforestation.reshape(1,totaldeforestation.shape[0],totaldeforestation.shape[1]))
 
         groundtruth_file=output_file.replace("layer","groundtruth")
-        if !os.path.isfile(groundtruth_file):
+        if not os.path.isfile(groundtruth_file):
             with rasterio.open(groundtruth_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                 dst.write(groundtruth.reshape(1,groundtruth.shape[0],groundtruth.shape[1]))
 
         confidence_file=output_file.replace("layer","confidence")
-        if !os.path.isfile(confidence_file):
+        if not os.path.isfile(confidence_file):
             with rasterio.open(confidence_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                 dst.write(confidence.reshape(1,confidence.shape[0],confidence.shape[1]))
 
