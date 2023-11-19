@@ -1,21 +1,16 @@
-
-# open packages 
 library(terra)
 library(xgboost)
-
+source("C:/data/git/ForestForesight/functions.R")
 #source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
 #files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
-source("C:/data/xgboost_test/helpers/functions.R")
-files=list.files("C:/Users/jonas/Downloads/10N_080W", pattern ="tif",full.names = T)
+
+files=list.files("C:/data/colombia_tiles/input/10N_080W", pattern ="tif",full.names = T)
 static_files= files[-grep("01.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
-ffdates=ffdates[1:29][c(24,29)]
-
-
-
+ffdates=ffdates[1:29]
   start=T
-  for(i in ffdates){
-    
+  for(i in ffdates[seq(13,29)]){
+    ffdate=ffdates[i]
     dynamic_files = files[grep(i,files)]
     rasstack = rast(c(dynamic_files, static_files))
     dts=as.matrix(rasstack)
@@ -26,25 +21,33 @@ ffdates=ffdates[1:29][c(24,29)]
     dts=cbind(dts,rep(abs(round(as.numeric(as.Date(i))%%365.25)-183),nrow(dts)))
     dts=cbind(dts,rep(as.numeric(as.Date(i)),nrow(dts)))
     colnames(dts)=c("x","y",gsub(".tif","",c(gsub(paste0("_",filedate),"",basename(dynamic_files)), basename(static_files))),"yearday_relative","date")
-    # dts=dts[-which(dts[,"smtotaldeforestation"]==0),]
-    # dts=dts[sample(seq(nrow(dts)),round(nrow(dts)/3)),]
-
     if(start){
       fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
   }
   unidates=sort(unique(dts[,ncol(dts)]))
   fulldts[is.na(fulldts)]=0
+  fulldts=cbind(fulldts,fulldts[,"6months"]-fulldts[,"3months"])
+  fulldts=cbind(fulldts,fulldts[,"pop2025"]-fulldts[,"pop2020"])
+  fulldts=fulldts[,-which(colnames(fulldts) %in% c("6months","pop2025","pop2030"))]
+  
   dts=fulldts
+  testsamples=which(dts[,"date"]==max(dts[,"date"]))
+  trainsamples=which(dts[,"date"]!=max(dts[,"date"]))
+  testdts=dts[testsamples,]
+  dts=dts[trainsamples,]
+  filterindex=which(colnames(dts)=="groundtruth")
+  deforestation_count=sum(dts[,filterindex]>0)
+  nonforestindices=which(dts[,filterindex]==0)
+  remove_indices=sample(nonforestindices,length(nonforestindices)-deforestation_count)
+  dts=dts[-remove_indices,]
+  label=label[-remove_indices]
   groundtruth_index=which(colnames(dts)=="groundtruth")
   label=dts[,"groundtruth"]
   dts=dts[,-groundtruth_index]
   dts_backup=dts
   label_backup=label
   #sample test data and exclude test data from training data
-  testsamples=which(dts[,"date"]==max(dts[,"date"]))
-  trainsamples=which(dts[,"date"]!=max(dts[,"date"]))
-  testdts=dts[testsamples,]
-  dts=dts[trainsamples,]
+
   test_label=label[testsamples]
   label=label[trainsamples]
   
@@ -54,9 +57,9 @@ ffdates=ffdates[1:29][c(24,29)]
   testdts=testdts[,-which(colnames(testdts)=="date")]
   #boost and predict
   dts_matrix= xgb.DMatrix(dts, label=label)
-  dts_matrix= xgb.DMatrix(dts[,-which(colnames(dts)=="nightlights")], label=label)
+  #dts_matrix= xgb.DMatrix(dts[,-which(colnames(dts)=="nightlights")], label=label)
   test_matrix= xgb.DMatrix(testdts, label=test_label)
-  test_matrix= xgb.DMatrix(testdts[,-which(colnames(testdts)=="nightlights")], label=test_label)
+  #test_matrix= xgb.DMatrix(testdts[,-which(colnames(testdts)=="nightlights")], label=test_label)
   watchlist = list(train = dts_matrix, eval = test_matrix)
   eta=0.1
   depth=5
