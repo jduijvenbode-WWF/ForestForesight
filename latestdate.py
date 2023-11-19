@@ -12,7 +12,7 @@ def aggregate_by_40_max(input_array,fun):
     elif fun=="mean":
         small = input_array.reshape([int(input_array.shape[1]//40), 40,int(input_array.shape[1]//40), 40]).mean(3).mean(1)
     elif fun=="nanmean":
-        small = np.nan_to_num(input_array.reshape([int(input_array.shape[1]//40), 40,int(input_array.shape[1]//40), 40]).nanmean(3).nanmean(1))
+        small = np.nan_to_num(np.nanmean(np.nanmean(input_array.reshape([int(input_array.shape[1]//40), 40,int(input_array.shape[1]//40), 40]),axis=3),axis=1))
     elif fun=="sum":
         small = input_array.reshape([int(input_array.shape[1]//40), 40,int(input_array.shape[1]//40), 40]).sum(3).sum(1)
     return small
