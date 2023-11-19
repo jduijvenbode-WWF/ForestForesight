@@ -53,8 +53,8 @@ def process_geotiff(input_file, output_file,relative_date):
                 totaldeforestation=template.copy()
                 groundtruth=template.copy()
                 #confidence=template.copy()
-                offx2=(offx1+(template.shape[0]//2))
-                offy2=(offy1+(template.shape[1]//2))
+            offx2=(offx1+(template.shape[0]//2))
+            offy2=(offy1+(template.shape[1]//2))
 
 
             # Take the remainder of 10000 for every pixel
@@ -62,7 +62,7 @@ def process_geotiff(input_file, output_file,relative_date):
             data = np.remainder(np.nan_to_num(data), 10000)
 
 
-            #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.            
+            #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.     
             latest_deforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max(np.multiply(np.maximum(np.divide(data,relative_date, where=data>0),1),10000).astype(int),fun="max")
 
             #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.  
@@ -114,7 +114,6 @@ if __name__ == "__main__":
     parser.add_argument("output_image", help="Path to the output geotiff image")
     parser.add_argument("relative_date", help="relative date")
     args = parser.parse_args()
-    print("Start")
     # Replace 'your_geotiff_file.tif' with the actual file path
     input_geotiff =  args.input_image
     output_geotiff = args.output_image
