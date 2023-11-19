@@ -52,13 +52,13 @@ def process_geotiff(input_file, output_file,relative_date):
                 twelvetosixmonths=template.copy()
                 totaldeforestation=template.copy()
                 groundtruth=template.copy()
-                confidence=template.copy()
+                #confidence=template.copy()
                 offx2=(offx1+(template.shape[0]//2))
                 offy2=(offy1+(template.shape[1]//2))
 
 
             # Take the remainder of 10000 for every pixel
-            confidence[offx1:offx2,offy1:offy2]=aggregate_by_40_max((np.remainder(np.nan_to_num(data), 10000)<relative_date).astype(int)*data//10000,fun="nanmean")
+            #confidence[offx1:offx2,offy1:offy2]=aggregate_by_40_max((np.remainder(np.nan_to_num(data), 10000)<relative_date).astype(int)*data//10000,fun="nanmean")
             data = np.remainder(np.nan_to_num(data), 10000)
 
 
@@ -102,10 +102,10 @@ def process_geotiff(input_file, output_file,relative_date):
             with rasterio.open(groundtruth_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                 dst.write(groundtruth.reshape(1,groundtruth.shape[0],groundtruth.shape[1]))
 
-        confidence_file=output_file.replace("layer","confidence")
-        if not os.path.isfile(confidence_file):
-            with rasterio.open(confidence_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
-                dst.write(confidence.reshape(1,confidence.shape[0],confidence.shape[1]))
+        #confidence_file=output_file.replace("layer","confidence")
+        #if not os.path.isfile(confidence_file):
+        #    with rasterio.open(confidence_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
+        #        dst.write(confidence.reshape(1,confidence.shape[0],confidence.shape[1]))
 
 if __name__ == "__main__":
     # Create a command-line argument parser
