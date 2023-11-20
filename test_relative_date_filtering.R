@@ -9,12 +9,12 @@ static_files= files[-grep("01.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 ffdates=ffdates[1:29]
 ffdates_backup=ffdates
-for(j in seq(12,29)){
-  ffdates=ffdates_backup[c((j-11):(j-6),j)]
+for(datenum in seq(12,29)){
+  ffdates=ffdates_backup[c((datenum-6),datenum)]
   start=T
   for(i in ffdates){
     dynamic_files = files[grep(i,files)]
-    rasstack = rast(c(dynamic_files, static_files),win=ext(rast(static_files[1]))-4)
+    rasstack = rast(c(dynamic_files, static_files),win=ext(rast(static_files[1])))
     dts=as.matrix(rasstack)
     coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
     filedate=substr(dynamic_files[1],tail(gregexpr("_",dynamic_files[1])[[1]],1)+1,nchar(dynamic_files[1])-4)
@@ -27,10 +27,10 @@ for(j in seq(12,29)){
       fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
   }
   fulldts[is.na(fulldts)]=0
-  # fulldts=cbind(fulldts,fulldts[,"6months"]-fulldts[,"3months"])
-  # fulldts=cbind(fulldts,fulldts[,"pop2025"]-fulldts[,"pop2020"])
-  # fulldts=fulldts[,-which(colnames(fulldts) %in% c("6months","pop2025","pop2030"))]
-  # colnames(fulldts)=c(colnames(fulldts)[1:(ncol(fulldts)-2)],"3-6months","popdiff")
+  fulldts=cbind(fulldts,fulldts[,"6months"]-fulldts[,"3months"])
+  fulldts=cbind(fulldts,fulldts[,"pop2025"]-fulldts[,"pop2020"])
+  fulldts=fulldts[,-which(colnames(fulldts) %in% c("6months","pop2025","pop2030"))]
+  colnames(fulldts)=c(colnames(fulldts)[1:(ncol(fulldts)-2)],"3-6months","popdiff")
   dts=fulldts
 
 
@@ -38,11 +38,15 @@ for(j in seq(12,29)){
   trainsamples=which(dts[,"date"]!=max(dts[,"date"]))
   testdts=dts[testsamples,]
   dts=dts[trainsamples,]
-  filterindex=which(colnames(dts)=="smtotaldeforestation")
+  filterindex=which(colnames(dts)=="groundtruth")
+  priority_index=which(colnames(dts)=="smtotaldeforestation")
   deforestation_count=sum(dts[,filterindex]>0)
-  nonforestindices=which(dts[,filterindex]==0)
-  remove_indices=sample(nonforestindices,length(nonforestindices)-deforestation_count)
-  dts=dts[-remove_indices,]
+  forestindices=which((dts[,filterindex]==0)&dts[,priority_index]>0)
+  nonforestindices=which((dts[,filterindex]==0)&dts[,priority_index]==0)
+  
+  keep_indices=sample(forestindices,max(length(forestindices),deforestation_count))
+  if(length(forestindices)<deforestation_count){keep_indices=c(keep_indices,sample(nonforestindices,deforestation_count-length(nonforestindices)))}
+  dts=dts[keep_indices,]
 
   groundtruth_index=which(colnames(dts)=="groundtruth")
   label=dts[,"groundtruth"]
