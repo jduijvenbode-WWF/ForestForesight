@@ -8,11 +8,13 @@ files=list.files("C:/data/colombia_tiles/input/10N_080W", pattern ="tif",full.na
 static_files= files[-grep("01.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 ffdates=ffdates[1:29]
+ffdates_backup=ffdates
+for(j in seq(12,29)){
+  ffdates=ffdates_backup[c((j-11):(j-6),j)]
   start=T
-  for(i in ffdates[seq(13,29)]){
-    ffdate=ffdates[i]
+  for(i in ffdates){
     dynamic_files = files[grep(i,files)]
-    rasstack = rast(c(dynamic_files, static_files))
+    rasstack = rast(c(dynamic_files, static_files),win=ext(rast(static_files[1]))-4)
     dts=as.matrix(rasstack)
     coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
     filedate=substr(dynamic_files[1],tail(gregexpr("_",dynamic_files[1])[[1]],1)+1,nchar(dynamic_files[1])-4)
@@ -24,42 +26,40 @@ ffdates=ffdates[1:29]
     if(start){
       fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
   }
-  unidates=sort(unique(dts[,ncol(dts)]))
   fulldts[is.na(fulldts)]=0
-  fulldts=cbind(fulldts,fulldts[,"6months"]-fulldts[,"3months"])
-  fulldts=cbind(fulldts,fulldts[,"pop2025"]-fulldts[,"pop2020"])
-  fulldts=fulldts[,-which(colnames(fulldts) %in% c("6months","pop2025","pop2030"))]
-  
+  # fulldts=cbind(fulldts,fulldts[,"6months"]-fulldts[,"3months"])
+  # fulldts=cbind(fulldts,fulldts[,"pop2025"]-fulldts[,"pop2020"])
+  # fulldts=fulldts[,-which(colnames(fulldts) %in% c("6months","pop2025","pop2030"))]
+  # colnames(fulldts)=c(colnames(fulldts)[1:(ncol(fulldts)-2)],"3-6months","popdiff")
   dts=fulldts
+
+
   testsamples=which(dts[,"date"]==max(dts[,"date"]))
   trainsamples=which(dts[,"date"]!=max(dts[,"date"]))
   testdts=dts[testsamples,]
   dts=dts[trainsamples,]
-  filterindex=which(colnames(dts)=="groundtruth")
+  filterindex=which(colnames(dts)=="smtotaldeforestation")
   deforestation_count=sum(dts[,filterindex]>0)
   nonforestindices=which(dts[,filterindex]==0)
   remove_indices=sample(nonforestindices,length(nonforestindices)-deforestation_count)
   dts=dts[-remove_indices,]
-  label=label[-remove_indices]
+
   groundtruth_index=which(colnames(dts)=="groundtruth")
   label=dts[,"groundtruth"]
   dts=dts[,-groundtruth_index]
-  dts_backup=dts
-  label_backup=label
-  #sample test data and exclude test data from training data
+  test_label=testdts[,"groundtruth"]
+  testdts=testdts[,-groundtruth_index]
 
-  test_label=label[testsamples]
-  label=label[trainsamples]
-  
+  #sample test data and exclude test data from training data
   #filter too many true negatives
   label[label>1]=1
   dts=dts[,-which(colnames(dts)=="date")]
   testdts=testdts[,-which(colnames(testdts)=="date")]
+  dts=dts[,-which(colnames(dts)=="yearday_relative")]
+  testdts=testdts[,-which(colnames(testdts)=="yearday_relative")]
   #boost and predict
   dts_matrix= xgb.DMatrix(dts, label=label)
-  #dts_matrix= xgb.DMatrix(dts[,-which(colnames(dts)=="nightlights")], label=label)
   test_matrix= xgb.DMatrix(testdts, label=test_label)
-  #test_matrix= xgb.DMatrix(testdts[,-which(colnames(testdts)=="nightlights")], label=test_label)
   watchlist = list(train = dts_matrix, eval = test_matrix)
   eta=0.1
   depth=5
@@ -70,7 +70,6 @@ ffdates=ffdates[1:29]
                    objective = "binary:logistic", feval= evalerrorF05 , maximize= TRUE, verbose = 1, watchlist= watchlist)
   
   pred <- predict(bst, testdts)
-  
   startF05=0
   for(i in seq(0.45,0.55,0.01)){
     a=table((pred > i)*2+(test_label>0))
@@ -88,7 +87,8 @@ ffdates=ffdates[1:29]
   }
   cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"))
   cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"),file="C:/data/results.txt",append=T)
-  
+}
+
 preds=pred
 testset=testdts
 testset=testset[which(preds>0.5),]

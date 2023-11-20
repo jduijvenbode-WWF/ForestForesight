@@ -46,6 +46,7 @@ def process_geotiff(input_file, output_file,relative_date):
         confidence_file=output_file.replace("layer","confidence")
         create_confidence = not os.path.isfile(confidence_file)
         # Iterate over windows
+        if not any()
         for i in range(num_windows):
             # Calculate the starting coordinates of the window
             col_offset = (i % 2) * window_width
@@ -76,7 +77,7 @@ def process_geotiff(input_file, output_file,relative_date):
 
 
             #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.     
-            if create_latest_deforestation: latest_deforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max(np.multiply(np.maximum(np.divide(data,relative_date, where=data>0),1),10000).astype(int),fun="max")
+            if create_latest_deforestation: latest_deforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max(np.multiply(np.minimum(np.divide(data,relative_date, where=data>0),1),10000).astype(int),fun="max")
 
             #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.  
             if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=relative_date)&(data>(relative_date-92))).astype(int),fun="sum")
@@ -117,7 +118,7 @@ def process_geotiff(input_file, output_file,relative_date):
 
         
         if create_confidence:
-            with rasterio.open(confidence_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
+            with rasterio.open(confidence_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="float32", crs=src.crs, transform=newtransform) as dst:
                 dst.write(confidence.reshape(1,confidence.shape[0],confidence.shape[1]))
 
 if __name__ == "__main__":
