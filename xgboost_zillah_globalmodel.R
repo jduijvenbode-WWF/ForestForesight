@@ -5,20 +5,23 @@ library(xgboost)
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
   source("C:/data/xgboost_test/helpers/functions.R")
   files=list.files("C:/Users/jonas/Downloads/10N_080W", pattern ="tif",full.names = T)
-}else{
+} else if (Sys.info()[4]=="DESKTOP-3DNFBGC"){
+  source("C:/Users/admin/Documents/GitHub/ForestForesight/functions.R")
+  files=list.files("D:/ff-dev/results/10N_080W", pattern ="tif",full.names = T)
+} else{
   source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
   files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
 }
 
 
-static_files= files[-grep("01.",files)]
-data = c("2022-1-01","2022-4-01","2022-7-01","2022-10-01","2022-11-01","2023-1-01","2023-2-01","2023-4-01")
+static_files= files[-grep("01\\.",files)]
+data = c("2022-1-01","2022-2-01","2022-3-01","2022-4-01","2022-5-01","2022-6-01")
 
 start=T
 for(i in data){
   dynamic_files = files[grep(i,files)]
-  rasstack = rast(c(dynamic_files, static_files),extent=ext(rast(dynamic_files[1]))-3) # win argument resulted in error 
-  rasstack = crop(rasstack,ext(rast(rasstack))-3) # used crop instead 
+  rasstack = rast(c(dynamic_files, static_files)) # win argument resulted in error 
+  #rasstack = crop(rasstack,ext(rast(rasstack))-3) # used crop instead 
   dts=as.matrix(rasstack)
   coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
   filedate=substr(dynamic_files[1],tail(gregexpr("_",dynamic_files[1])[[1]],1)+1,nchar(dynamic_files[1])-4)
@@ -286,4 +289,64 @@ for(i in seq(0.25,0.65,0.01)){
   }
 }
 cat(paste("threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"))
+
+
+ 
+### Test : train once, test on subsequent data ##
+
+dts=fulldts
+dts=dts[,-which(colnames(dts)=="yearday_relative")]
+dts[is.na(dts)]=0
+groundtruth_index=which(colnames(dts)=="groundtruth")
+label=dts[,groundtruth_index]
+dts=dts[,-groundtruth_index]
+
+
+#sample train data 
+trainsamples=which(dts[,which(colnames(dts)=="date")]==as.numeric(as.Date(data[1])))
+traindts=dts[trainsamples,]
+train_label=label[trainsamples]
+
+#filter too many true negatives
+filterindex=which(colnames(traindts)=="smtotaldeforestation")
+deforestation_count=sum(traindts[,filterindex]>0)
+nonforestindices=which(traindts[,filterindex]==0)
+remove_indices=sample(nonforestindices,length(nonforestindices)-deforestation_count)
+traindts=traindts[-remove_indices,]
+train_label=train_label[-remove_indices]
+train_label[train_label>1]=1
+traindts=traindts[,-which(colnames(dts)=="date")]
+
+# train the model on first date (2022-1-01)
+eta=0.1
+subsample=0.7
+nrounds=100
+depth=5
+
+bst <- xgboost(data = traindts, label = train_label,
+               max_depth = depth, eta = eta,subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
+               objective = "binary:logistic",eval_metric="aucpr",verbose = F)
+pred <- predict(bst, traindts)
+
+# train F05 
+F05 <- function(preds, label){
+  a=table((pred > 0.5)*2+(label>0))
+  UA=a[4]/(a[3]+a[4])
+  PA=a[4]/(a[2]+a[4])
+  F05=round(1.25*UA*PA/(0.25*UA+PA),4)
+  return(F05)
+}
+
+cat("Train F05 is:", F05(pred,train_label))
+
+# test the model on the subsequent 6 months
+
+for(datenum in seq(2,length(data))){
+  testsamples=which(dts[,which(colnames(dts)=="date")]==as.numeric(as.Date(data[datenum])))
+  testdts=dts[testsamples,][,-which(colnames(dts)=="date")]
+  test_label=label[testsamples]
+  test_pred <- predict(bst, testdts)
+  cat("For",data[datenum]," the test F05 is:", F05(test_pred,test_label),"\n")
+}
+
 
