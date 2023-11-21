@@ -5,7 +5,7 @@ source("C:/data/git/ForestForesight/functions.R")
 #files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
 
 files=list.files("C:/data/colombia_tiles/input/10N_080W", pattern ="tif",full.names = T)
-static_files= files[-grep("01.",files)]
+static_files= files[-grep("01\\.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 ffdates=ffdates[1:29]
 ffdates_backup=ffdates
@@ -23,7 +23,7 @@ for(datenum in seq(12,29)){
     dts=cbind(dts,rep(abs(round(as.numeric(as.Date(i))%%365.25)-183),nrow(dts)))
     dts=cbind(dts,rep(as.numeric(as.Date(i)),nrow(dts)))
     colnames(dts)=c("x","y",gsub(".tif","",c(gsub(paste0("_",filedate),"",basename(dynamic_files)), basename(static_files))),"yearday_relative","date")
-    if(start){
+    if(i==ffdates[1]){
       fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
   }
   fulldts[is.na(fulldts)]=0
@@ -46,7 +46,7 @@ for(datenum in seq(12,29)){
   
   keep_indices=sample(forestindices,max(length(forestindices),deforestation_count))
   if(length(forestindices)<deforestation_count){keep_indices=c(keep_indices,sample(nonforestindices,deforestation_count-length(nonforestindices)))}
-  dts=dts[keep_indices,]
+  #dts=dts[keep_indices,]
 
   groundtruth_index=which(colnames(dts)=="groundtruth")
   label=dts[,"groundtruth"]
@@ -62,6 +62,8 @@ for(datenum in seq(12,29)){
   dts=dts[,-which(colnames(dts)=="yearday_relative")]
   testdts=testdts[,-which(colnames(testdts)=="yearday_relative")]
   #boost and predict
+  #dts_matrix= xgb.DMatrix(dts[,-which(colnames(dts)=="latestdeforestation")], label=label)
+  #test_matrix= xgb.DMatrix(testdts[,-which(colnames(testdts)=="latestdeforestation")], label=test_label)
   dts_matrix= xgb.DMatrix(dts, label=label)
   test_matrix= xgb.DMatrix(testdts, label=test_label)
   watchlist = list(train = dts_matrix, eval = test_matrix)
