@@ -74,17 +74,18 @@ def process_geotiff(input_file, output_file,relative_date):
                 # Take the remainder of 10000 for every pixel
                 if create_confidence: confidence[offx1:offx2,offy1:offy2]=aggregate_by_40_max((np.remainder(np.nan_to_num(data), 10000)<relative_date).astype(int)*data//10000,fun="nanmean")
                 data = np.remainder(np.nan_to_num(data), 10000)
+                if create_groundtruth: groundtruth[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date+182))&(data>relative_date)).astype(int),fun="max")
+                data[data>relative_date]=0
 
 
                 #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.     
-                if create_latest_deforestation: latest_deforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max(np.multiply(np.minimum(np.divide(data,relative_date, where=data>0),1),10000).astype(int),fun="max")
+                if create_latest_deforestation: latest_deforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max(np.multiply(np.divide(data,relative_date),10000).astype(int),fun="max")
 
                 #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.  
-                if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=relative_date)&(data>(relative_date-92))).astype(int),fun="sum")
-                if create_sixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=relative_date)&(data>(relative_date-183))).astype(int),fun="sum")
+                if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
+                if create_sixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-183)).astype(int),fun="sum")
                 if create_twelvetosixmonths: twelvetosixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date-183))&(data>(relative_date-366))).astype(int),fun="sum")
-                if create_totaldeforestation: totaldeforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data<=(relative_date)).astype(int),fun="sum")
-                if create_groundtruth: groundtruth[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date+182))&(data>relative_date)).astype(int),fun="max")
+                if create_totaldeforestation: totaldeforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>0).astype(int),fun="sum")
 
                    
             if create_latest_deforestation:

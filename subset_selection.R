@@ -127,3 +127,48 @@ while(dim(dts_left)[2]>0){
   dts_test_new = cbind(dts_test_new, dts_test_left[,add])
   dts_test_left = dts_test_left[,-add]
 }
+
+
+###### Function subset selection addition###########
+
+selectsubset = function(dts,label,testdts,test_label, eta=0.3, depth = 4
+                        , subsample=0.6, nrounds = 100, treshold=0.55){
+  dts_left = dts
+  dts_new = matrix(nrow=dim(dts)[1], ncol=0)
+  dts_test_left = testdts
+  dts_test_new = matrix(nrow=dim(testdts)[1], ncol=0)
+  F05_best=0
+  li=list()
+  while(!is.null(dim(dts_left))){
+    F05_max= 0 
+    for(i in seq(dim(dts_left)[2])){
+      dts_temp = cbind(dts_new, dts_left[,i])
+      testdts_temp = cbind(dts_test_new, dts_test_left[,i])
+      bst <- xgboost(data = dts_temp, label = label, max_depth = depth, 
+                     eta = eta,subsample=subsample,  nrounds = nrounds,early_stopping_rounds = 3,
+                     objective = "binary:logistic",eval_metric="aucpr",verbose = F)
+      pred <- predict(bst, testdts_temp)
+      a=table((pred > treshold)*2+(test_label>0))
+      UA=a[4]/(a[3]+a[4])
+      PA=a[4]/(a[2]+a[4])
+      F05=1.25*UA*PA/(0.25*UA+PA)
+      if (is.na(F05)){F05=0}
+      if(F05>F05_max){
+        add = i
+        F05_max=F05
+      }
+      cat(paste("added",colnames(dts_left)[i],"UA:",round(UA,2),", PA:",round(PA,2),"F05:",round(F05,4),"\n"))
+    }
+    cat(paste("Attribute to add : ",colnames(dts_left)[add],"F05 max:", round(F05_max,4) ,"\n" ))
+    li=append(li, colnames(dts_left)[add])
+    dts_new=cbind(dts_new, dts_left[,add])
+    dts_left =dts_left[,-add] 
+    dts_test_new = cbind(dts_test_new, dts_test_left[,add])
+    dts_test_left = dts_test_left[,-add]
+    if(F05_max>F05_best){
+      F05_best=F05_max
+    }
+  }
+  return(list(best_subset= li, F05 = F05_best))
+}
+
