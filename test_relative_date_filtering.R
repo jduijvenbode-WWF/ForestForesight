@@ -2,10 +2,24 @@ library(terra)
 library(sf)
 library(xgboost)
 source("C:/data/git/ForestForesight/functions.R")
+tiles=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
+if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
+  source("C:/data/xgboost_test/helpers/functions.R")
+  inputdir="C:/data/colombia_tiles/input/"
+  outputdir="C:/data/colombia_tiles/results/"
+} else if (Sys.info()[4]=="DESKTOP-3DNFBGC"){
+  source("C:/Users/admin/Documents/GitHub/ForestForesight/functions.R")
+  inputdir="D:/ff-dev/results"
+  outputdir="D:/ff-dev/predictions"
+} else{
+  source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
+  files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
+}
 #source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
 #files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
 
-borders=st_read("C:/data/accuracy_analysis/borders.geojson")
+files=list.files(file.path(input_dir,tile), pattern ="tif",full.names = T)
+borders=st_read(file.path(input_dir,"borders.geojson"))
 borders=vect(borders)
 borders=borders[-which(is.na(borders$iso3))]
 borders$status=NULL
@@ -16,9 +30,9 @@ borders$french_short=NULL
 pols=as.polygons(rast(nrows=60, ncols=360, nlyrs=1, xmin=-180, xmax=180,ymin=-30, ymax=30, crs="epsg:4326",vals=rep(0,60*360)),dissolve=F,na.rm=F,values=F)
 pols$coordname=paste0(round(crds(centroids(pols))[,1]-0.5),"_",round(crds(centroids(pols))[,2]-0.5))
 pols2=intersect(pols,borders)
-tiles=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
+
 for(tile in tiles){
-files=list.files(file.path("C:/data/colombia_tiles/input/",tile), pattern ="tif",full.names = T)
+
 files=files[-grep("12to6",files)]
 static_files= files[-grep("01\\.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
@@ -101,12 +115,12 @@ for(datenum in seq(7,length(ffdates))){
   print("predictions transformed")
   ext(predictions)=ext(rasstack)
   print("extent transferred")
-  writedir=file.path("C:/data/colombia_tiles/results/",tile)
+  writedir=file.path(outputdir,tile)
   if(!dir.exists(writedir)){dir.create(writedir)}
   writeRaster(predictions,file.path(writedir,paste0("predictions_",max(ffdates),".tif")),overwrite=T)
   saveRDS(object = bst,file.path(writedir,paste0("predictor_",max(ffdates),".rds")))
   print("model saved")
-  groundtruth=rast(file.path("C:/data/colombia_tiles/input",tile,paste0("groundtruth_",max(ffdates),".tif")))
+  groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",max(ffdates),".tif")))
   print("groundtruth created")
   eval=predictions*2+groundtruth
   FP=extract(eval==1,pols2,fun="sum",na.rm=T,touches=F)[,2]
