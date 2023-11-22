@@ -18,8 +18,8 @@ if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
 #source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
 #files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
 
-files=list.files(file.path(input_dir,tile), pattern ="tif",full.names = T)
-borders=st_read(file.path(input_dir,"borders.geojson"))
+
+borders=st_read(file.path(inputdir,"borders.geojson"))
 borders=vect(borders)
 borders=borders[-which(is.na(borders$iso3))]
 borders$status=NULL
@@ -32,15 +32,17 @@ pols$coordname=paste0(round(crds(centroids(pols))[,1]-0.5),"_",round(crds(centro
 pols2=intersect(pols,borders)
 
 for(tile in tiles){
-
+files=list.files(file.path(inputdir,tile), pattern ="tif",full.names = T)
 files=files[-grep("12to6",files)]
-static_files= files[-grep("01\\.",files)]
+init_static_files= files[-grep("01\\.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 ffdates=ffdates[1:29]
 ffdates_backup=ffdates
 datfram=data.frame()
 for(datenum in seq(7,length(ffdates))){
+  static_files=init_static_files
   ffdates=ffdates_backup[c(max(1,(datenum-8)):(datenum-6),datenum)]
+  print(max(ffdates))
   if(min(as.numeric(substr(ffdates,1,4)))<2021){static_files=static_files[-grep("loss2020",static_files)]}
   if(min(as.numeric(substr(ffdates,1,4)))<2022){static_files=static_files[-grep("loss2021",static_files)]}
   if(min(as.numeric(substr(ffdates,1,4)))<2023){static_files=static_files[-grep("loss2022",static_files)]}
@@ -127,15 +129,18 @@ for(datenum in seq(7,length(ffdates))){
   FN=extract(eval==2,pols2,fun="sum",na.rm=T,touches=F)[,2]
   TP=extract(eval==3,pols2,fun="sum",na.rm=T,touches=F)[,2]
   TN=extract(eval==0,pols2,fun="sum",na.rm=T,touches=F)[,2]
+  print("values extracted")
   precision=TP/(TP+FP)
   recall=TP/(TP+FN)
   accuracy=(TP+TN)/(TP+TN+FN+FP)
   F1score=(2*precision*recall)/(precision+recall)
   F05score=(1.25*precision*recall)/(0.25*precision+recall)
+  print("metrics calculated")
   resdat=data.frame(coordname=pols2$coordname,TP=TP,FN=FN,FP=FP,TN=TN,precision=precision,recall=recall,accuracy=accuracy,F1score=F1score,F05score=F05score,date=as.Date(max(ffdates)),tile=tile,country=pols2$iso3)
   resdat=resdat[which(!is.nan(TN)),]
   datfram=rbind(datfram,resdat)
   write.csv(datfram,"C:/data/results_20231122.csv")
+  print("data written")
 }
 }
 
