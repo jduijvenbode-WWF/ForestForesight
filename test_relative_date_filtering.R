@@ -1,16 +1,35 @@
 library(terra)
+library(sf)
 library(xgboost)
 source("C:/data/git/ForestForesight/functions.R")
 #source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
 #files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
 
-files=list.files("C:/data/colombia_tiles/input/10N_080W", pattern ="tif",full.names = T)
+borders=st_read("C:/data/accuracy_analysis/borders.geojson")
+borders=vect(borders)
+borders=borders[-which(is.na(borders$iso3))]
+borders$status=NULL
+borders$color_code=NULL
+borders$iso_3166_1_alpha_2_codes=NULL
+borders$geo_point_2d=NULL
+borders$french_short=NULL
+pols=as.polygons(rast(nrows=60, ncols=360, nlyrs=1, xmin=-180, xmax=180,ymin=-30, ymax=30, crs="epsg:4326",vals=rep(0,60*360)),dissolve=F,na.rm=F,values=F)
+pols$coordname=paste0(round(crds(centroids(pols))[,1]-0.5),"_",round(crds(centroids(pols))[,2]-0.5))
+pols2=intersect(pols,borders)
+tiles=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
+for(tile in tiles){
+files=list.files(file.path("C:/data/colombia_tiles/input/",tile), pattern ="tif",full.names = T)
+files=files[-grep("12to6",files)]
 static_files= files[-grep("01\\.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 ffdates=ffdates[1:29]
 ffdates_backup=ffdates
-for(datenum in seq(12,29)){
-  ffdates=ffdates_backup[c((datenum-6),datenum)]
+datfram=data.frame()
+for(datenum in seq(7,length(ffdates))){
+  ffdates=ffdates_backup[c(max(1,(datenum-8)):(datenum-6),datenum)]
+  if(min(as.numeric(substr(ffdates,1,4)))<2021){static_files=static_files[-grep("loss2020",static_files)]}
+  if(min(as.numeric(substr(ffdates,1,4)))<2022){static_files=static_files[-grep("loss2021",static_files)]}
+  if(min(as.numeric(substr(ffdates,1,4)))<2023){static_files=static_files[-grep("loss2022",static_files)]}
   start=T
   for(i in ffdates){
     dynamic_files = files[grep(i,files)]
@@ -41,10 +60,11 @@ for(datenum in seq(12,29)){
   filterindex=which(colnames(dts)=="groundtruth")
   priority_index=which(colnames(dts)=="smtotaldeforestation")
   deforestation_count=sum(dts[,filterindex]>0)
+  deforestedindices=which(dts[,filterindex]>0)
   forestindices=which((dts[,filterindex]==0)&dts[,priority_index]>0)
   nonforestindices=which((dts[,filterindex]==0)&dts[,priority_index]==0)
   
-  keep_indices=sample(forestindices,max(length(forestindices),deforestation_count))
+  keep_indices=c(deforestedindices,sample(forestindices,max(length(forestindices),deforestation_count)))
   if(length(forestindices)<deforestation_count){keep_indices=c(keep_indices,sample(nonforestindices,deforestation_count-length(nonforestindices)))}
   #dts=dts[keep_indices,]
 
@@ -76,27 +96,33 @@ for(datenum in seq(12,29)){
                    objective = "binary:logistic", feval= evalerrorF05 , maximize= TRUE, verbose = 1, watchlist= watchlist)
   
   pred <- predict(bst, testdts)
-  startF05=0
-  for(i in seq(0.45,0.55,0.01)){
-    a=table((pred > i)*2+(test_label>0))
-    UA=a[4]/(a[3]+a[4])
-    PA=a[4]/(a[2]+a[4])
-    F05=round(1.25*UA*PA/(0.25*UA+PA),2)
-    if(!is.na(F05)){
-      if(F05>startF05){
-        threshold=i
-        startF05=F05
-        sUA=round(UA,2)
-        sPA=round(PA,2)
-      }
-    }
-  }
-  cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"))
-  cat(paste("date:",datenum,"threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nrounds,"depth:",depth,"UA:",100*sUA,", PA:",100*sPA,"F05:",startF05,"\n"),file="C:/data/results.txt",append=T)
+
+  predictions=rast(t(matrix(pred>0.5,nrow=ncol(rasstack))),crs=crs(rasstack))
+  print("predictions transformed")
+  ext(predictions)=ext(rasstack)
+  print("extent transferred")
+  writedir=file.path("C:/data/colombia_tiles/results/",tile)
+  if(!dir.exists(writedir)){dir.create(writedir)}
+  writeRaster(predictions,file.path(writedir,paste0("predictions_",max(ffdates),".tif")),overwrite=T)
+  saveRDS(object = bst,file.path(writedir,paste0("predictor_",max(ffdates),".rds")))
+  print("model saved")
+  groundtruth=rast(file.path("C:/data/colombia_tiles/input",tile,paste0("groundtruth_",max(ffdates),".tif")))
+  print("groundtruth created")
+  eval=predictions*2+groundtruth
+  FP=extract(eval==1,pols2,fun="sum",na.rm=T,touches=F)[,2]
+  FN=extract(eval==2,pols2,fun="sum",na.rm=T,touches=F)[,2]
+  TP=extract(eval==3,pols2,fun="sum",na.rm=T,touches=F)[,2]
+  TN=extract(eval==0,pols2,fun="sum",na.rm=T,touches=F)[,2]
+  precision=TP/(TP+FP)
+  recall=TP/(TP+FN)
+  accuracy=(TP+TN)/(TP+TN+FN+FP)
+  F1score=(2*precision*recall)/(precision+recall)
+  F05score=(1.25*precision*recall)/(0.25*precision+recall)
+  resdat=data.frame(coordname=pols2$coordname,TP=TP,FN=FN,FP=FP,TN=TN,precision=precision,recall=recall,accuracy=accuracy,F1score=F1score,F05score=F05score,date=as.Date(max(ffdates)),tile=tile,country=pols2$iso3)
+  resdat=resdat[which(!is.nan(TN)),]
+  datfram=rbind(datfram,resdat)
+  write.csv(datfram,"C:/data/results_20231122.csv")
+}
 }
 
-preds=pred
-testset=testdts
-testset=testset[which(preds>0.5),]
-res=res(rasstack)[1]
 
