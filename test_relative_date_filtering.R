@@ -2,7 +2,7 @@ library(terra)
 library(sf)
 library(xgboost)
 source("C:/data/git/ForestForesight/functions.R")
-tiles=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
+tiles=c("20N_080W","00N_080W","00N_070W")
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
   source("C:/data/xgboost_test/helpers/functions.R")
   inputdir="C:/data/colombia_tiles/input/"
@@ -33,7 +33,7 @@ pols2=intersect(pols,borders)
 
 for(tile in tiles){
 files=list.files(file.path(inputdir,tile), pattern ="tif",full.names = T)
-files=files[-grep("12to6",files)]
+
 init_static_files= files[-grep("01\\.",files)]
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 ffdates=ffdates[1:29]

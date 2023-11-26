@@ -99,7 +99,7 @@ def process_geotiff(input_file, output_file,relative_date):
 
             
             if create_sixmonths:
-                with rasterio.open(threemonths_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
+                with rasterio.open(sixmonths_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                     dst.write(sixmonths.reshape(1,sixmonths.shape[0],sixmonths.shape[1]))
 
             
