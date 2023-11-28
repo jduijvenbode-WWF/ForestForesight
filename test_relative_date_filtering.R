@@ -1,27 +1,24 @@
 library(terra)
 library(sf)
 library(xgboost)
-
 tiles=rev(c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W"))
+
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
   months=3
   source("C:/data/xgboost_test/helpers/functions.R")
   inputdir="C:/data/colombia_tiles/input/"
-  outputdir="C:/data/colombia_tiles/results/"
+  outputdir="C:/data/colombia_tiles/results20231128/"
 } else if (Sys.info()[4]=="DESKTOP-3DNFBGC"){
-  output_csv="D:/ff-dev/results_20231123.csv"
-  months=5
+  output_csv=file.path(outputdir,"results.csv")
+  months=2
   source("C:/Users/admin/Documents/GitHub/ForestForesight/functions.R")
   inputdir="D:/ff-dev/results"
-  outputdir="D:/ff-dev/predictions"
+  outputdir="D:/ff-dev/predictions20231128"
 } else{
   source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
   files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
 }
-#source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
-#files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
-
-
+if(!dir.exists(outputdir)){dir.create(outputdir)}
 borders=st_read(file.path(inputdir,"borders.geojson"))
 borders=vect(borders)
 borders=borders[-which(is.na(borders$iso3))]
@@ -33,7 +30,6 @@ borders$french_short=NULL
 pols=as.polygons(rast(nrows=60, ncols=360, nlyrs=1, xmin=-180, xmax=180,ymin=-30, ymax=30,vals=rep(0,60*360)),dissolve=F,na.rm=F,values=F)
 pols$coordname=paste0(round(crds(centroids(pols))[,1]-0.5),"_",round(crds(centroids(pols))[,2]-0.5))
 pols2=intersect(pols,borders)
-
 
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 ffdates=ffdates[1:29]
@@ -131,6 +127,7 @@ for(tile in tiles){
       print("model saved")
       groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",max(ffdates),".tif")))
       print("groundtruth created")
+      groundtruth[is.na(groundtruth)]=0
       eval=predictions*2+groundtruth
       FP=extract(eval==1,pols2,fun="sum",na.rm=T,touches=F)[,2]
       FN=extract(eval==2,pols2,fun="sum",na.rm=T,touches=F)[,2]
@@ -151,5 +148,6 @@ for(tile in tiles){
     }
   }
 }
+
 
 
