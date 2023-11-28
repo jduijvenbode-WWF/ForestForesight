@@ -52,10 +52,10 @@ if __name__ == "__main__":
     input_folder = "C:/data/colombia_tiles/input"
     for root, dirs, files in os.walk(input_folder):
         for file in files:
-            if file.startswith("6"):
+            if file.startswith("totaldef"):
                 input_path = os.path.join(root, file)
                 print(input_path)
-                output_path = os.path.join(root, file.replace("6months","sm6months"))
+                output_path = os.path.join(root, file.replace("totaldef","smtotaldef"))
 
                 try:
                     if not os.path.isfile(output_path):
