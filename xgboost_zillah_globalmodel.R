@@ -17,7 +17,6 @@ if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
 static_files= files[-grep("01\\.",files)]
 data=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 data=data[1:18]
-
 start=T
 for(i in data){
   dynamic_files = files[grep(i,files)]
@@ -34,7 +33,6 @@ for(i in data){
   if(start){
     fulldts=dts;start=F}else{fulldts=rbind(fulldts,dts)}
 }
-
 
 ######method 1: random sample###########
 
@@ -292,7 +290,7 @@ cat(paste("threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nr
 
 
  
-### Test : train once, test on subsequent data ##
+### Test 4 : train once, test on subsequent data ##
 
 fulldts=fulldts[,-which(colnames(fulldts)=="yearday_relative")]
 fulldts[is.na(fulldts)]=0
@@ -300,6 +298,11 @@ groundtruth_index=which(colnames(fulldts)=="groundtruth")
 label=fulldts[,groundtruth_index]
 fulldts=fulldts[,-groundtruth_index]
 
+
+# Train and test only within forest 
+mask_forest = which(fulldts[,which(colnames(fulldts)=="forestmask2019")]>0)
+fulldts= fulldts[mask_forest,]
+label = label[mask_forest]
 
 #sample train data 
 trainsamples=which(fulldts[,which(colnames(fulldts)=="date")]==as.numeric(as.Date(data[1:6])))
