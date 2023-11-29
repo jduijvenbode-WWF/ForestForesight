@@ -1,11 +1,7 @@
 
 source("C:/Users/EagleView/Documents/GitHub/ForestForesight/functions.R")
 files=list.files("D:/ff-dev/alerts/",full.names=T)
-firstindices=c("D:/ff-dev/alerts/20N_080W.tif", "D:/ff-dev/alerts/10N_080W.tif", "D:/ff-dev/alerts/00N_080W.tif", "D:/ff-dev/alerts/10N_070W.tif"
-               ,"D:/ff-dev/alerts/00N_070W.tif", "D:/ff-dev/alerts/10S_080W.tif")
-files=files[c(which(files %in% firstindices),which(!files %in% firstindices))]
-firstindices=c("D:/ff-dev/alerts/10N_080W.tif")
-files=files[c(which(files %in% firstindices),which(!files %in% firstindices))]
+files=sample(files,length(files))
 ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")[1:29]
 setwd("D:/ff-dev/results/")
 for(file in files){
