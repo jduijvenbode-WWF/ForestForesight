@@ -15,7 +15,8 @@ if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
 
 
 static_files= files[-grep("01\\.",files)]
-data = c("2022-1-01","2022-2-01","2022-3-01","2022-4-01","2022-5-01","2022-6-01")
+data=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
+data=data[1:18]
 
 start=T
 for(i in data){
@@ -237,7 +238,6 @@ for(datenum in seq(8)){
 
 ######method 3: different area###########
 
-dts=fulldts
 dts[is.na(dts)]=0
 groundtruth_index=which(colnames(dts)=="groundtruth")
 label=dts[,groundtruth_index]
@@ -294,30 +294,31 @@ cat(paste("threshold:",threshold,"eta:",eta,"subsample:",subsample,"nrounds:",nr
  
 ### Test : train once, test on subsequent data ##
 
-dts=fulldts
-dts=dts[,-which(colnames(dts)=="yearday_relative")]
-dts[is.na(dts)]=0
-groundtruth_index=which(colnames(dts)=="groundtruth")
-label=dts[,groundtruth_index]
-dts=dts[,-groundtruth_index]
+fulldts=fulldts[,-which(colnames(fulldts)=="yearday_relative")]
+fulldts[is.na(fulldts)]=0
+groundtruth_index=which(colnames(fulldts)=="groundtruth")
+label=fulldts[,groundtruth_index]
+fulldts=fulldts[,-groundtruth_index]
 
 
 #sample train data 
-trainsamples=which(dts[,which(colnames(dts)=="date")]==as.numeric(as.Date(data[1])))
-traindts=dts[trainsamples,]
+trainsamples=which(fulldts[,which(colnames(fulldts)=="date")]==as.numeric(as.Date(data[1:6])))
+traindts=fulldts[trainsamples,]
 train_label=label[trainsamples]
 
 #filter too many true negatives
-filterindex=which(colnames(traindts)=="smtotaldeforestation")
-deforestation_count=sum(traindts[,filterindex]>0)
-nonforestindices=which(traindts[,filterindex]==0)
-remove_indices=sample(nonforestindices,length(nonforestindices)-deforestation_count)
-traindts=traindts[-remove_indices,]
-train_label=train_label[-remove_indices]
-train_label[train_label>1]=1
-traindts=traindts[,-which(colnames(dts)=="date")]
+# filterindex=which(colnames(traindts)=="smtotaldeforestation")
+# deforestation_count=sum(traindts[,filterindex]>0)
+# nonforestindices=which(traindts[,filterindex]==0)
+# remove_indices=sample(nonforestindices,length(nonforestindices)-deforestation_count)
+# traindts=traindts[-remove_indices,]
+# train_label=train_label[-remove_indices]
+# train_label[train_label>1]=1
 
-# train the model on first date (2022-1-01)
+
+traindts=traindts[,-which(colnames(fulldts)=="date")]
+
+# train the model on first half year (2021-1-01-- 2021-6-01)
 eta=0.1
 subsample=0.7
 nrounds=100
@@ -329,24 +330,24 @@ bst <- xgboost(data = traindts, label = train_label,
 pred <- predict(bst, traindts)
 
 # train F05 
-F05 <- function(preds, label){
-  a=table((pred > 0.5)*2+(label>0))
+getF05 <- function(prediction, label){
+  a=table((prediction > 0.5)*2+(label>0))
   UA=a[4]/(a[3]+a[4])
   PA=a[4]/(a[2]+a[4])
   F05=round(1.25*UA*PA/(0.25*UA+PA),4)
   return(F05)
 }
 
-cat("Train F05 is:", F05(pred,train_label))
+cat("Train F05 is:", getF05(pred,train_label))
 
-# test the model on the subsequent 6 months
+# test the model on the subsequent months
 
-for(datenum in seq(2,length(data))){
-  testsamples=which(dts[,which(colnames(dts)=="date")]==as.numeric(as.Date(data[datenum])))
-  testdts=dts[testsamples,][,-which(colnames(dts)=="date")]
+for(datenum in seq(12,length(data))){
+  testsamples=which(fulldts[,which(colnames(fulldts)=="date")]==as.numeric(as.Date(data[datenum])))
+  testdts=fulldts[testsamples,][,-which(colnames(fulldts)=="date")]
   test_label=label[testsamples]
   test_pred <- predict(bst, testdts)
-  cat("For",data[datenum]," the test F05 is:", F05(test_pred,test_label),"\n")
+  cat("For",data[datenum]," the test F05 is:", getF05(test_pred,test_label),"\n")
 }
 
 
