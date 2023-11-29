@@ -1,42 +1,38 @@
 library(terra)
-files=list.files("C:/users/jonas/downloads/forestloss_2000_2022/",full.names=T)
-firstindices=c("C:/users/jonas/downloads/forestloss_2000_2022/20N_080W.tif", "C:/users/jonas/downloads/forestloss_2000_2022/10N_080W.tif", "C:/users/jonas/downloads/forestloss_2000_2022/00N_080W.tif", "C:/users/jonas/downloads/forestloss_2000_2022/10N_070W.tif"
-               ,"C:/users/jonas/downloads/forestloss_2000_2022/00N_070W.tif", "C:/users/jonas/downloads/forestloss_2000_2022/10S_080W.tif")
-files=files[c(which(files %in% firstindices),which(!files %in% firstindices))]
+sobel_filter <- function(raster_data) {
+    # Apply Sobel filter to the raster
+  sobel_x <- matrix(c(-1, 0, 1, -2, 0, 2, -1, 0, 1), nrow = 3, ncol = 3)
+  sobel_y <- t(sobel_x)
+  result_x <- terra::focal(raster_data, sobel_x, fun="mean", expand=T)
+  result_y <- terra::focal(raster_data, sobel_y, fun="mean", expand=T)
+  
+  # Combine the x and y gradient matrices
+  gradient_magnitude <- sqrt(result_x^2 + result_y^2)
+  
+  # Convert the result back to raster
+  
+  return(gradient_magnitude)
+}
+files=list.files("D:/ff-dev/forestloss_2000_2022/",full.names=T)
 
-maskboundaries=lapply(list.files("C:/users/jonas/downloads/forestmasks/",full.names = T),function(x) as.polygons(ext(rast(x))))
-maskboundaries=do.call(rbind,maskboundaries)
-maskboundaries$names=list.files("C:/users/jonas/downloads/forestmasks/",full.names = T)
 m=c(1,19,1)
 rclmat <- matrix(m, ncol=3, byrow=TRUE)
 for(file in files){
   loc=gsub(".tif","",(basename(file)))
   print(loc)
-  edgesfile=paste0("C:/users/jonas/downloads/elevations/",loc,"_edgedensity2019.tif")
+  edgesfile=paste0("D:/ff-dev/results/",loc,"/edgedensity2019.tif")
   if(!file.exists(edgesfile)){
-    elefile=paste0("C:/users/jonas/downloads/elevations/",loc,"_elevation.tif")
+    elefile=list.files(paste0("D:/ff-dev/results/",loc),full.names = T)[1]
     if(file.exists(elefile)){
       loss=rast(file)
-      masknames=maskboundaries[ext(loss)]$names
-      if(length(masknames)>0){
-        if(length(masknames)>1){
-          mask=crop(merge(sprc(masknames)),ext(loss))
-        }else{mask=rast(masknames,win=ext(loss))}
-        if(ext(mask)!=ext(loss)){mask=extend(mask,loss,fill=0)}
+      mask=rast(gsub("forestloss_2000_2022","forestmasks_tiled",file))
         mask=mask-classify(loss,rclmat,others=0)
-        template=rast(paste0("C:/users/jonas/downloads/elevations/",loc,"_elevation.tif"))
-        forestmask=paste0("C:/users/jonas/downloads/elevations/",loc,"_forestmask2019.tif")
+        template=rast(elefile)
+        forestmask=paste0("D:/ff-dev/results/",loc,"/forestmask2019.tif")
         if(!file.exists(forestmask)){project(mask,template,method="sum",filename=forestmask)}
-        selpols=as.polygons(rast(ext(mask),ncol=2,nrow=2))
-        for(i in 1:length(selpols)){
-          buffsize=res(mask)[1]*110000
-          crop(mask,buffer(selpols[i],buffsize),filename="C:/data/tempras.tif",overwrite=T)
-          system(paste0("python C:/data/git/ForestForesight/sobelfilter.py C:/data/tempras.tif C:/data/edges",i,".tif"),intern=T)
-        }
-        rasts=list.files("C:/data/",full.names = T,pattern="edges")
-        newrast=project(merge(sprc(rasts)),template,method="sum",filename=edgesfile)
-        file.remove(rasts)
+        mask=sobel_filter(mask)
+        project(mask,template,method="sum",filename=edgesfile)
       }
     }
   }
-}
+
