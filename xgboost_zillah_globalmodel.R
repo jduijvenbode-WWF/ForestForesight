@@ -18,6 +18,9 @@ static_files= files[-grep("01\\.",files)]
 data=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
 data=data[1:18]
 start=T
+if(min(as.numeric(substr(min(data),1,4)))<2021){static_files=static_files[-grep("loss2020",static_files)]}
+if(min(as.numeric(substr(min(data),1,4)))<2022){static_files=static_files[-grep("loss2021",static_files)]}
+if(min(as.numeric(substr(min(data),1,4)))<2023){static_files=static_files[-grep("loss2022",static_files)]}
 for(i in data){
   dynamic_files = files[grep(i,files)]
   rasstack = rast(c(dynamic_files, static_files)) # win argument resulted in error 
