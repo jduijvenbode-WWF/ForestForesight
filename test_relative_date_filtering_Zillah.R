@@ -2,22 +2,23 @@ library(terra)
 library(sf)
 library(xgboost)
 
-
-tiles=rev(c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W"))
+### CHANGE DATES AND TILES ON KING KONG!! ##
+colombia=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
+laos= c("20N_100E", "30N_100E")
+tiles= laos
 
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
-  months=3
   source("C:/data/xgboost_test/helpers/functions.R")
   inputdir="C:/data/colombia_tiles/input/"
   outputdir="C:/data/colombia_tiles/results20231128/"
 } else if (Sys.info()[4]=="DESKTOP-3DNFBGC"){
-  months=2
   source("C:/Users/admin/Documents/GitHub/ForestForesight/functions.R")
   inputdir="D:/ff-dev/results"
   outputdir="D:/ff-dev/predictions20231128"
 } else{
   source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
-  files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
+  inputdir= "/Users/temp/Documents/FF/input"
+  outputdir= "/Users/temp/Documents/FF/predictions"
 }
 output_csv=file.path(outputdir,"results.csv")
 if(!dir.exists(outputdir)){dir.create(outputdir)}
@@ -36,7 +37,7 @@ pols$coordname=paste0(round(crds(centroids(pols))[,1]-0.5),"_",round(crds(centro
 pols2=intersect(pols,borders)
 
 ffdates= paste(sort(rep(c(2021, 2022, 2023), each = 12)),sprintf("%02d", seq(12)),"01",sep = "-")
-ffdates=ffdates[1:29]
+ffdates=ffdates[1:6]
 ffdates_backup=ffdates
 datfram=data.frame()
 # Loop over each tile
@@ -65,7 +66,9 @@ for (tile in tiles) {
     # Get dynamic_files for the current date
     dynamic_files = files[grep(i, files)]
     # Create a raster stack
-    rasstack = rast(c(dynamic_files, static_files), win = ext(rast(static_files[1])))
+    if(Sys.info()[4]=="Temps-MacBook-Pro.local"){
+      rasstack = rast(c(dynamic_files, static_files), win = ext(rast(static_files[1])-4.8))
+      } else {rasstack = rast(c(dynamic_files, static_files), win = ext(rast(static_files[1])))}
     # Extract data from the raster stack
     dts = as.matrix(rasstack)
     # Get coordinates from the raster stack
@@ -98,11 +101,13 @@ for (tile in tiles) {
   # Rename columns
   colnames(fulldts) = c(colnames(fulldts)[1:(ncol(fulldts) - 2)], "3-6months", "popdiff")
   
-  # Update dts with fulldts
-  dts = fulldts
-  
+
+  # Train and test only within forest 
+  mask_forest = which(fulldts[,which(colnames(fulldts)=="forestmask2019")]>0)
+  fulldts= fulldts[mask_forest,]
+
   #sample train data 
-  trainsamples=which(dts[,which(colnames(dts)=="date")]==as.numeric(as.Date(data[1:10])))
+  trainsamples=which(fulldts[,which(colnames(fulldts)=="date")]==as.numeric(as.Date(ffdates[1:3])))
   dts=fulldts[trainsamples,]
   groundtruth_index=which(colnames(dts)=="groundtruth")
   label=dts[,"groundtruth"]
@@ -117,17 +122,17 @@ for (tile in tiles) {
   nrounds=200
   bst <- xgboost(data = dts, label = label,
                  max_depth = depth, eta = eta, subsample=subsample,  nrounds = nrounds, early_stopping_rounds = 10,
-                 objective = "binary:logistic",eval_metric="aucpr",verbosity = 2)
+                 objective = "binary:logistic",eval_metric="aucpr",verbosity = 1)
   saveRDS(object = bst,file.path(writedir,paste0("predictor.rds")))
   print("model saved")
 
-  for (datenum in seq(11, length(ffdates_backup))) {
+  for (datenum in seq(4, length(ffdates_backup))) {
     print(ffdates[datenum])
     # Define the path for the predicted raster
     pred_raster = file.path(writedir, paste0("predictions_", ffdates[datenum], ".tif"))
     # Check if the predicted raster file doesn't exist
     if (!file.exists(pred_raster)){
-      testsamples=which(fulldts[,which(colnames(fulldts)=="date")]==as.numeric(as.Date(data[datenum])))
+      testsamples=which(fulldts[,which(colnames(fulldts)=="date")]==as.numeric(as.Date(ffdates[datenum])))
       testdts=fulldts[testsamples,][,-which(colnames(fulldts)=="date")]
       test_label=testdts[,"groundtruth"]
       testdts=testdts[,-groundtruth_index]
@@ -135,12 +140,15 @@ for (tile in tiles) {
     
       pred <- predict(bst, testdts)
       
-      predictions=rast(t(matrix(pred>0.5,nrow=ncol(rasstack))),crs=crs(rasstack))
+      pred_ini = numeric(dim(rasstack)[1]*dim(rasstack)[2])
+      pred_ini[mask_forest[mask_forest<(dim(rasstack)[1]*dim(rasstack)[2])]]=pred
+      
+      predictions=rast(t(matrix(pred_ini>0.5,nrow=ncol(rasstack))),crs=crs(rasstack))
       print("predictions transformed")
       ext(predictions)=ext(rasstack)
       print("extent transferred")
       writeRaster(predictions,pred_raster,overwrite=T)
-      writeRaster(rast(t(matrix(pred,nrow=ncol(rasstack))),crs=crs(rasstack)),gsub("predictions_","predictions_unclassified",pred_raster),overwrite=T)
+      writeRaster(rast(t(matrix(pred_ini,nrow=ncol(rasstack))),crs=crs(rasstack)),gsub("predictions_","predictions_unclassified",pred_raster),overwrite=T)
       groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",ffdates[datenum],".tif")))
       print("groundtruth created")
       groundtruth[is.na(groundtruth)]=0
@@ -162,7 +170,6 @@ for (tile in tiles) {
       write.csv(datfram,output_csv)
       print("data written")
     }
-      
       
     }
   }
