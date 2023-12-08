@@ -37,7 +37,7 @@ while(T){
   text(areas2,paste0(areas$tile_id,"\n",areas2$count),halo=T,cex=0.7)
   
   dev.off()
-  a=s3sync(bucket=intal_bucket,verbose=F)
+  a=s3sync(bucket=intal_bucket,verbose=T)
   Sys.sleep(30*60)
   print(Sys.time())
 }
