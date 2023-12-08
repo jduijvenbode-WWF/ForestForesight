@@ -15,11 +15,11 @@ sobel_filter <- function(raster_data) {
 }
 #this should prioritize the tiles on the countries that we want to do first
 files=list.files("D:/ff-dev/forestloss_2000_2022/",full.names=T)
-areas=vect("D:/ff-dev/integrated_alerts.geojson")
-borders=vect("D:/ff-dev/borders.geojson")
+areas=vect("D:/ff-dev/integratedalerts.geojson")
+borders=vect("D:/ff-dev/results/borders.geojson")
 prio_tifs=paste0(areas[borders[which(
   borders$iso3 %in% c("GAB","PER","COL","BOL","LAO","IND"))]]$tile_id,".tif")
-files=c(files[which(basename(files %in% prio_tifs))],files[-which(basename(files %in% prio_tifs))])
+files = c(files[which(basename(files) %in% basename(prio_tifs))], files[-which(basename(files) %in% basename(prio_tifs))])
 #reclassification matrix
 m=c(1,19,0)
 rclmat <- matrix(m, ncol=3, byrow=TRUE)
@@ -38,7 +38,9 @@ for(file in files){
         template=rast(elefile)
         forestmask=paste0("D:/ff-dev/results/",loc,"/forestmask2019.tif")
         # reproject with the average, so that pixels have a value between 0-10000. write as unsigned 16bit
-        if(!file.exists(forestmask)){project(mask,template,method="average",filename=forestmask,datatype="INT2U")}
+        #if(!file.exists(forestmask)){}
+        project(mask,template,method="average",filename=forestmask,datatype="INT2U", overwrite=TRUE)
+        print(paste("forest mask", loc ,"is created"))
         #mask=sobel_filter(mask)
         #project(mask,template,method="sum",filename=edgesfile)
       }
