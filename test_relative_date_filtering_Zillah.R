@@ -4,7 +4,7 @@ library(xgboost)
 
 ### CHANGE DATES AND TILES ON KING KONG!! ##
 colombia=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
-laos= c("20N_100E", "30N_100E")
+laos= c("30N_100E","20N_100E")
 tiles= laos
 
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
@@ -14,13 +14,12 @@ if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
 } else if (Sys.info()[4]=="DESKTOP-3DNFBGC"){
   source("C:/Users/admin/Documents/GitHub/ForestForesight/functions.R")
   inputdir="D:/ff-dev/results"
-  outputdir="D:/ff-dev/predictions20231128"
+  outputdir="D:/ff-dev/predictionsZillah"
 } else{
   source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
   inputdir= "/Users/temp/Documents/FF/input"
   outputdir= "/Users/temp/Documents/FF/predictions"
 }
-output_csv=file.path(outputdir,"results.csv")
 if(!dir.exists(outputdir)){dir.create(outputdir)}
 
 
@@ -37,11 +36,12 @@ pols$coordname=paste0(round(crds(centroids(pols))[,1]-0.5),"_",round(crds(centro
 pols2=intersect(pols,borders)
 
 ffdates= paste(sort(rep(c(2021, 2022, 2023), each = 12)),sprintf("%02d", seq(12)),"01",sep = "-")
-ffdates=ffdates[1:6]
+ffdates=ffdates[1:29]
 ffdates_backup=ffdates
 datfram=data.frame()
 # Loop over each tile
 for (tile in tiles) {
+  output_csv=file.path(outputdir,tile,"results.csv")
   files <- list.files(file.path(inputdir, tile), pattern = "tif", full.names = TRUE)
   static_files = files[-grep("01\\.", files)]
   # Set the output directory path
@@ -107,7 +107,7 @@ for (tile in tiles) {
   fulldts= fulldts[mask_forest,]
 
   #sample train data 
-  trainsamples=which(fulldts[,which(colnames(fulldts)=="date")]==as.numeric(as.Date(ffdates[1:3])))
+  trainsamples=which(fulldts[,which(colnames(fulldts)=="date")]==as.numeric(as.Date(ffdates[1:24])))# first 2 jaar
   dts=fulldts[trainsamples,]
   groundtruth_index=which(colnames(dts)=="groundtruth")
   label=dts[,"groundtruth"]
@@ -126,7 +126,7 @@ for (tile in tiles) {
   saveRDS(object = bst,file.path(writedir,paste0("predictor.rds")))
   print("model saved")
 
-  for (datenum in seq(4, length(ffdates_backup))) {
+  for (datenum in seq(25, length(ffdates_backup))) {
     print(ffdates[datenum])
     # Define the path for the predicted raster
     pred_raster = file.path(writedir, paste0("predictions_", ffdates[datenum], ".tif"))
@@ -139,6 +139,9 @@ for (tile in tiles) {
       testdts=testdts[,-which(colnames(testdts)=="yearday_relative")]
     
       pred <- predict(bst, testdts)
+      
+      tileF05 = getF05(pred, test_label)
+      print(paste("F05:", tileF05 ))
       
       pred_ini = numeric(dim(rasstack)[1]*dim(rasstack)[2])
       pred_ini[mask_forest[mask_forest<(dim(rasstack)[1]*dim(rasstack)[2])]]=pred
@@ -153,8 +156,8 @@ for (tile in tiles) {
       print("groundtruth created")
       groundtruth[is.na(groundtruth)]=0
       eval=predictions*2+groundtruth
-      FP=extract(eval==1,pols2,fun="sum",na.rm=T,touches=F)[,2]
-      FN=extract(eval==2,pols2,fun="sum",na.rm=T,touches=F)[,2]
+      FN=extract(eval==1,pols2,fun="sum",na.rm=T,touches=F)[,2]
+      FP=extract(eval==2,pols2,fun="sum",na.rm=T,touches=F)[,2]
       TP=extract(eval==3,pols2,fun="sum",na.rm=T,touches=F)[,2]
       TN=extract(eval==0,pols2,fun="sum",na.rm=T,touches=F)[,2]
       print("values extracted")
