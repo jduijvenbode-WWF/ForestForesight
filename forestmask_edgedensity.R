@@ -27,7 +27,6 @@ for(file in files){
   loc=gsub(".tif","",(basename(file)))
   print(loc)
   edgesfile=paste0("D:/ff-dev/results/",loc,"/edgedensity2019.tif")
-  if(!file.exists(edgesfile)){
     elefile=list.files(paste0("D:/ff-dev/results/",loc),full.names = T)[1]
     if(file.exists(elefile)){
       loss=rast(file)
@@ -43,7 +42,6 @@ for(file in files){
         print(paste("forest mask", loc ,"is created"))
         #mask=sobel_filter(mask)
         #project(mask,template,method="sum",filename=edgesfile)
-      }
     }
   }
 
