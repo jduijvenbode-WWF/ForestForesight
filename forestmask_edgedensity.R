@@ -26,7 +26,7 @@ for(file in files){
     if(file.exists(elefile)){
       loss=rast(file)
       mask=rast(gsub("forestloss_2000_2022","forestmasks_tiled",file))
-        mask=mask-classify(loss,rclmat,others=0)
+        mask=(mask>0)-classify(loss,rclmat,others=0)
         template=rast(elefile)
         forestmask=paste0("D:/ff-dev/results/",loc,"/forestmask2019.tif")
         if(!file.exists(forestmask)){project(mask,template,method="sum",filename=forestmask)}
