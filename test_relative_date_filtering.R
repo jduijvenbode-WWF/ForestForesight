@@ -37,7 +37,7 @@ pols=as.polygons(rast(nrows=60, ncols=360, nlyrs=1, xmin=-180, xmax=180,ymin=-30
 pols$coordname=paste0(round(crds(centroids(pols))[,1]-0.5),"_",round(crds(centroids(pols))[,2]-0.5))
 pols2=intersect(pols,borders)
 
-ffdates=paste(sort(rep(c(2021,2022,2023),12)),seq(12),"01",sep="-")
+ffdates= paste(sort(rep(c(2021, 2022, 2023), each = 12)),sprintf("%02d", seq(12)),"01",sep = "-")
 ffdates=ffdates[1:29]
 ffdates_backup=ffdates
 datfram=data.frame()
