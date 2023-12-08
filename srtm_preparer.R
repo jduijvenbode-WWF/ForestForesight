@@ -14,13 +14,14 @@ SRTM<-function(lon, lat) {
   
   f <- paste('srtm_', colTile, '_', rowTile, sep="")
   theurl <- paste("https://srtm.csi.cgiar.org/wp-content/uploads/files/srtm_5x5/TIFF/", f, ".zip", sep="")
-  if(!file.exists(paste0(file,'.zip'))){
+  print(theurl)
+  if(!file.exists(paste0("elevation/",f,'_elevation.tif'))){
     try(utils::download.file(url=theurl, destfile=paste0(f,'.zip'), method="auto", quiet = FALSE, mode = "wb", cacheOK = TRUE),silent=T)
   }
 }
 for(img in seq(length(alerts))){
   for(x in c(0,5)){
-    for(y in c(0,5)){
+    for(y in c(5,10)){
       print(img)
       SRTM(ext(alerts[img])[1]+x,ext(alerts[img])[3]+y)
     }
@@ -28,13 +29,13 @@ for(img in seq(length(alerts))){
 }
 
 files=list.files(pattern="zip")
-for(file in files){
+for(file in files[45:length(files)]){
   unzip(file)
   if(file.exists(gsub("zip","tif",file))){
     a=rast(gsub("zip","tif",file))
-    writeRaster(a,file.path("elevation",gsub(".zip","_elevation.tif",file)))
-    terra::terrain(a,v="slope",filename=file.path("slope",gsub(".zip","_slope.tif",file)))
-    terra::terrain(a,v="roughness",filename=file.path("roughness",gsub(".zip","_roughness.tif",file)))
+    writeRaster(a,file.path("elevation",gsub(".zip","_elevation.tif",file)),overwrite=T)
+    terra::terrain(a,v="slope",filename=file.path("slope",gsub(".zip","_slope.tif",file)),overwrite=T)
+    terra::terrain(a,v="roughness",filename=file.path("roughness",gsub(".zip","_roughness.tif",file)),overwrite=T)
   }
 }
 setwd("elevation")
@@ -50,8 +51,10 @@ for(srtm in srtms){
 
 plot(alerts[1],add=T)
 alert=alerts[1]
-for(ind in seq(6,length(alerts))){
+for(ind in seq(1,length(alerts))){
   alert=alerts[ind]
+  elevationras=rast("D:/ff-dev/results/",alert$tile_id,"/elevation.tif")
+  if(nrow(elevationras)==1250){
   selpol=pols[buffer(alert,-2)]
   if(length(selpol)>1){
     srtmras=merge(sprc(selpol$names))
@@ -61,6 +64,6 @@ for(ind in seq(6,length(alerts))){
   }
   if(!dir.exists(file.path("D:/ff-dev/results/",alert$tile_id))){dir.create(paste0("D:/ff-dev/results/",alert$tile_id))}
   baseras=aggregate(rast(paste0("../../alerts/",alert$tile_id,".tif")),40,"max")
-  srtmras_proj=project(srtmras,baseras,method="average",align=T,filename=paste0("D:/ff-dev/results/",alert$tile_id,"/elevation.tif"))
-  rnras_proj=project(rnras,baseras,method="average",align=T,filename=paste0("D:/ff-dev/results/",alert$tile_id,"/slope.tif"))
+  srtmras_proj=project(srtmras,baseras,method="average",align=T,filename=paste0("D:/ff-dev/results/",alert$tile_id,"/elevation.tif"),overwrite=T)
+  rnras_proj=project(rnras,baseras,method="average",align=T,filename=paste0("D:/ff-dev/results/",alert$tile_id,"/slope.tif"),overwrite=T)
 }
