@@ -1,19 +1,25 @@
 library(terra)
 library(sf)
 library(xgboost)
-tiles=rev(c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W"))
+tiles=c("10S_070W","20S_070W","10S_060W","10N_000E","00N_000E","10N_0'010E","00N_010E")
 
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
   months=3
   source("C:/data/xgboost_test/helpers/functions.R")
   inputdir="C:/data/colombia_tiles/input/"
   outputdir="C:/data/colombia_tiles/results20231128/"
-} else if (Sys.info()[4]=="DESKTOP-3DNFBGC"){
-  output_csv=file.path(outputdir,"results.csv")
-  months=2
+} else if (Sys.info()[4] %in% c("DESKTOP-3DNFBGC")){
+  outputdir="D:/ff-dev/predictions20231128"
+  output_csv=file.path(outputdir,"results2.csv")
+  months=10
   source("C:/Users/admin/Documents/GitHub/ForestForesight/functions.R")
   inputdir="D:/ff-dev/results"
+} else if (Sys.info()[4] %in% c("GODZILLA")){
   outputdir="D:/ff-dev/predictions20231128"
+  output_csv=file.path(outputdir,"results.csv")
+  months=10
+  source("C:/Users/eagleview/Documents/GitHub/ForestForesight/functions.R")
+  inputdir="D:/ff-dev/results"
 } else{
   source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
   files=list.files("/Users/temp/Documents/FF/10N_080W", pattern ="tif",full.names = T)
@@ -70,12 +76,15 @@ for(tile in tiles){
       fulldts=fulldts[,-which(colnames(fulldts) %in% c("6months","pop2025","pop2030"))]
       colnames(fulldts)=c(colnames(fulldts)[1:(ncol(fulldts)-2)],"3-6months","popdiff")
       dts=fulldts
+      rm(fulldts)
+      gc()
       
       
       testsamples=which(dts[,"date"]==max(dts[,"date"]))
       trainsamples=which(dts[,"date"]!=max(dts[,"date"]))
       testdts=dts[testsamples,]
       dts=dts[trainsamples,]
+      dts=dts[which(dts[,"forestmask2019"]>0),]
       #next part doesn't work because it totally changes the balance between positives and negatives and gives very bad results in the end
       # filterindex=which(colnames(dts)=="groundtruth")
       # priority_index=which(colnames(dts)=="smtotaldeforestation")
@@ -116,30 +125,27 @@ for(tile in tiles){
                        objective = "binary:logistic", feval= evalerrorF05 , maximize= TRUE, verbose = 1, watchlist= watchlist)
       
       pred <- predict(bst, testdts)
-      
-      predictions=rast(t(matrix(pred>0.5,nrow=ncol(rasstack))),crs=crs(rasstack))
-      print("predictions transformed")
+      i=0.5
+      predictions=rast(t(matrix(pred>i,nrow=ncol(rasstack))),crs=crs(rasstack))
       ext(predictions)=ext(rasstack)
-      print("extent transferred")
       writeRaster(predictions,pred_raster,overwrite=T)
       writeRaster(rast(t(matrix(pred,nrow=ncol(rasstack))),crs=crs(rasstack)),gsub("predictions_","predictions_unclassified",pred_raster),overwrite=T)
       saveRDS(object = bst,file.path(writedir,paste0("predictor_",max(ffdates),".rds")))
-      print("model saved")
       groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",max(ffdates),".tif")))
-      print("groundtruth created")
       groundtruth[is.na(groundtruth)]=0
       eval=predictions*2+groundtruth
-      FP=extract(eval==1,pols2,fun="sum",na.rm=T,touches=F)[,2]
-      FN=extract(eval==2,pols2,fun="sum",na.rm=T,touches=F)[,2]
+      FP=extract(eval==2,pols2,fun="sum",na.rm=T,touches=F)[,2]
+      FN=extract(eval==1,pols2,fun="sum",na.rm=T,touches=F)[,2]
       TP=extract(eval==3,pols2,fun="sum",na.rm=T,touches=F)[,2]
       TN=extract(eval==0,pols2,fun="sum",na.rm=T,touches=F)[,2]
-      print("values extracted")
       precision=TP/(TP+FP)
       recall=TP/(TP+FN)
       accuracy=(TP+TN)/(TP+TN+FN+FP)
       F1score=(2*precision*recall)/(precision+recall)
+      recall=sum(TP,na.rm=T)/((sum(TP,na.rm=T))+sum(FN,na.rm=T))
+      precision=sum(TP,na.rm=T)/((sum(TP,na.rm=T))+sum(FP,na.rm=T))
       F05score=(1.25*precision*recall)/(0.25*precision+recall)
-      print("metrics calculated")
+      }
       resdat=data.frame(coordname=pols2$coordname,TP=TP,FN=FN,FP=FP,TN=TN,precision=precision,recall=recall,accuracy=accuracy,F1score=F1score,F05score=F05score,date=as.Date(max(ffdates)),tile=tile,country=pols2$iso3)
       resdat=resdat[which(!is.nan(TN)),]
       datfram=rbind(datfram,resdat)
