@@ -13,9 +13,15 @@ sobel_filter <- function(raster_data) {
   
   return(gradient_magnitude)
 }
+#this should prioritize the tiles on the countries that we want to do first
 files=list.files("D:/ff-dev/forestloss_2000_2022/",full.names=T)
-
-m=c(1,19,1)
+areas=vect("D:/ff-dev/integrated_alerts.geojson")
+borders=vect("D:/ff-dev/borders.geojson")
+prio_tifs=paste0(areas[borders[which(
+  borders$iso3 %in% c("GAB","PER","COL","BOL","LAO","IND"))]]$tile_id,".tif")
+files=c(files[which(basename(files %in% prio_tifs))],files[-which(basename(files %in% prio_tifs))])
+#reclassification matrix
+m=c(1,19,0)
 rclmat <- matrix(m, ncol=3, byrow=TRUE)
 for(file in files){
   loc=gsub(".tif","",(basename(file)))
@@ -26,12 +32,15 @@ for(file in files){
     if(file.exists(elefile)){
       loss=rast(file)
       mask=rast(gsub("forestloss_2000_2022","forestmasks_tiled",file))
-        mask=(mask>0)-classify(loss,rclmat,others=0)
+      #the original mask has values 1-100 for the fraction. Set everything that is deforested between 2001-2019
+      # to 0 and multiply the rest by 100 so that you get a value between 0-10000 for fraction
+        mask=mask*classify(loss,rclmat,others=100)
         template=rast(elefile)
         forestmask=paste0("D:/ff-dev/results/",loc,"/forestmask2019.tif")
-        if(!file.exists(forestmask)){project(mask,template,method="sum",filename=forestmask)}
-        mask=sobel_filter(mask)
-        project(mask,template,method="sum",filename=edgesfile)
+        # reproject with the average, so that pixels have a value between 0-10000. write as unsigned 16bit
+        if(!file.exists(forestmask)){project(mask,template,method="average",filename=forestmask,datatype="INT2U")}
+        #mask=sobel_filter(mask)
+        #project(mask,template,method="sum",filename=edgesfile)
       }
     }
   }
