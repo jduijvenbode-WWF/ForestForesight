@@ -23,7 +23,7 @@ files = c(files[which(basename(files) %in% basename(prio_tifs))], files[-which(b
 #reclassification matrix
 m=c(1,19,0)
 rclmat <- matrix(m, ncol=3, byrow=TRUE)
-for(file in files){
+for(file in files[69:103]){
   loc=gsub(".tif","",(basename(file)))
   print(loc)
   edgesfile=paste0("D:/ff-dev/results/",loc,"/edgedensity2019.tif")
@@ -33,7 +33,7 @@ for(file in files){
       mask=rast(gsub("forestloss_2000_2022","forestmasks_tiled",file))
       #the original mask has values 1-100 for the fraction. Set everything that is deforested between 2001-2019
       # to 0 and multiply the rest by 100 so that you get a value between 0-10000 for fraction
-        mask=mask*classify(loss,rclmat,others=100)
+        mask=mask*classify(loss,rclmat,others=100,filename="D:/ff-dev/tempclas.tif",overwrite=T)
         template=rast(elefile)
         forestmask=paste0("D:/ff-dev/results/",loc,"/forestmask2019.tif")
         # reproject with the average, so that pixels have a value between 0-10000. write as unsigned 16bit
