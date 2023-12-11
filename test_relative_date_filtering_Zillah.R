@@ -4,9 +4,10 @@ library(xgboost)
 
 ### CHANGE DATES AND TILES ON KING KONG!! ##
 colombia=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
-laos= c("30N_100E","20N_100E")
+laos= c("20N_100E","30N_100E")
 tiles= laos
 version = "Train_2year_test_subseq"
+treshold=0.45
 
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
   source("C:/data/xgboost_test/helpers/functions.R")
@@ -42,6 +43,7 @@ ffdates_backup=ffdates
 datfram=data.frame()
 # Loop over each tile
 for (tile in tiles) {
+  print(paste("Tile:", tile))
   output_csv=file.path(outputdir,tile,"results.csv")
   files <- list.files(file.path(inputdir, tile), pattern = "tif", full.names = TRUE)
   static_files = files[-grep("01\\.", files)]
@@ -127,8 +129,8 @@ for (tile in tiles) {
   saveRDS(object = bst,file.path(writedir,paste0("predictor.rds")))
   print("model saved")
 
-  for (datenum in seq(25, length(ffdates_backup))) {
-    print(ffdates[datenum])
+  for (datenum in seq(29, length(ffdates_backup))) {
+    print(paste("test datum:", ffdates[datenum]))
     # Define the path for the predicted raster
     pred_raster = file.path(writedir, paste0("predictions_", ffdates[datenum], ".tif"))
     # Check if the predicted raster file doesn't exist
@@ -141,13 +143,13 @@ for (tile in tiles) {
     
       pred <- predict(bst, testdts)
       
-      tileF05 = getF05(pred, test_label)
+      tileF05 = getF05(pred, test_label,treshold)
       print(paste("F05:", tileF05 ))
       
       pred_ini = numeric(dim(rasstack)[1]*dim(rasstack)[2])
       pred_ini[mask_forest[mask_forest<(dim(rasstack)[1]*dim(rasstack)[2])]]=pred
       
-      predictions=rast(t(matrix(pred_ini>0.5,nrow=ncol(rasstack))),crs=crs(rasstack))
+      predictions=rast(t(matrix(pred_ini>treshold,nrow=ncol(rasstack))),crs=crs(rasstack))
       print("predictions transformed")
       ext(predictions)=ext(rasstack)
       print("extent transferred")
