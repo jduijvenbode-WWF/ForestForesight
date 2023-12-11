@@ -6,6 +6,7 @@ library(xgboost)
 colombia=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
 laos= c("30N_100E","20N_100E")
 tiles= laos
+version = "Train_2year_test_subseq"
 
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
   source("C:/data/xgboost_test/helpers/functions.R")
@@ -14,7 +15,7 @@ if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
 } else if (Sys.info()[4]=="DESKTOP-3DNFBGC"){
   source("C:/Users/admin/Documents/GitHub/ForestForesight/functions.R")
   inputdir="D:/ff-dev/results"
-  outputdir="D:/ff-dev/predictionsZillah"
+  outputdir=paste0("D:/ff-dev/predictionsZillah/",version)
 } else{
   source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
   inputdir= "/Users/temp/Documents/FF/input"
@@ -167,7 +168,7 @@ for (tile in tiles) {
       F1score=(2*precision*recall)/(precision+recall)
       F05score=(1.25*precision*recall)/(0.25*precision+recall)
       print("metrics calculated")
-      resdat=data.frame(coordname=pols2$coordname,TP=TP,FN=FN,FP=FP,TN=TN,precision=precision,recall=recall,accuracy=accuracy,F1score=F1score,F05score=F05score,date=as.Date(max(ffdates)),tile=tile,country=pols2$iso3)
+      resdat=data.frame(coordname=pols2$coordname,TP=TP,FN=FN,FP=FP,TN=TN,precision=precision,recall=recall,accuracy=accuracy,F1score=F1score,F05score=F05score,date=as.Date(max(ffdates)),tile=tile,country=pols2$iso3, version=version)
       resdat=resdat[which(!is.nan(TN)),]
       datfram=rbind(datfram,resdat)
       write.csv(datfram,output_csv)
