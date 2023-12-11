@@ -183,8 +183,8 @@ evalerrorF05 <- function(preds, dts_matrix) {
   return(list(metric = "error F05", value = as.numeric(F05)))
 }
 
-getF05 <- function(prediction, label){
-  a=table((prediction > 0.5)*2+(label>0))
+getF05 <- function(prediction, label, treshold){
+  a=table((prediction > treshold)*2+(label>0))
   UA=a[4]/(a[3]+a[4])
   PA=a[4]/(a[2]+a[4])
   F05=round(1.25*UA*PA/(0.25*UA+PA),4)
