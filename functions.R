@@ -188,5 +188,5 @@ getF05 <- function(prediction, label, treshold){
   UA=a[4]/(a[3]+a[4])
   PA=a[4]/(a[2]+a[4])
   F05=round(1.25*UA*PA/(0.25*UA+PA),4)
-  return(F05)
+  return(list(UA,PA,F05))
 }
