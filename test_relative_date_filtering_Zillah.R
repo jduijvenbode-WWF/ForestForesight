@@ -5,7 +5,7 @@ library(xgboost)
 ### CHANGE DATES AND TILES ON KING KONG!! ##
 colombia=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
 laos= c("20N_100E","30N_100E")
-tiles= laos
+tiles= rev(laos)
 version = "Train_2year_test_subseq"
 treshold=0.45
 
@@ -44,7 +44,6 @@ datfram=data.frame()
 # Loop over each tile
 for (tile in tiles) {
   print(paste("Tile:", tile))
-  output_csv=file.path(outputdir,tile,"results.csv")
   files <- list.files(file.path(inputdir, tile), pattern = "tif", full.names = TRUE)
   static_files = files[-grep("01\\.", files)]
   # Set the output directory path
@@ -71,7 +70,7 @@ for (tile in tiles) {
     # Create a raster stack
     if(Sys.info()[4]=="Temps-MacBook-Pro.local"){
       rasstack = rast(c(dynamic_files, static_files), win = ext(rast(static_files[1])-4.8))
-      } else {rasstack = rast(c(dynamic_files, static_files), win = ext(rast(static_files[1])))}
+      } else {rasstack=c(rast(dynamic_files,win=ext(rast(static_files[1]))),rast(static_files,win=ext(rast(static_files[1]))))}
     # Extract data from the raster stack
     dts = as.matrix(rasstack)
     # Get coordinates from the raster stack
@@ -131,6 +130,7 @@ for (tile in tiles) {
 
   for (datenum in seq(29, length(ffdates_backup))) {
     print(paste("test datum:", ffdates[datenum]))
+    output_csv=file.path(outputdir,tile,paste0("results_",ffdates[datenum],".csv"))
     # Define the path for the predicted raster
     pred_raster = file.path(writedir, paste0("predictions_", ffdates[datenum], ".tif"))
     # Check if the predicted raster file doesn't exist
