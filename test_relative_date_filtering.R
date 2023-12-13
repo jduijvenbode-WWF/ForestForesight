@@ -1,7 +1,7 @@
 library(terra)
 library(sf)
 library(xgboost)
-tiles=c("10S_070W","20S_070W","10S_060W","10N_000E","00N_000E","10N_0'010E","00N_010E")
+tiles=c("00N_100E","10N_110E","00N_110E","10N_100E")
 
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
   months=3
@@ -58,7 +58,8 @@ for(tile in tiles){
       start=T
       for(i in ffdates){
         dynamic_files = files[grep(i,files)]
-        rasstack = rast(c(dynamic_files, static_files),win=ext(rast(static_files[1])))
+        rasstack=c(rast(dynamic_files,win=ext(rast(static_files[1]))),rast(static_files,win=ext(rast(static_files[1]))))
+        #rasstack = rast(c(dynamic_files, static_files),win=ext(rast(static_files[1])))
         dts=as.matrix(rasstack)
         coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
         filedate=substr(dynamic_files[1],tail(gregexpr("_",dynamic_files[1])[[1]],1)+1,nchar(dynamic_files[1])-4)
@@ -131,7 +132,7 @@ for(tile in tiles){
       writeRaster(predictions,pred_raster,overwrite=T)
       writeRaster(rast(t(matrix(pred,nrow=ncol(rasstack))),crs=crs(rasstack)),gsub("predictions_","predictions_unclassified",pred_raster),overwrite=T)
       saveRDS(object = bst,file.path(writedir,paste0("predictor_",max(ffdates),".rds")))
-      groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",max(ffdates),".tif")))
+      groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",max(ffdates),".tif")),win=ext(rasstack))
       groundtruth[is.na(groundtruth)]=0
       eval=predictions*2+groundtruth
       FP=extract(eval==2,pols2,fun="sum",na.rm=T,touches=F)[,2]
