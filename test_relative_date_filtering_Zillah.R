@@ -4,8 +4,10 @@ library(xgboost)
 
 ### CHANGE DATES AND TILES ON KING KONG!! ##
 colombia=c("10N_080W","10N_070W","20N_080W","00N_080W","00N_070W")
-laos= c("30N_100E","20N_100E")
+laos= c("20N_100E","30N_100E")
 tiles= laos
+version = "Train_2year_test_subseq"
+treshold=0.3
 
 if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
   source("C:/data/xgboost_test/helpers/functions.R")
@@ -14,7 +16,7 @@ if(Sys.info()[4]=="LAPTOP-DMVN4G1N"){
 } else if (Sys.info()[4]=="DESKTOP-3DNFBGC"){
   source("C:/Users/admin/Documents/GitHub/ForestForesight/functions.R")
   inputdir="D:/ff-dev/results"
-  outputdir="D:/ff-dev/predictionsZillah"
+  outputdir=paste0("D:/ff-dev/predictionsZillah/",version)
 } else{
   source("/Users/temp/Documents/GitHub/ForestForesight/functions.R")
   inputdir= "/Users/temp/Documents/FF/input"
@@ -41,7 +43,7 @@ ffdates_backup=ffdates
 datfram=data.frame()
 # Loop over each tile
 for (tile in tiles) {
-  output_csv=file.path(outputdir,tile,"results.csv")
+  print(paste("Tile:", tile))
   files <- list.files(file.path(inputdir, tile), pattern = "tif", full.names = TRUE)
   static_files = files[-grep("01\\.", files)]
   # Set the output directory path
@@ -68,7 +70,7 @@ for (tile in tiles) {
     # Create a raster stack
     if(Sys.info()[4]=="Temps-MacBook-Pro.local"){
       rasstack = rast(c(dynamic_files, static_files), win = ext(rast(static_files[1])-4.8))
-      } else {rasstack = rast(c(dynamic_files, static_files), win = ext(rast(static_files[1])))}
+      } else {rasstack=c(rast(dynamic_files,win=ext(rast(static_files[1]))),rast(static_files[c(1,3:10)],win=ext(rast(static_files[1]))),rast(static_files[2],win=ext(rast(static_files[1]))))}
     # Extract data from the raster stack
     dts = as.matrix(rasstack)
     # Get coordinates from the raster stack
@@ -126,8 +128,9 @@ for (tile in tiles) {
   saveRDS(object = bst,file.path(writedir,paste0("predictor.rds")))
   print("model saved")
 
-  for (datenum in seq(25, length(ffdates_backup))) {
-    print(ffdates[datenum])
+  for (datenum in seq(25, length(ffdates_backup))){
+    print(paste("test datum:", ffdates[datenum]))
+    output_csv=file.path(outputdir,tile,paste0("results_",ffdates[datenum],".csv"))
     # Define the path for the predicted raster
     pred_raster = file.path(writedir, paste0("predictions_", ffdates[datenum], ".tif"))
     # Check if the predicted raster file doesn't exist
@@ -140,19 +143,19 @@ for (tile in tiles) {
     
       pred <- predict(bst, testdts)
       
-      tileF05 = getF05(pred, test_label)
-      print(paste("F05:", tileF05 ))
+      assess = getF05(pred, test_label,treshold)
+      print(paste("UA:", asses[1], " PA:",asses[2], "F05:", asses[3] ))
       
       pred_ini = numeric(dim(rasstack)[1]*dim(rasstack)[2])
       pred_ini[mask_forest[mask_forest<(dim(rasstack)[1]*dim(rasstack)[2])]]=pred
       
-      predictions=rast(t(matrix(pred_ini>0.5,nrow=ncol(rasstack))),crs=crs(rasstack))
+      predictions=rast(t(matrix(pred_ini>treshold,nrow=ncol(rasstack))),crs=crs(rasstack))
       print("predictions transformed")
       ext(predictions)=ext(rasstack)
       print("extent transferred")
       writeRaster(predictions,pred_raster,overwrite=T)
       writeRaster(rast(t(matrix(pred_ini,nrow=ncol(rasstack))),crs=crs(rasstack)),gsub("predictions_","predictions_unclassified",pred_raster),overwrite=T)
-      groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",ffdates[datenum],".tif")))
+      groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",ffdates[datenum],".tif")),win=ext(rast(static_files[1])))
       print("groundtruth created")
       groundtruth[is.na(groundtruth)]=0
       eval=predictions*2+groundtruth
@@ -167,7 +170,7 @@ for (tile in tiles) {
       F1score=(2*precision*recall)/(precision+recall)
       F05score=(1.25*precision*recall)/(0.25*precision+recall)
       print("metrics calculated")
-      resdat=data.frame(coordname=pols2$coordname,TP=TP,FN=FN,FP=FP,TN=TN,precision=precision,recall=recall,accuracy=accuracy,F1score=F1score,F05score=F05score,date=as.Date(max(ffdates)),tile=tile,country=pols2$iso3)
+      resdat=data.frame(coordname=pols2$coordname,TP=TP,FN=FN,FP=FP,TN=TN,precision=precision,recall=recall,accuracy=accuracy,F1score=F1score,F05score=F05score,date=as.Date(max(ffdates)),tile=tile,country=pols2$iso3, version=version)
       resdat=resdat[which(!is.nan(TN)),]
       datfram=rbind(datfram,resdat)
       write.csv(datfram,output_csv)
