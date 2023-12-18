@@ -50,5 +50,3 @@ for(file in files){
     newname=paste0(substr(file,1,nchar(file)-8),"0",substr(file,nchar(file)-7,nchar(file)))
     file.rename(file,newname)}
 }
-"00N_070W/groundtruth_2021-7-01.tif"
-"00N_070W/groundtruth_2021-7-01.tif"
