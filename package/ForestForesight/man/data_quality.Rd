@@ -14,6 +14,6 @@ This function loops through all tif files in a given folder and gives a summary 
 }
 \examples{
 # Example usage:
-result <- process_tif_files("path/to/tif_folder", test_integrity = TRUE)
+result <- process_tif_files("path/to/tif_folder")
 
 }
