@@ -30,7 +30,7 @@
 #' @name run_xgboost
 
 
-train_xgboost <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
+run_xgboost <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
                           subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,verbose=F) {
 
   # Convert the matrix to a DMatrix object
