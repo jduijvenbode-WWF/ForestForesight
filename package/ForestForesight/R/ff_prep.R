@@ -40,6 +40,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     data(countries)
     borders=vect(countries)
     tilesvect=tilesvect[borders[which(borders$iso3==country)]]$tile_id
+    cat(paste("country contains the following tiles that will be processed:",paste(tilesvect,collapse=", "),"\n"))
     if(is.null(tiles)){tiles=tilesvect}
   }
 
@@ -47,10 +48,10 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   allfiles=as.character(unlist(sapply(tiles,function(x) list.files(path=file.path(datafolder,x),full.names=T,recursive=T,pattern="tif$"))))
   if(length(allfiles)==0){stop(paste("no folders with tif-files found that correspond to the given tile id's:",paste(tiles,collapse=",")))}
   #remove features that are not wanted
-  if(!is.na(exc_features)){
+  if(!is.na(exc_features[1])){
     exc_indices=unique(unlist(sapply(exc_features,function(x) which(startsWith(basename(allfiles),x)))))
     if(length(exc_indices)>0){allfiles=allfiles[-exc_indices]}}
-  if(!is.na(inc_features)){
+  if(!is.na(inc_features[1])){
     inc_indices=unique(unlist(sapply(inc_features,function(x) which(startsWith(basename(allfiles),x)))))
     if(length(inc_indices>0)){allfiles=allfiles[inc_indices]}}
   if(length(allfiles)==0){stop("after including and excluding the requested variables there are no files left")}
@@ -78,6 +79,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       #take a random sample if that was applied
       if(sample_size<1){dts=dts[sample(seq(nrow(dts)),round(nrow(dts)*sample_size)),]}
       if(first){first=F;fdts=dts}else{
+
         fdts=rbind(fdts,dts)}
     }
   }
@@ -105,6 +107,6 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     data_matrix=xgb.DMatrix(fdts, label=data_label)
   }
   if((length(tiles)==1)&(sample_size==1)){templateraster=static_files[1]}else{templateraster=NA}
-  return(list("data_matrix"=data_matrix,"testindices"=filterindices,"groundtruth"=data_label,"templateraster"=templateraster))
+  return(list("data_matrix"=data_matrix,"testindices"=filterindices,"groundtruth"=data_label,"templateraster"=templateraster,features=colnames(fdts)))
 }
 
