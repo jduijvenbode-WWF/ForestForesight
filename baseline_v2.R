@@ -56,7 +56,7 @@ for(i in 1:length(sixmonths)){
       #1 means only groundtruth (FN), 2 means only 
       #2 means only past deforestation, no groundtruth (FP)
       #3 means both groundtruth and past deforestation (TP)
-      ras=smras*2+gtras
+      ras=smras+gtras*2
       #extract per value per polygon, do not take pixels that only touch the polygons, just take the pixels that overlap with the polygons
       FP=extract(ras==1,pols2,fun="sum",na.rm=T,touches=F)[,2]
       FN=extract(ras==2,pols2,fun="sum",na.rm=T,touches=F)[,2]
