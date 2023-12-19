@@ -14,24 +14,26 @@
 ff_dqc <- function(folder_path) {
 
   summary_by_feature=function(dataframe,feature){
+    type="dynamic"
     seldf=dataframe[which(dataframe$featurenames==feature),]
-    if(nrow(seldf)==1){seldf=rbind(seldf,seldf)}
+    if(nrow(seldf)==1){seldf=rbind(seldf,seldf);type="static"}
     return(list("feature"=feature,
-                "mindate"=as.character(min(as.Date(seldf$dates))),
-                "maxdate"=as.character(max(as.Date(seldf$dates))),
+                "type"=type,
+                "mindate"=if(is.na(seldf$dates[1])){NA}else{as.character(min(as.Date(seldf$dates)))},
+                "maxdate"=if(is.na(seldf$dates[1])){NA}else{as.character(max(as.Date(seldf$dates)))},
                 "gaps"=if(max(diff(sort(as.Date(seldf$dates))))<32){"no"}else{"yes"},
                 "doubles"=if(min(diff(sort(as.Date(seldf$dates))))>27){"no"}else{"yes"},
-                "npixel"=if(sd(seldf$npixel)==0){"equal"}else{"diff"},
-                "xmin"=if(sd(seldf$xmin)==0){"equal"}else{"diff"},
-                "xmax"=if(sd(seldf$xmax)==0){"equal"}else{"diff"},
-                "ymin"=if(sd(seldf$ymin)==0){"equal"}else{"diff"},
-                "ymax"=if(sd(seldf$ymax)==0){"equal"}else{"diff"},
-                "resolution"=if(sd(seldf$resolution)==0){"equal"}else{"diff"},
-                "crsname"=if(length(unique(seldf$crsname))==1){"equal"}else{"diff"},
-                "crscode"=if(length(unique(seldf$crscode))==1){"equal"}else{"diff"},
+                "npixel"=if(sd(seldf$npixel)==0){seldf$npixel[1]}else{"diff"},
+                "xmin"=if(sd(seldf$xmin)==0){seldf$xmin[1]}else{"diff"},
+                "xmax"=if(sd(seldf$xmax)==0){seldf$xmax[1]}else{"diff"},
+                "ymin"=if(sd(seldf$ymin)==0){seldf$ymin[1]}else{"diff"},
+                "ymax"=if(sd(seldf$ymax)==0){seldf$ymax[1]}else{"diff"},
+                "resolution"=if(sd(seldf$resolution)==0){seldf$resolution[1]}else{"diff"},
+                "crsname"=if(length(unique(seldf$crsname))==1){seldf$crsname[1]}else{"diff"},
+                "crscode"=if(length(unique(seldf$crscode))==1){seldf$crscode[1]}else{"diff"},
                 "mean"=round(mean(as.numeric(seldf$mean)),2),
                 "max"=round(max(as.numeric(seldf$max)),2),
-                "hasNA"=if(length(unique(seldf$hasNA))==1){"equal"}else{"diff"}))
+                "hasNA"=if(length(unique(seldf$hasNA))==1){seldf$hasNA[1]}else{"diff"}))
   }
   # Get a list of all TIF files in the folder
   tif_files <- list.files(folder_path, pattern = "\\.tif$", full.names = TRUE)
@@ -47,5 +49,7 @@ ff_dqc <- function(folder_path) {
   summarytable=as.data.frame(do.call(rbind,summary))
   names(summarytable)=names(summary[[1]])
   for(i in 1:ncol(summarytable)){summarytable[,i]=unlist(summarytable[,i])}
-  return(list("summary"=summarytable,"all"=allvals))
+  summarytable=summarytable[order(summarytable$type),]
+  extentcheck=length(c(unique(allvals$npixel),unique(allvals$xmin),unique(allvals$xmax),unique(allvals$ymin),unique(allvals$ymax),unique(allvals$resolution)))==6
+  return(list("tile"=basename(folder_path),"byfeature"=summarytable,"all"=allvals,"equalextent"=extentcheck))
 }
