@@ -6,7 +6,7 @@
 #'
 #' @examples
 #' # Example usage:
-#' result <- process_tif_files("path/to/tif_folder", test_integrity = TRUE)
+#' result <- process_tif_files("path/to/tif_folder")
 #'
 #' @export
 #'
