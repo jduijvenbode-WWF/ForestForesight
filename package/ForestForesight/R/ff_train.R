@@ -26,11 +26,11 @@
 #' Jonas van Duijvenbode (2023)
 #'
 #' @keywords XGBoost data preparation
-#' @rdname run_xgboost
-#' @name run_xgboost
+#' @rdname ff_train
+#' @name ff_train
 
 
-run_xgboost <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
+ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
                           subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,verbose=F) {
 
   # Convert the matrix to a DMatrix object
@@ -45,7 +45,7 @@ run_xgboost <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta =
     max_depth = max_depth,
     subsample = subsample
   )
-  if(is.null(validation_matrix)){
+  if(is.na(validation_matrix)){
     watchlist=list(train = dtrain)
   }else{watchlist=list(train = dtrain,eval= deval)}
   # Train the XGBoost model

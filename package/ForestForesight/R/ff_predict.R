@@ -16,11 +16,11 @@
 #' Jonas van Duijvenbode (2023)
 #'
 #' @keywords XGBoost data preparation
-#' @rdname predict_ff
-#' @name predict_ff
+#' @rdname ff_predict
+#' @name ff_predict
 
 
-predict_ff <- function(model, test_matrix, threshold=0.5,groundtruth){
+ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth){
   predictions=predict(a,test_matrix)
   precision=c()
   recall=c()

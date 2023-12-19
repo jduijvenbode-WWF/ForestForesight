@@ -11,7 +11,7 @@
 #' @export
 #'
 #'
-data_quality <- function(folder_path) {
+ff_dqc <- function(folder_path) {
 
   summary_by_feature=function(dataframe,feature){
     seldf=dataframe[which(dataframe$featurenames==feature),]
@@ -35,7 +35,7 @@ data_quality <- function(folder_path) {
   }
   # Get a list of all TIF files in the folder
   tif_files <- list.files(folder_path, pattern = "\\.tif$", full.names = TRUE)
-  valuelist=lapply(tif_files,function(x) summarize_rast(x))
+  valuelist=lapply(tif_files,function(x) ff_dqc_file(x))
   allvals=as.data.frame(as.matrix(do.call(rbind,valuelist)))
   names(allvals)=names(valuelist[[1]])
   for(i in 1:ncol(allvals)){allvals[,i]=unlist(allvals[,i])}
