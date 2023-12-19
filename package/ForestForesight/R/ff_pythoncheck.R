@@ -12,7 +12,7 @@
 #' }
 #'
 #' @export
-python_package_dendencies=function(packages=c("numpy","scipy","rasterio","argparse")){
+ff_pythoncheck=function(packages=c("numpy","scipy","rasterio","argparse")){
   version=system("python -V",intern=T)
   packageresult=c()
   for(package in packages){
