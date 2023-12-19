@@ -1,4 +1,4 @@
-data_preparation=function(datafolder=NA,country=NA,countryfile=NA,tilesfile=NULL,tiles=NULL,groundtruth_pattern="groundtruth",training_start=c(2021,1),training_end=c(2022,12),test_month,inc_features=NULL,exc_features=NULL,fltr_features="forestmask2019",fltr_condition=">0",random_sample_size=1,apply_filter_on_test=T,relativedate=T){
+data_preparation=function(datafolder=NA,country=NA,countryfile=NA,tilesfile=NULL,tiles=NULL,groundtruth_pattern="groundtruth",training_start=c(2021,1),training_end=c(2022,12),test_month,inc_features=NULL,exc_features=NULL,fltr_features="forestmask2019",fltr_condition=">0",random_sample_size=1,apply_filter_on_test=T,relativedate=T,return_watchlist=F){
   #folder should be a path to the folder that contains the 10-degree folders. Alternatively make sure your environment variable xgboost_datafolder is that folder
   #country should be a 3-letter iso code (Gabon=GAB,Laos=LAO). If this parameter is set, countryfile and tilefile should also be set
   #countryfile is only used when country is set and should contain a column called iso3.
@@ -60,9 +60,7 @@ data_preparation=function(datafolder=NA,country=NA,countryfile=NA,tilesfile=NULL
   }
   if(!exists("testfilterindices")){testfilterindices=NA}
   #split data into feature data and label data
-  print(colnames(traindts))
   groundtruth_index=which(colnames(traindts)==groundtruth_pattern)
-  print(groundtruth_index)
   train_label=traindts[,groundtruth_index]
   traindts=traindts[,-groundtruth_index]
   groundtruth_index=which(colnames(testdts)==groundtruth_pattern)
@@ -72,14 +70,10 @@ data_preparation=function(datafolder=NA,country=NA,countryfile=NA,tilesfile=NULL
   #make sure that label data is binary
   train_label[train_label>1]=1
   test_label[test_label>1]=1
-  print("nondeju")
   #create a watchlist that can be used by xgboost
-  print(nrow(traindts));print(length(train_label))
-  print(nrow(testdts));print(length(test_label))
-  watchlist = list(train = xgb.DMatrix(traindts, label=train_label), eval = xgb.DMatrix(testdts, label=test_label))
+  if(return_watchlist){watchlist = list(train = xgb.DMatrix(traindts, label=train_label), eval = xgb.DMatrix(testdts, label=test_label))}else{watchlist=NA}
   #set the working directory back to original
   setwd(curwd)
-  print("godver")
-  return(list("watchlist"=watchlist,"testindices"=testfilterindices))
+  return(list("train_dataset"=traindts,"train_labels"=train_label,"test_dataset"=testdts,"test_labels"=test_label,"testindices"=testfilterindices,"watchlist"=watchlist))
 }
 test=data_preparation(tiles="10N_080W",training_start=c(2022,01),training_end = c(2022,1),test_month = c(2022,9),random_sample_size = 0.6,exc_features = c("sm6months","loss2022"))
