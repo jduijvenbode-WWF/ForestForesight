@@ -45,7 +45,7 @@ ff_dqc <- function(folder_path) {
   allvals$dates=as.character(unlist(sapply(tif_files,function(x) strsplit(gsub(pattern = "\\.tif",replacement="",basename(x)),"_")[[1]][2])))
   allvals=allvals[,c(ncol(allvals)-1,ncol(allvals),seq(ncol(allvals)-2))]
   # Initialize data frame to store quality flags
-  summary=lapply(unique(allvals$featurenames),function(x) summary_by_feature(allvals,x))
+  summary=suppressWarnings(lapply(unique(allvals$featurenames),function(x) summary_by_feature(allvals,x)))
   summarytable=as.data.frame(do.call(rbind,summary))
   names(summarytable)=names(summary[[1]])
   for(i in 1:ncol(summarytable)){summarytable[,i]=unlist(summarytable[,i])}
