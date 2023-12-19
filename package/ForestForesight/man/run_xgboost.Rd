@@ -2,10 +2,9 @@
 % Please edit documentation in R/run_xgboost.R
 \name{run_xgboost}
 \alias{run_xgboost}
-\alias{train_xgboost}
 \title{Train an XGBoost Model}
 \usage{
-train_xgboost(
+run_xgboost(
   train_matrix,
   validation_matrix = NA,
   nrounds = 200,

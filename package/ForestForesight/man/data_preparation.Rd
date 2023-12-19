@@ -7,20 +7,16 @@
 data_preparation(
   datafolder = NA,
   country = NA,
-  countryfile = NA,
-  tilesfile = NULL,
   tiles = NULL,
   groundtruth_pattern = "groundtruth",
-  training_start = c(2021, 1),
-  training_end = c(2021, 3),
-  test_month,
+  start = c(2021, 1),
+  end = NA,
   inc_features = NA,
   exc_features = NA,
   fltr_features = "forestmask2019",
   fltr_condition = ">0",
+  sample_size = 1,
   validation_sample = 0,
-  random_sample_size = 1,
-  apply_filter_on_test = T,
   relativedate = T
 )
 }
@@ -29,19 +25,13 @@ data_preparation(
 
 \item{country}{Country for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.}
 
-\item{countryfile}{Path to the country file. Not necessary if the file borders.geojson is in the datafolder.}
-
-\item{tilesfile}{Path to the tiles file. Not necessary if the file integratedalerts.geojson is in the datafolder.}
-
 \item{tiles}{Vector of tiles in the syntax of e.g. 10N_080W.}
 
 \item{groundtruth_pattern}{Pattern to identify ground truth files. 'groundtruth'.}
 
-\item{training_start}{Start date for training data in the format c(YYYY, M). Default is c(2021, 1).}
+\item{start}{Start date for training data in the format c(YYYY, M). Default is c(2021, 1).}
 
-\item{training_end}{End date for training data in the format c(YYYY, M). Default is c(2022, 12).}
-
-\item{test_month}{Test month for evaluation in the format c(YYYY, M). Example: c(2023,5).}
+\item{end}{End date for training data in the format c(YYYY, M). Default is NA to only process the start month.}
 
 \item{inc_features}{Vector of included features. States which features to include in the data preparation.}
 
@@ -51,11 +41,9 @@ data_preparation(
 
 \item{fltr_condition}{Vector of filtering conditions. Default is '>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector}
 
+\item{sample_size}{Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1}
+
 \item{validation_sample}{float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3}
-
-\item{random_sample_size}{Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1}
-
-\item{apply_filter_on_test}{Boolean indicating whether to apply the filters in fltr_features also on test data. Default is TRUE.}
 
 \item{relativedate}{Boolean indicating whether the date is relative. Default is \code{TRUE}.}
 }
@@ -67,10 +55,6 @@ This function prepares data for machine learning tasks based on specified parame
 }
 \references{
 Jonas van Duijvenbode (2023)
-}
-\seealso{
-\code{\link{other_function}}
-\code{\link{another_function}}
 }
 \keyword{XGBoost}
 \keyword{data}
