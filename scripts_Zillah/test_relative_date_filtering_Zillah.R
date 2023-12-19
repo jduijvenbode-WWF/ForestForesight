@@ -70,7 +70,8 @@ for (tile in tiles) {
     # Create a raster stack
     if(Sys.info()[4]=="Temps-MacBook-Pro.local"){
       rasstack = rast(c(dynamic_files, static_files), win = ext(rast(static_files[1])-4.8))
-      } else {rasstack=c(rast(dynamic_files,win=ext(rast(static_files[1]))),rast(static_files[c(1,3:10)],win=ext(rast(static_files[1]))),rast(static_files[2],win=ext(rast(static_files[1]))))}
+      } else {rasstack=c(rast(dynamic_files,win=ext(rast(static_files[1]))),rast(static_files,win=ext(rast(static_files[1]))))}
+    # {rasstack=c(rast(dynamic_files,win=ext(rast(static_files[1]))),rast(static_files[c(1,3:10)],win=ext(rast(static_files[1]))),rast(static_files[2],win=ext(rast(static_files[1]))))}
     # Extract data from the raster stack
     dts = as.matrix(rasstack)
     # Get coordinates from the raster stack
@@ -128,7 +129,7 @@ for (tile in tiles) {
   saveRDS(object = bst,file.path(writedir,paste0("predictor.rds")))
   print("model saved")
 
-  for (datenum in seq(25, length(ffdates_backup))){
+  for (datenum in seq(29, length(ffdates_backup))){
     print(paste("test datum:", ffdates[datenum]))
     output_csv=file.path(outputdir,tile,paste0("results_",ffdates[datenum],".csv"))
     # Define the path for the predicted raster
@@ -144,7 +145,7 @@ for (tile in tiles) {
       pred <- predict(bst, testdts)
       
       assess = getF05(pred, test_label,treshold)
-      print(paste("UA:", asses[1], " PA:",asses[2], "F05:", asses[3] ))
+      print(paste("UA:", assess[[1]], " PA:",assess[[2]], "F05:", assess[[3]] ))
       
       pred_ini = numeric(dim(rasstack)[1]*dim(rasstack)[2])
       pred_ini[mask_forest[mask_forest<(dim(rasstack)[1]*dim(rasstack)[2])]]=pred
@@ -155,7 +156,7 @@ for (tile in tiles) {
       print("extent transferred")
       writeRaster(predictions,pred_raster,overwrite=T)
       writeRaster(rast(t(matrix(pred_ini,nrow=ncol(rasstack))),crs=crs(rasstack)),gsub("predictions_","predictions_unclassified",pred_raster),overwrite=T)
-      groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",ffdates[datenum],".tif")),win=ext(rast(static_files[1])))
+      groundtruth=rast(file.path(inputdir,tile,paste0("groundtruth_",ffdates[datenum],".tif")))
       print("groundtruth created")
       groundtruth[is.na(groundtruth)]=0
       eval=predictions*2+groundtruth
