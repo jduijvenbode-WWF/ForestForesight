@@ -105,8 +105,9 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     validation_matrix=xgb.DMatrix(fdts[sample_indices,], label=data_label[sample_indices])
   }else{
     data_matrix=xgb.DMatrix(fdts, label=data_label)
+    validation_matrix=NA
   }
   if((length(tiles)==1)&(sample_size==1)){templateraster=static_files[1]}else{templateraster=NA}
-  return(list("data_matrix"=data_matrix,"testindices"=filterindices,"groundtruth"=data_label,"templateraster"=templateraster,features=colnames(fdts)))
+  return(list("data_matrix"=data_matrix,"validation_matrix"=validation_matrix,"testindices"=filterindices,"groundtruth"=data_label,"templateraster"=templateraster,features=colnames(fdts)))
 }
 
