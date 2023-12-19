@@ -24,11 +24,11 @@
 #' Jonas van Duijvenbode (2023)
 #'
 #' @keywords XGBoost data preparation
-#' @rdname data_preparation
-#' @name data_preparation
+#' @rdname ff_prep
+#' @name ff_prep
 
 
-data_preparation=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start=c(2021,1),end=NA,inc_features=NA,exc_features=NA,fltr_features="forestmask2019",fltr_condition=">0",sample_size=1,validation_sample=0,relativedate=T){
+ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start=c(2021,1),end=NA,inc_features=NA,exc_features=NA,fltr_features="forestmask2019",fltr_condition=">0",sample_size=1,validation_sample=0,relativedate=T){
   if(is.na(start[1])){stop("no start date given")}
   if(is.null(tiles)&is.na(country)){stop("unknown what to process since no tiles or country were given")}
   if(is.na(end[1])){end=start}
@@ -76,7 +76,7 @@ data_preparation=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_patter
       if(relativedate){newcolnames=c(newcolnames,"relativedate")}
       colnames(dts)=newcolnames
       #take a random sample if that was applied
-      if(sample_size<1){dts=dts[sample(seq(nrow(dts)),round(nrow(dts)*random_sample_size)),]}
+      if(sample_size<1){dts=dts[sample(seq(nrow(dts)),round(nrow(dts)*sample_size)),]}
       if(first){first=F;fdts=dts}else{
         fdts=rbind(fdts,dts)}
     }

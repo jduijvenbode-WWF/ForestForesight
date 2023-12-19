@@ -11,7 +11,7 @@
 #' @export
 #'
 #'
-data_quality <- function(folder_path) {
+ff_dqc <- function(folder_path) {
 
   summary_by_feature=function(dataframe,feature){
     seldf=dataframe[which(dataframe$featurenames==feature),]
