@@ -28,12 +28,15 @@
 #' @name ff_prep
 
 
-ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start=c(2021,1),end=NA,inc_features=NA,exc_features=NA,fltr_features="forestmask2019",fltr_condition=">0",sample_size=1,validation_sample=0,relativedate=T){
+ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start=c(2021,1),end=NA,inc_features=NA,exc_features=NA,fltr_features="forestmask2019",fltr_condition=">0",sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F){
   if(is.na(start[1])){stop("no start date given")}
   if(is.null(tiles)&is.na(country)){stop("unknown what to process since no tiles or country were given")}
   if(is.na(end[1])){end=start}
   if(is.na(datafolder)){datafolder=Sys.getenv("xgboost_datafolder")}
   if(datafolder==""){stop("No environment variable for xgboost_datafolder and no datafolder parameter set")}
+  if(sampleraster&((validation_sample>0)|sample_size<1)){
+    sampleraster=F
+    warning("No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}
   data(gfw_tiles)
   tilesvect=vect(gfw_tiles)
   if(!is.na(country)){
@@ -58,6 +61,8 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   #create the range between start and end date
   daterange=as.character(seq(as.Date(paste0(start[1],"-",sprintf("%02d",start[2]),"-01")),as.Date(paste0(end[1],"-",sprintf("%02d",end[2]),"-01")),"1 month"))
   first=T
+  if(length(tiles)>1){warning("No template raster will be returned because multiple tiles are processed together")
+    sampleraster=F}
   for(tile in tiles){
     files=allfiles[grep(tile,allfiles)]
     static_files= files[-grep("01\\.",files)]
@@ -68,6 +73,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     for(i in daterange){
       dynamic_files = sort(files[grep(i,files)])
       rasstack=c(rast(dynamic_files,win=ext(rast(static_files[1]))),rast(static_files,win=ext(rast(static_files[1]))))
+      if(first){if(sampleraster){groundtruth_raster=rast(dynamic_files[grep(groundtruth_pattern,dynamic_files)])}else{groundtruth_raster=NA}}
       dts=as.matrix(rasstack)
       coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
       dts=cbind(coords,dts)
@@ -76,12 +82,20 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       newcolnames=c("x","y",gsub(".tif","",c(sapply(basename(dynamic_files),function(x) strsplit(x,"_")[[1]][1]), basename(static_files))))
       if(relativedate){newcolnames=c(newcolnames,"relativedate")}
       colnames(dts)=newcolnames
+
       #take a random sample if that was applied
       if(sample_size<1){dts=dts[sample(seq(nrow(dts)),round(nrow(dts)*sample_size)),]}
       if(first){first=F;fdts=dts}else{
-
-        fdts=rbind(fdts,dts)}
+        common_cols <- intersect(colnames(dts), colnames(fdts))
+        notin1=colnames(dts)[which(!(colnames(dts) %in% common_cols))]
+        notin2=colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
+        if(length(c(notin1,notin2))>0){warning(paste("the following columns are dropped because they are not present in the entire time series: ",paste(c(notin1,notin2),collapse=", ")))}
+        # Subset matrices based on common column names
+        # Merge matrices by column names
+        fdts <- rbind(fdts[, common_cols, drop = FALSE], fdts[, common_cols, drop = FALSE])
+      }
     }
+    if(verbose){cat(paste("features:",paste(newcolnames,collapse=", "),"\n"))}
   }
   #filter training data on features that have been declared
   filterindices=c()
@@ -107,7 +121,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     data_matrix=xgb.DMatrix(fdts, label=data_label)
     validation_matrix=NA
   }
-  if((length(tiles)==1)&(sample_size==1)){templateraster=static_files[1]}else{templateraster=NA}
-  return(list("data_matrix"=data_matrix,"validation_matrix"=validation_matrix,"testindices"=filterindices,"groundtruth"=data_label,"templateraster"=templateraster,features=colnames(fdts)))
+
+  return(list("data_matrix"=data_matrix,"validation_matrix"=validation_matrix,"testindices"=filterindices,"groundtruth"=data_label,"groundtruthraster"=groundtruth_raster,features=colnames(fdts)))
 }
 
