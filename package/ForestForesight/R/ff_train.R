@@ -45,9 +45,9 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     max_depth = max_depth,
     subsample = subsample
   )
-  if(is.na(validation_matrix)){
-    watchlist=list(train = dtrain)
-  }else{watchlist=list(train = dtrain,eval= deval)}
+  if(class(validation_matrix)=="xgb.DMatrix"){
+    watchlist=list(train = dtrain,eval= deval)
+  }else{watchlist=list(train = dtrain)}
   # Train the XGBoost model
   model <- xgboost::xgb.train(
     params = params,

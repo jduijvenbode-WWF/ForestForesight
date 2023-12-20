@@ -17,7 +17,9 @@ ff_prep(
   fltr_condition = ">0",
   sample_size = 1,
   validation_sample = 0,
-  relativedate = T
+  relativedate = T,
+  sampleraster = T,
+  verbose = F
 )
 }
 \arguments{
