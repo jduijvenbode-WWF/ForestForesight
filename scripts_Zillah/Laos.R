@@ -14,8 +14,8 @@ quality_2 = ff_dqc(files[2])
 print(quality_2$byfeature)
 
 ## data preperation ##
-laos_train = ff_prep(country = "LAO", end = c(2021,12), exc_features = c("pop2020","pop202","pop2030"))
-laos_test =  ff_prep(country = "LAO", start = c(2022,6), end = c(2023,5), exc_features = c("pop2020","pop202","pop2030"))
+laos_train = ff_prep(country = "LAO", end = c(2021,12),sample_size=0.01, exc_features = c("pop2020","pop202","pop2030"))
+laos_test =  ff_prep(country = "LAO", start = c(2022,6), exc_features = c("pop2020","pop202","pop2030"))
 
 ## Run XGBoost ##
 
