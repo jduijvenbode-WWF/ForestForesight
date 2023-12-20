@@ -20,8 +20,8 @@
 #' @name ff_predict
 
 
-ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth){
-  predictions=predict(a,test_matrix)
+ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,templateraster=NA){
+  predictions=predict(model,test_matrix)
   precision=c()
   recall=c()
   F05=c()
@@ -33,5 +33,9 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth){
    recall=c(recall,rec)
    F05=c(F05,1.25*prec*rec/(0.25*prec+rec))
   }
-  return(list(threshold=threshold,"precision"=precision,"recall"=recall,"F0.5"=F05))
+  if(!is.na(indices[1])&!is.na(templateraster[1])){
+    templateraster[]=0
+    templateraster[indices]=predictions>threshold
+  }
+  return(list(threshold=threshold,"precision"=precision,"recall"=recall,"F0.5"=F05,"predicted_raster"=templateraster))
 }

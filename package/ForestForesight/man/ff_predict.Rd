@@ -4,7 +4,14 @@
 \alias{ff_predict}
 \title{Predict with a trained XGBoost model}
 \usage{
-ff_predict(model, test_matrix, threshold = 0.5, groundtruth)
+ff_predict(
+  model,
+  test_matrix,
+  threshold = 0.5,
+  groundtruth,
+  indices = NA,
+  templateraster = NA
+)
 }
 \arguments{
 \item{model}{The trained XGboost model}
