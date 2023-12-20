@@ -92,7 +92,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         if(length(c(notin1,notin2))>0){warning(paste("the following columns are dropped because they are not present in the entire time series: ",paste(c(notin1,notin2),collapse=", ")))}
         # Subset matrices based on common column names
         # Merge matrices by column names
-        fdts <- rbind(fdts[, common_cols, drop = FALSE], fdts[, common_cols, drop = FALSE])
+        fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
       }
     }
     if(verbose){cat(paste("features:",paste(newcolnames,collapse=", "),"\n"))}
