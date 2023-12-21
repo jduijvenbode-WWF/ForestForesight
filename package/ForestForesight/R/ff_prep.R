@@ -76,7 +76,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     for(i in daterange){
       dynamic_files = sort(files[grep(i,files)])
       extent=ext(rast(static_files[1]))
-      if(shrink=="crop"){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
+      if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
       if(shrink=="crop-deg"){
         extent=ext(crop(as.polygons(extent),ext(selected_country)))
         #crop to the nearest degree by changing the extent
@@ -84,7 +84,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         }
       rasstack=c(rast(dynamic_files,win=extent),rast(static_files,win=extent))
       if(first){if(sampleraster){groundtruth_raster=rast(dynamic_files[grep(groundtruth_pattern,dynamic_files)])}else{groundtruth_raster=NA}}
-      if(shrink="extract"){dts=extract(rasstack,selected_country,raw=T,ID=F)}else{dts=as.matrix(rasstack)}
+      if(shrink=="extract"){dts=extract(rasstack,selected_country,raw=T,ID=F)}else{dts=as.matrix(rasstack)}
       coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
       dts=cbind(coords,dts)
       if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)))}

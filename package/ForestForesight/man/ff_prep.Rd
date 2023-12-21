@@ -19,7 +19,8 @@ ff_prep(
   validation_sample = 0,
   relativedate = T,
   sampleraster = T,
-  verbose = F
+  verbose = F,
+  shrink = "none"
 )
 }
 \arguments{
@@ -48,6 +49,8 @@ ff_prep(
 \item{validation_sample}{float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3}
 
 \item{relativedate}{Boolean indicating whether the date is relative. Default is \code{TRUE}.}
+
+\item{shrink}{Option to shrink the input area if a country was selected. Use none to keep all the data within the tile. Use crop to crop the extent, crop-deg to crop to the nearest outer degree and use extract to keep only the values that overlap with the country}
 }
 \value{
 A prepared dataset for machine learning.
