@@ -46,7 +46,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     subsample = subsample
   )
 
-  if(is.na(validation_matrix)){watchlist=list(train = dtrain)
+  if(any(is.na(validation_matrix))){watchlist=list(train = dtrain)
   }else{
     if(class(validation_matrix)=="xgb.DMatrix"){deval= validation_matrix
     }else{deval= xgb.DMatrix(validation_matrix$features, label=validation_matrix$label)}
