@@ -14,24 +14,28 @@ quality_2 = ff_dqc(files[2])
 print(quality_2$byfeature)
 
 ## data preperation ##
-laos_train = ff_prep(country = "LAO", end = c(2021,12),sample_size=0.01)
-laos_test =  ff_prep(country = "LAO", start = c(2022,6),sample_size=0.3, exc_features = c("loss2021"))
+laos_train = ff_prep(country = "LAO", end = c(2021,12),sample_size=0.1, shrink="crop")
+laos_test =  ff_prep(country = "LAO", start = c(2022,6),sample_size=0.2, exc_features = c("loss2021","loss2022"), shrink="extract")
 
 ## Run XGBoost ##
 laos_model = ff_train(train_matrix = laos_train$data_matrix, verbose=T)
+
 
 ## Predict ##
 results=ff_predict(laos_model,laos_test$data_matrix,indices=laos_test$testindices,
                    templateraster =laos_test$groundtruthraster, groundtruth=laos_test$groundtruth)
 
 ## on 12 months ##
+
 ffdates= list(c(2022,6),c(2022,7),c(2022,8),c(2022,9),c(2022,10),c(2022,11),c(2022,12),c(2023,1),c(2023,2),c(2023,3),c(2023,4),c(2023,5))
 
 for(date in ffdates){
-  laos_test =  ff_prep(country = "LAO", start = date, sample_size=0.3, exc_features = c("loss2021"))
-  print(paste("prepared:",date ))
+  laos_test =  ff_prep(country = "LAO", start = date, sample_size=0.3, exc_features = c("loss2021","loss2022"), shrink="crop")
   results=ff_predict(laos_model,laos_test$data_matrix,indices=laos_test$testindices,
                      templateraster =laos_test$groundtruthraster, groundtruth=laos_test$groundtruth)
-  print(paste("precision=", results$precision, "recall= ", results$recall,"F05=", results$F0.5 ))
+  print(paste(as.Date(paste0(date[1],"-",sprintf("%02d",date[2]),"-01")),": precision=", round(results$precision,3), "recall= ", round(results$recall,3)
+              ,"F05=", round(results$F0.5,3 )))
   }
 
+## SHAP ##
+shp = shapviz(laos_model,laos_test$data_matrix )
