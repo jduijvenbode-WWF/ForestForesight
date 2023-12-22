@@ -34,8 +34,8 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
                           subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,verbose=F) {
 
   # Convert the matrix to a DMatrix object
-  dtrain <- train_matrix
-  deval= validation_matrix
+  if(class(train_matrix)=="xgb.DMatrix"){dtrain <- train_matrix
+  }else{dtrain <- xgb.DMatrix(train_matrix$features, label=train_matrix$label)}
 
   # Set default parameters
   params <- list(
@@ -45,9 +45,13 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     max_depth = max_depth,
     subsample = subsample
   )
-  if(class(validation_matrix)=="xgb.DMatrix"){
-    watchlist=list(train = dtrain,eval= deval)
-  }else{watchlist=list(train = dtrain)}
+
+  if(is.na(validation_matrix)){watchlist=list(train = dtrain)
+  }else{
+    if(class(validation_matrix)=="xgb.DMatrix"){deval= validation_matrix
+    }else{deval= xgb.DMatrix(validation_matrix$features, label=validation_matrix$label)}
+    watchlist=list(train = dtrain,eval= deval)}
+
   # Train the XGBoost model
   model <- xgboost::xgb.train(
     params = params,

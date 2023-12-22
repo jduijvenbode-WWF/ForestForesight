@@ -14,11 +14,12 @@ quality_2 = ff_dqc(files[2])
 print(quality_2$byfeature)
 
 ## data preperation ##
-laos_train = ff_prep(country = "LAO", end = c(2021,12),sample_size=0.1, shrink="crop")
+laos_train = ff_prep(country = "LAO", end = c(2021,12),sample_size=0.2, validation_sample = 0.1, shrink="crop")
 laos_test =  ff_prep(country = "LAO", start = c(2022,6),sample_size=0.2, exc_features = c("loss2021","loss2022"), shrink="extract")
+laos_test2 =  ff_prep(country = "LAO", start = c(2022,6),sample_size=0.2, exc_features = c("loss2021","loss2022"), shrink="crop")
 
 ## Run XGBoost ##
-laos_model = ff_train(train_matrix = laos_train$data_matrix, verbose=T)
+laos_model = ff_train(train_matrix = laos_train$data_matrix,validation_matrix=laos_train$validation_matrix, verbose=T)
 
 
 ## Predict ##
