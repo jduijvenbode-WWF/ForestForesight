@@ -84,12 +84,14 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         }
       rasstack=c(rast(dynamic_files,win=extent),rast(static_files,win=extent))
       if(first){if(sampleraster){groundtruth_raster=rast(dynamic_files[grep(groundtruth_pattern,dynamic_files)])}else{groundtruth_raster=NA}}
-      if(shrink=="extract"){dts=extract(rasstack,selected_country,raw=T,ID=F)}else{dts=as.matrix(rasstack)}
+      if(shrink=="extract"){dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)}
+      else{dts=as.matrix(rasstack)
       coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
-      dts=cbind(coords,dts)
+      dts=cbind(dts,coords)}
+
       if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)))}
       dts[is.na(dts)]=0
-      newcolnames=c("x","y",gsub(".tif","",c(sapply(basename(dynamic_files),function(x) strsplit(x,"_")[[1]][1]), basename(static_files))))
+      newcolnames=c(gsub(".tif","",c(sapply(basename(dynamic_files),function(x) strsplit(x,"_")[[1]][1]), basename(static_files))),"x","y")
       if(relativedate){newcolnames=c(newcolnames,"sin_month")}
       colnames(dts)=newcolnames
 
@@ -125,10 +127,10 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
 
   if(validation_sample>0){
     sample_indices=sample(seq(nrow(fdts)),round(validation_sample*nrow(fdts)))
-    data_matrix=xgb.DMatrix(fdts[-sample_indices,], label=data_label[-sample_indices])
-    validation_matrix=xgb.DMatrix(fdts[sample_indices,], label=data_label[sample_indices])
+    data_matrix=list(features= fdts[-sample_indices,], label=data_label[-sample_indices])
+    validation_matrix=list(features = fdts[sample_indices,], label=data_label[sample_indices])
   }else{
-    data_matrix=xgb.DMatrix(fdts, label=data_label)
+    data_matrix=list(features= fdts, label=data_label)
     validation_matrix=NA
   }
 
