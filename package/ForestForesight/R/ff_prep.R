@@ -15,6 +15,7 @@
 #' @param validation_sample float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3
 #' @param sample_size Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1
 #' @param relativedate Boolean indicating whether the date is relative. Default is \code{TRUE}.
+#' @param shrink Option to shrink the input area if a country was selected. Use none to keep all the data within the tile. Use crop to crop the extent, crop-deg to crop to the nearest outer degree and use extract to keep only the values that overlap with the country
 #'
 #' @return A prepared dataset for machine learning.
 #' @export
@@ -28,7 +29,8 @@
 #' @name ff_prep
 
 
-ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start=c(2021,1),end=NA,inc_features=NA,exc_features=NA,fltr_features="forestmask2019",fltr_condition=">0",sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F){
+ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start=c(2021,1),end=NA,inc_features=NA,exc_features=NA,fltr_features="forestmask2019",fltr_condition=">0",sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none"){
+  if(is.na(country)){shrink="none"}
   if(is.na(start[1])){stop("no start date given")}
   if(is.null(tiles)&is.na(country)){stop("unknown what to process since no tiles or country were given")}
   if(is.na(end[1])){end=start}
@@ -42,7 +44,8 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   if(!is.na(country)){
     data(countries)
     borders=vect(countries)
-    tilesvect=tilesvect[borders[which(borders$iso3==country)]]$tile_id
+    selected_country=borders[which(borders$iso3==country)]
+    tilesvect=tilesvect[selected_country]$tile_id
     cat(paste("country contains the following tiles that will be processed:",paste(tilesvect,collapse=", "),"\n"))
     if(is.null(tiles)){tiles=tilesvect}
   }
@@ -72,14 +75,23 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     if(length(grep("loss2022",static_files))>0){if(min(year(daterange))<2023){static_files=static_files[-grep("loss2022",static_files)]}}
     for(i in daterange){
       dynamic_files = sort(files[grep(i,files)])
-      rasstack=c(rast(dynamic_files,win=ext(rast(static_files[1]))),rast(static_files,win=ext(rast(static_files[1]))))
+      extent=ext(rast(static_files[1]))
+      if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
+      if(shrink=="crop-deg"){
+        extent=ext(crop(as.polygons(extent),ext(selected_country)))
+        #crop to the nearest degree by changing the extent
+        extent[1]=floor(extent[1]);extent[2]=ceiling(extent[2]);extent[3]=floor(extent[3]);extent[4]=ceiling(extent[4])
+        }
+      rasstack=c(rast(dynamic_files,win=extent),rast(static_files,win=extent))
       if(first){if(sampleraster){groundtruth_raster=rast(dynamic_files[grep(groundtruth_pattern,dynamic_files)])}else{groundtruth_raster=NA}}
-      dts=as.matrix(rasstack)
+      if(shrink=="extract"){dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)}
+      else{dts=as.matrix(rasstack)
       coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
-      dts=cbind(coords,dts)
+      dts=cbind(dts,coords)}
+
       if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)))}
       dts[is.na(dts)]=0
-      newcolnames=c("x","y",gsub(".tif","",c(sapply(basename(dynamic_files),function(x) strsplit(x,"_")[[1]][1]), basename(static_files))))
+      newcolnames=c(gsub(".tif","",c(sapply(basename(dynamic_files),function(x) strsplit(x,"_")[[1]][1]), basename(static_files))),"x","y")
       if(relativedate){newcolnames=c(newcolnames,"sin_month")}
       colnames(dts)=newcolnames
 
@@ -115,10 +127,10 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
 
   if(validation_sample>0){
     sample_indices=sample(seq(nrow(fdts)),round(validation_sample*nrow(fdts)))
-    data_matrix=xgb.DMatrix(fdts[-sample_indices,], label=data_label[-sample_indices])
-    validation_matrix=xgb.DMatrix(fdts[sample_indices,], label=data_label[sample_indices])
+    data_matrix=list(features= fdts[-sample_indices,], label=data_label[-sample_indices])
+    validation_matrix=list(features = fdts[sample_indices,], label=data_label[sample_indices])
   }else{
-    data_matrix=xgb.DMatrix(fdts, label=data_label)
+    data_matrix=list(features= fdts, label=data_label)
     validation_matrix=NA
   }
 
