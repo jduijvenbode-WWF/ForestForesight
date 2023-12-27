@@ -53,6 +53,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   #list all the files for the tiles that have been selected
   allfiles=as.character(unlist(sapply(tiles,function(x) list.files(path=file.path(datafolder,x),full.names=T,recursive=T,pattern="tif$"))))
   if(length(allfiles)==0){stop(paste("no folders with tif-files found that correspond to the given tile id's:",paste(tiles,collapse=",")))}
+
   #remove features that are not wanted
   if(!is.na(exc_features[1])){
     exc_indices=unique(unlist(sapply(exc_features,function(x) which(startsWith(basename(allfiles),x)))))
@@ -68,6 +69,9 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     sampleraster=F}
   for(tile in tiles){
     files=allfiles[grep(tile,allfiles)]
+    if(is.na(country)&(shrink=="extract")){
+      if(!exists("countries")){data(countries);borders=vect(countries)}
+      selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
     static_files= files[-grep("01\\.",files)]
     #remove the loss files that would have predictive power
     if(length(grep("loss2020",static_files))>0){if(min(year(daterange))<2021){static_files=static_files[-grep("loss2020",static_files)]}}
