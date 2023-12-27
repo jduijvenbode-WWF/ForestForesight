@@ -19,5 +19,4 @@ for(file in files){
       project(loss,template,method="max",filename=paste0("D:/ff-dev/results/",loc,"/lastloss.tif"),overwrite=T)
     }
   }
-  
 }
