@@ -53,17 +53,18 @@ plot(alerts[1],add=T)
 alert=alerts[1]
 for(ind in seq(1,length(alerts))){
   alert=alerts[ind]
-  elevationras=rast("D:/ff-dev/results/",alert$tile_id,"/elevation.tif")
+  elevationras=rast(paste0("D:/ff-dev/results/",alert$tile_id,"/elevation.tif"))
   if(nrow(elevationras)==1250){
-  selpol=pols[buffer(alert,-2)]
-  if(length(selpol)>1){
-    srtmras=merge(sprc(selpol$names))
-    rnras=merge(sprc(paste0("../roughness/",gsub("elevation","roughness",selpol$names))))
-  }else{srtmras=rast(selpol$names)
-        rnras=rast(paste0("../roughness/",gsub("elevation","roughness",selpol$names)))
+    selpol=pols[buffer(alert,-2)]
+    if(length(selpol)>1){
+      srtmras=merge(sprc(selpol$names))
+      rnras=merge(sprc(paste0("../roughness/",gsub("elevation","roughness",selpol$names))))
+    }else{srtmras=rast(selpol$names)
+    rnras=rast(paste0("../roughness/",gsub("elevation","roughness",selpol$names)))
+    }
+    if(!dir.exists(file.path("D:/ff-dev/results/",alert$tile_id))){dir.create(paste0("D:/ff-dev/results/",alert$tile_id))}
+    baseras=aggregate(rast(paste0("../../alerts/",alert$tile_id,".tif")),40,"max")
+    srtmras_proj=project(srtmras,baseras,method="average",align=T,filename=paste0("D:/ff-dev/results/",alert$tile_id,"/elevation.tif"),overwrite=T)
+    rnras_proj=project(rnras,baseras,method="average",align=T,filename=paste0("D:/ff-dev/results/",alert$tile_id,"/slope.tif"),overwrite=T)
   }
-  if(!dir.exists(file.path("D:/ff-dev/results/",alert$tile_id))){dir.create(paste0("D:/ff-dev/results/",alert$tile_id))}
-  baseras=aggregate(rast(paste0("../../alerts/",alert$tile_id,".tif")),40,"max")
-  srtmras_proj=project(srtmras,baseras,method="average",align=T,filename=paste0("D:/ff-dev/results/",alert$tile_id,"/elevation.tif"),overwrite=T)
-  rnras_proj=project(rnras,baseras,method="average",align=T,filename=paste0("D:/ff-dev/results/",alert$tile_id,"/slope.tif"),overwrite=T)
 }
