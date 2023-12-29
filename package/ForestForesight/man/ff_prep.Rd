@@ -20,7 +20,8 @@ ff_prep(
   relativedate = T,
   sampleraster = T,
   verbose = F,
-  shrink = "none"
+  shrink = "none",
+  window = NA
 )
 }
 \arguments{
@@ -51,6 +52,8 @@ ff_prep(
 \item{relativedate}{Boolean indicating whether the date is relative. Default is \code{TRUE}.}
 
 \item{shrink}{Option to shrink the input area if a country was selected. Use none to keep all the data within the tile. Use crop to crop the extent, crop-deg to crop to the nearest outer degree and use extract to keep only the values that overlap with the country}
+
+\item{window}{Set the extent on which to process. normally NA to not use this option and derive it from the data}
 }
 \value{
 A prepared dataset for machine learning.

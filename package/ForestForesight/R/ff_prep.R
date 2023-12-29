@@ -16,6 +16,7 @@
 #' @param sample_size Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1
 #' @param relativedate Boolean indicating whether the date is relative. Default is \code{TRUE}.
 #' @param shrink Option to shrink the input area if a country was selected. Use none to keep all the data within the tile. Use crop to crop the extent, crop-deg to crop to the nearest outer degree and use extract to keep only the values that overlap with the country
+#' @param window Set the extent on which to process. normally NA to not use this option and derive it from the data
 #'
 #' @return A prepared dataset for machine learning.
 #' @export
@@ -29,7 +30,7 @@
 #' @name ff_prep
 
 
-ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start=c(2021,1),end=NA,inc_features=NA,exc_features=NA,fltr_features="forestmask2019",fltr_condition=">0",sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none"){
+ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start=c(2021,1),end=NA,inc_features=NA,exc_features=NA,fltr_features="forestmask2019",fltr_condition=">0",sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
   if(is.na(country)){shrink="none"}
   if(is.na(start[1])){stop("no start date given")}
   if(is.null(tiles)&is.na(country)){stop("unknown what to process since no tiles or country were given")}
@@ -85,8 +86,9 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         extent=ext(crop(as.polygons(extent),ext(selected_country)))
         #crop to the nearest degree by changing the extent
         extent[1]=floor(extent[1]);extent[2]=ceiling(extent[2]);extent[3]=floor(extent[3]);extent[4]=ceiling(extent[4])
-        }
-      rasstack=c(rast(dynamic_files,win=extent),rast(static_files,win=extent))
+      }
+      if(!is.na(window[1])){extent=terra::intersect(extent,window)}
+      rasstack=rast(unlist(sapply(c(dynamic_files,static_files),function(x) rast(x,win=extent))))
       if(first){if(sampleraster){groundtruth_raster=rast(dynamic_files[grep(groundtruth_pattern,dynamic_files)])}else{groundtruth_raster=NA}}
       if(shrink=="extract"){dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)}
       else{dts=as.matrix(rasstack)

@@ -3,6 +3,7 @@
 #' This function loops through all tif files in a given folder and gives a summary and total overview of the quality of the rasters
 #'
 #' @param folder_path The path to the folder containing TIF files.
+#' @param return_values Should the values of the rasters also be returned.
 #'
 #' @examples
 #' # Example usage:
@@ -11,7 +12,7 @@
 #' @export
 #'
 #'
-ff_dqc <- function(folder_path) {
+ff_dqc <- function(folder_path,return_values=T) {
   summary_by_feature=function(dataframe,feature){
     type="dynamic"
     seldf=dataframe[which(dataframe$featurenames==feature),]
@@ -36,7 +37,7 @@ ff_dqc <- function(folder_path) {
   }
   # Get a list of all TIF files in the folder
   tif_files <- list.files(folder_path, pattern = "\\.tif$", full.names = TRUE)
-  valuelist=lapply(tif_files,function(x) ff_dqc_file(x))
+  valuelist=lapply(tif_files,function(x) ff_dqc_file(x,return_values))
   allvals=as.data.frame(as.matrix(do.call(rbind,valuelist)))
   names(allvals)=names(valuelist[[1]])
   for(i in 1:ncol(allvals)){allvals[,i]=unlist(allvals[,i])}
@@ -53,5 +54,12 @@ ff_dqc <- function(folder_path) {
   dyn_summary=summarytable[which(!is.na(summarytable$mindate)),]
   datecheck=all(dyn_summary$gaps=="no")&all(dyn_summary$doubles=="no")&(length(unique(dyn_summary$mindate))==1)&(length(unique(dyn_summary$maxdate))==1)
   extentcheck=length(c(unique(allvals$npixel),unique(allvals$xmin),unique(allvals$xmax),unique(allvals$ymin),unique(allvals$ymax),unique(allvals$resolution)))==6
-  return(list("tile"=basename(folder_path),"byfeature"=summarytable,"all"=allvals,"equalextent"=extentcheck,"equaldaterange"=datecheck,"incorrect_dateformats"=incorrect_dateformats))
+  return(list("tile"=basename(folder_path),
+              "byfeature"=summarytable,
+              "all"=allvals,
+              "equalextent"=extentcheck,
+              "equaldaterange"=datecheck,
+              "incorrect_dateformats"=incorrect_dateformats,
+              "minextent"=ext(max(allvals$xmin),min(allvals$xmax),max(allvals$ymin),min(allvals$ymax))
+              ))
 }
