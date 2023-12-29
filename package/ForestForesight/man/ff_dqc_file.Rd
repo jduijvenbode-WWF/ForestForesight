@@ -4,10 +4,12 @@
 \alias{ff_dqc_file}
 \title{summary data aspects of a raster}
 \usage{
-ff_dqc_file(raster)
+ff_dqc_file(raster, return_values = T)
 }
 \arguments{
 \item{raster}{path to raster.}
+
+\item{return_values}{Should the values of the rasters also be returned.}
 }
 \description{
 requires a path to a raster as input and gives some quality parameters of that file

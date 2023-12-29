@@ -4,10 +4,12 @@
 \alias{ff_dqc}
 \title{Data quality control}
 \usage{
-ff_dqc(folder_path)
+ff_dqc(folder_path, return_values = T)
 }
 \arguments{
 \item{folder_path}{The path to the folder containing TIF files.}
+
+\item{return_values}{Should the values of the rasters also be returned.}
 }
 \description{
 This function loops through all tif files in a given folder and gives a summary and total overview of the quality of the rasters
