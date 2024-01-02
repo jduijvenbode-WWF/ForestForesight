@@ -4,6 +4,7 @@ import numpy as np
 import argparse
 import os
 from scipy.ndimage import label
+import time
 
 
 
@@ -19,12 +20,12 @@ def aggregate_by_40_max(input_array,fun):
     return small
 
 def fun_patchiness(input_array):
-    print("start")
+    start=time.time()
     output_array=np.zeros((input_array.shape[1]//40,input_array.shape[2]//40))
     for x in range(0,output_array.shape[0]):
         for y in range(0,output_array.shape[0]):
             output_array[x,y]=label(input_array[0,(40*x):(40*x+40),(40*y):(40*y+40)])[1]
-    print("end")
+    print(time.time()-start)
     return output_array
 
 
@@ -99,7 +100,6 @@ def process_geotiff(input_file, output_file,relative_date):
                 if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
                 if create_sixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-183)).astype(int),fun="sum")
                 #for now patchiness uses 6 months as well.
-                print((data>(relative_date-183)).astype(int).shape)
                 if create_patchiness: patchiness[offx1:offx2,offy1:offy2]=fun_patchiness((data>(relative_date-183)).astype(int))
                 if create_twelvetosixmonths: twelvetosixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date-183))&(data>(relative_date-366))).astype(int),fun="sum")
                 if create_totaldeforestation: totaldeforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>0).astype(int),fun="sum")
