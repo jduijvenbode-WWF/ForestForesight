@@ -3,6 +3,7 @@ from rasterio.windows import Window
 import numpy as np
 import argparse
 import os
+from scipy.ndimage import label
 
 
 
@@ -16,6 +17,13 @@ def aggregate_by_40_max(input_array,fun):
     elif fun=="sum":
         small = input_array.reshape([int(input_array.shape[1]//40), 40,int(input_array.shape[1]//40), 40]).sum(3).sum(1)
     return small
+
+def fun_patchiness(input_array):
+    output_array=np.zeros((input_array.shape[0]//40,input_array.shape[1]//40))
+    for x in range(0,output_array.shape[0]):
+        for y in range(0,output_array.shape[0]):
+            output_array[x,y]=label(input_array[(40*x):(40*x+40),(40*y):(40*y+40)])[1]
+
 
 
 
@@ -45,6 +53,8 @@ def process_geotiff(input_file, output_file,relative_date):
         create_groundtruth = not os.path.isfile(groundtruth_file)
         confidence_file=output_file.replace("layer","confidence")
         create_confidence = not os.path.isfile(confidence_file)
+        patchiness_file=output_file.replace("layer","patchiness")
+        create_patchiness = not os.path.isfile(patchiness_file)
         # Iterate over windows
         if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,create_twelvetosixmonths,create_latest_deforestation]):
             for i in range(num_windows):
@@ -67,6 +77,7 @@ def process_geotiff(input_file, output_file,relative_date):
                     totaldeforestation=template.copy()
                     groundtruth=template.copy()
                     confidence=template.copy()
+                    patchiness=template.copy()
                 offx2=(offx1+(template.shape[0]//2))
                 offy2=(offy1+(template.shape[1]//2))
 
@@ -84,6 +95,8 @@ def process_geotiff(input_file, output_file,relative_date):
                 #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.  
                 if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
                 if create_sixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-183)).astype(int),fun="sum")
+                #for now patchiness uses 6 months as well.
+                if create_patchiness: patchiness[offx1:offx2,offy1:offy2]=fun_patchiness((data>(relative_date-183)).astype(int))
                 if create_twelvetosixmonths: twelvetosixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date-183))&(data>(relative_date-366))).astype(int),fun="sum")
                 if create_totaldeforestation: totaldeforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>0).astype(int),fun="sum")
 
@@ -121,6 +134,10 @@ def process_geotiff(input_file, output_file,relative_date):
             if create_confidence:
                 with rasterio.open(confidence_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="float32", crs=src.crs, transform=newtransform) as dst:
                     dst.write(confidence.reshape(1,confidence.shape[0],confidence.shape[1]))
+
+            if create_patchiness:
+                with rasterio.open(patchiness_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="uint16", crs=src.crs, transform=newtransform) as dst:
+                    dst.write(patchiness.reshape(1,patchiness.shape[0],patchiness.shape[1]))
 
 if __name__ == "__main__":
     # Create a command-line argument parser
