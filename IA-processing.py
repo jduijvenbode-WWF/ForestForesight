@@ -19,10 +19,13 @@ def aggregate_by_40_max(input_array,fun):
     return small
 
 def fun_patchiness(input_array):
+    print("start")
     output_array=np.zeros((input_array.shape[0]//40,input_array.shape[1]//40))
     for x in range(0,output_array.shape[0]):
         for y in range(0,output_array.shape[0]):
             output_array[x,y]=label(input_array[(40*x):(40*x+40),(40*y):(40*y+40)])[1]
+    print("end")
+    return output_array
 
 
 
@@ -70,14 +73,14 @@ def process_geotiff(input_file, output_file,relative_date):
                 data = src.read(window=window)
                 if i==0:
                     template=np.zeros((data.shape[1]//20,data.shape[2]//20))
-                    latest_deforestation=template.copy()
-                    threemonths=template.copy()
-                    sixmonths=template.copy()
-                    twelvetosixmonths=template.copy()
-                    totaldeforestation=template.copy()
-                    groundtruth=template.copy()
-                    confidence=template.copy()
-                    patchiness=template.copy()
+                    if create_latest_deforestation: latest_deforestation=template.copy()
+                    if create_threemonths: threemonths=template.copy()
+                    if create_sixmonths: sixmonths=template.copy()
+                    if create_twelvetosixmonths: twelvetosixmonths=template.copy()
+                    if create_totaldeforestation: totaldeforestation=template.copy()
+                    if create_groundtruth: groundtruth=template.copy()
+                    if create_confidence: confidence=template.copy()
+                    if create_patchiness: patchiness=template.copy()
                 offx2=(offx1+(template.shape[0]//2))
                 offy2=(offy1+(template.shape[1]//2))
 
