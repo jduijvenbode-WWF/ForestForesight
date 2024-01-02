@@ -20,10 +20,10 @@ def aggregate_by_40_max(input_array,fun):
 
 def fun_patchiness(input_array):
     print("start")
-    output_array=np.zeros((input_array.shape[0]//40,input_array.shape[1]//40))
+    output_array=np.zeros((input_array.shape[1]//40,input_array.shape[2]//40))
     for x in range(0,output_array.shape[0]):
         for y in range(0,output_array.shape[0]):
-            output_array[x,y]=label(input_array[(40*x):(40*x+40),(40*y):(40*y+40)])[1]
+            output_array[x,y]=label(input_array[0,(40*x):(40*x+40),(40*y):(40*y+40)])[1]
     print("end")
     return output_array
 
