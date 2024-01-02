@@ -20,12 +20,10 @@ def aggregate_by_40_max(input_array,fun):
     return small
 
 def fun_patchiness(input_array):
-    start=time.time()
     output_array=np.zeros((input_array.shape[1]//40,input_array.shape[2]//40))
     for x in range(0,output_array.shape[0]):
         for y in range(0,output_array.shape[0]):
             output_array[x,y]=label(input_array[0,(40*x):(40*x+40),(40*y):(40*y+40)])[1]
-    print(time.time()-start)
     return output_array
 
 
@@ -60,7 +58,7 @@ def process_geotiff(input_file, output_file,relative_date):
         patchiness_file=output_file.replace("layer","patchiness")
         create_patchiness = not os.path.isfile(patchiness_file)
         # Iterate over windows
-        if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,create_twelvetosixmonths,create_latest_deforestation]):
+        if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,create_twelvetosixmonths,create_latest_deforestation,create_patchiness]):
             for i in range(num_windows):
                 # Calculate the starting coordinates of the window
                 col_offset = (i % 2) * window_width
