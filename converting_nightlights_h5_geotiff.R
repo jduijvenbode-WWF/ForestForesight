@@ -1,21 +1,36 @@
-files=list.files(path="C:/users/jonas/downloads/nightlights202305",pattern="h5$",full.names=T)
-curdate="2023-5-01"
-library(terra)
-areas=vect("C:/data/accuracy_analysis/integratedalerts.geojson")
+datafolder='D:/ff-dev/nighttime/converted2/'
+downloadfolder="D:/ff-dev/nighttime/VNP46A3/"
+setwd(downloadfolder)
+files=list.files(path=downloadfolder,recursive=T,pattern="h5$",full.names=T)
+print(length(files))
+
+library(ForestForesight)
+data("gfw_tiles")
+areas=vect(gfw_tiles)
 for(file in files){
-  a=system(paste("gdalinfo",file),intern=T)
-  if(length(grep("GRingPointLatitude=",a))==1){
-    lat=strsplit(trimws(gsub("GRingPointLatitude=","",a[grep("GRingPointLatitude=",a)]))," ")[[1]]
-    lon=strsplit(trimws(gsub("GRingPointLongitude=","",a[grep("GRingPointLongitude=",a)]))," ")[[1]]
-    foldername=paste0(sprintf("%02d",abs(as.numeric(lat[2]))),if(as.numeric(lat[2])<0){"S"}else{"N"},"_",
-                      sprintf("%03d",abs(as.numeric(lon[1]))),if(as.numeric(lon[1])<0){"W"}else{"E"})
+  curdate=as.Date(as.numeric(basename(dirname(file))),origin=paste0(as.numeric(basename(dirname(dirname(file))))-1,"-12-31"))
+  print(paste("gdalinfo",file))
+    col=as.numeric(substr(basename(file),19,20))
+    row=as.numeric(substr(basename(file),22,23))
+    coln=if(col<18){sprintf("%02d0W",18-col)}else{sprintf("%02d0E",col-18)}
+    rown=if(row<10){sprintf("%01d0N",9-row)}else{sprintf("%01d0S",row-9)}
+    colo=10*(col-18)
+    rowo=10*(9-row)
+    foldername=paste0(rown,"_",coln)
     cat(paste(foldername,"\n"))
     if(foldername %in% areas$tile_id){
-      if(!file.exists(paste0('C:/data/nightlights_refurbished/',foldername,"/nightlights_",curdate,".tif"))){
-        if(!dir.exists(file.path('C:/data/nightlights_refurbished/',foldername))){dir.create(file.path('C:/data/nightlights_refurbished/',foldername))}
-        system(paste("gdal_translate -a_srs EPSG:4326 -a_nodata 65535 -a_ullr",lon[1],lat[2],lon[3],lat[1],
-                     paste0('-of GTiff HDF5:"',file,'"://HDFEOS/GRIDS/VIIRS_Grid_DNB_2d/Data_Fields/NearNadir_Composite_Snow_Free ', 
-                            'C:/data/nightlights_refurbished/',foldername,"/nightlights_",curdate,".tif")),intern=T)
+      extractname=paste0(datafolder,foldername,"/nightlights_",curdate,".tif")
+      if(!file.exists(extractname)){
+        if(!dir.exists(file.path(datafolder,foldername))){dir.create(file.path(datafolder,foldername))}
+        cat(foldername);cat(curdate);cat("\n")
+        system(paste("gdal_translate -a_srs EPSG:4326 -a_nodata 65535 -a_ullr",colo,rowo,colo+10,rowo-10,
+                     paste0('-of GTiff HDF5:"',file,'"://HDFEOS/GRIDS/VIIRS_Grid_DNB_2d/Data_Fields/NearNadir_Composite_Snow_Free ',
+                            extractname)),intern=T)
+        tempras=list.files(file.path("D:/ff-dev/results/",basename(dirname(extractname))),pattern="groundtruth",full.names = T)[1]
+        newname=file.path(dirname(tempras),basename(extractname))
+        project(rast(extractname),rast(tempras),method="near",filename=newname,overwrite=T)
+        #file.remove(extractname)
       }
     }
-  }}
+  }
+
