@@ -10,6 +10,6 @@ for(file in files){
     print(ffdate)
     newfile=file.path(getwd(),createfilename(createrasname(file),date = ffdate,layer="layer"))
     diffdate=as.numeric(as.Date(ffdate)-as.Date("2015-01-01"))
-    system(paste("python","C:/Users/EagleView/Documents/GitHub/ForestForesight/latestdate.py",file,newfile,diffdate),intern=T)
+    system(paste("python","C:/Users/EagleView/Documents/GitHub/ForestForesight/IA-processing.py",file,newfile,diffdate),intern=T)
   }
 }
