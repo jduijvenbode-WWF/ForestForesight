@@ -99,6 +99,7 @@ def process_geotiff(input_file, output_file,relative_date):
                 if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
                 if create_sixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-183)).astype(int),fun="sum")
                 #for now patchiness uses 6 months as well.
+                print((data>(relative_date-183)).astype(int).shape)
                 if create_patchiness: patchiness[offx1:offx2,offy1:offy2]=fun_patchiness((data>(relative_date-183)).astype(int))
                 if create_twelvetosixmonths: twelvetosixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date-183))&(data>(relative_date-366))).astype(int),fun="sum")
                 if create_totaldeforestation: totaldeforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>0).astype(int),fun="sum")
