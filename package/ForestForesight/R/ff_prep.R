@@ -139,7 +139,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     data_matrix=list(features= fdts, label=data_label)
     validation_matrix=NA
   }
-
+  if(sum(data_matrix$label)==0){stop("data contains no actuals, all labels are 0")}
   return(list("data_matrix"=data_matrix,"validation_matrix"=validation_matrix,"testindices"=filterindices,"groundtruth"=data_label,"groundtruthraster"=groundtruth_raster,features=colnames(fdts)))
 }
 
