@@ -4,7 +4,7 @@ tiles=list.files(file.path(inputdir), pattern ="_")
 
 Sys.setenv("AWS_DEFAULT_REGION"="eu-west-1")
 
-features= c("pop2020.tif","pop202.tif","pop2030.tif")
+features= c("elevation.tif", "slope.tif")
 
 for (tile in tiles){
   for (feature in features){
@@ -19,7 +19,7 @@ for (tile in tiles){
 }
 
 for (tile in tiles){
-  for (file in c("pop2020.tif","pop202.tif","pop2030.tif")){
+  for (file in c("pop2025.tif")){
     local_path <- file.path(inputdir, tile, file)
     file.remove(local_path)
     print(paste("removed :", local_path))
@@ -27,4 +27,14 @@ for (tile in tiles){
   
 }
 
-
+for (tile in tiles){
+  for (feature in features){
+    #local_path <- file.path(inputdir, tile, feature)
+    #rast_feature= rast(local_path)
+    object_key <- paste0(tile, '/', feature)
+    rast_feature = s3read_using(FUN=rast,object=object_key, bucket = "wwf-ff-global" )
+    if(!all(dim(rast_feature)== c(2500,2500,1))){
+      print(object_key) 
+      print(dim(rast_feature))}
+  }
+}
