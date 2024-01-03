@@ -1,3 +1,8 @@
+import argparse
+import rasterio
+import numpy as np
+from scipy.ndimage import distance_transform_edt
+
 def distance_to_nearest_nonzero_geotiff(input_geotiff, output_geotiff):
     # Read the GeoTIFF file
     with rasterio.open(input_geotiff) as src:
@@ -7,7 +12,10 @@ def distance_to_nearest_nonzero_geotiff(input_geotiff, output_geotiff):
         metadata = src.profile
 
     # Create a binary mask where zeros are treated as foreground and non-zeros as background
+    input_array[np.isnan(input_array)]=0
     mask = input_array == 0
+    print(np.max(mask))
+    print(np.max(input_array))
 
     # Calculate Euclidean distance transform
     distance_transform = distance_transform_edt(mask)
