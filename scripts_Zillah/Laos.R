@@ -6,6 +6,8 @@ Sys.setenv("xgboost_datafolder"="D:/ff-dev/results")
 
 ## set variables ##
 files=c("D:/ff-dev/results/20N_100E","D:/ff-dev/results/30N_100E")
+data("countries")
+laos= countries[countries$iso3=="LAO",]$geometry
 
 ## data quality check ##
 quality_1 = ff_dqc(files[1])
@@ -25,18 +27,18 @@ laos_model = ff_train(train_matrix = laos_train$data_matrix,validation_matrix=la
 results=ff_predict(laos_model,laos_test$data_matrix,indices=laos_test$testindices,
                    templateraster =laos_test$groundtruthraster, groundtruth=laos_test$groundtruth)
 
+
 ## on 12 months ##
 
 ffdates= list(c(2022,6),c(2022,7),c(2022,8),c(2022,9),c(2022,10),c(2022,11),c(2022,12),c(2023,1),c(2023,2),c(2023,3),c(2023,4),c(2023,5))
 
 for(date in ffdates){
-  laos_test =  ff_prep(country = "LAO", start = date, sample_size=0.3, exc_features = c("loss2021","loss2022"), shrink="extract")
+  laos_test =  ff_prep(country = "LAO", start = date, sample_size=0.2, shrink="extract")
   results=ff_predict(laos_model,laos_test$data_matrix,indices=laos_test$testindices,
                      templateraster =laos_test$groundtruthraster, groundtruth=laos_test$groundtruth)
   print(paste(as.Date(paste0(date[1],"-",sprintf("%02d",date[2]),"-01")),": precision=", round(results$precision,3), "recall= ", round(results$recall,3)
               ,"F05=", round(results$F0.5,3 )))
-  shap_sample= laos_test$data_matrix$features[sample(nrow(laos_test$data_matrix$features), 1000),]
-  shap_long <- shap.prep(xgb_model = laos_model, X_train = shap_sample)
+
   }
 
 ## SHAP ##
