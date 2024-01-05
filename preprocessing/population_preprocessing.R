@@ -1,30 +1,32 @@
-library(terra)
+library(ForestForesight)
 setwd("D:/ff-dev/")
 source("C:/Users/EagleView/Documents/GitHub/ForestForesight/functions.R")
-ialerts=vect("integratedalerts.geojson")
+data("gfw_tiles")
+ialerts=vect(gfw_tiles)
 setwd("population/")
 files=list.files(pattern="tif$")
 elevations=list.files("D:/ff-dev/results",full.names = T,recursive = T,pattern="elevation.tif")
-start=T
+increase=rast(files[3])-rast(files[1])
+current=rast(files[2])
 for(el in elevations){
   print(el)
-  filename=gsub("elevation","pop2020",el)
-  filename2=gsub("elevation","pop2025",el)
-  filename3=gsub("elevation","pop2030",el)
-  if(!file.exists(filename)){
+
+  filename=gsub("elevation","popcurrent",el)
+  filename2=gsub("elevation","popincrease",el)
   template=rast(el)
+  extent=ext(template)+0.01
   #pop2020
-  pop2020=rast(files[1],win=ext(template)+1)
-  pop2020=project(pop2020,template,method="max")
-  focal(pop2020,fun="sum",w=matrixcreator(25),filename=filename)
   #pop2025
-  pop2025=rast(files[2],win=ext(template)+1)
-  pop2025=project(pop2025,template,method="max")
-  focal(pop2025,fun="sum",w=matrixcreator(25),filename=filename2)
+  if(!file.exists(filename)){
+  popcur=crop(current,extent)
+  popcur=project(popcur,template,method="max")
+  focal(popcur,fun="sum",w=matrixcreator(25),filename=filename)
+  }
   #pop2030
-  pop2030=rast(files[3],win=ext(template)+1)
-  pop2030=project(pop2030,template,method="max")
-  focal(pop2030,fun="sum",w=matrixcreator(25),filename=filename3)
-  
+  if(!file.exists(filename2)){
+  popinc=crop(increase,extent)
+  popinc=project(popinc,template,method="max")
+  focal(popinc,fun="sum",w=matrixcreator(25),filename=filename2)
+
   }
 }
