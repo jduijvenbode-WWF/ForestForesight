@@ -12,7 +12,10 @@ ff_analyse(
   append = T,
   analysis_polygons = NULL,
   return_polygons = T,
-  remove_empty = T
+  remove_empty = T,
+  date = NULL,
+  tile = NULL,
+  method = NA
 )
 }
 \arguments{
@@ -31,6 +34,12 @@ ff_analyse(
 \item{return_polygons}{Logical. If TRUE, the polygons with calculated scores will be returned.}
 
 \item{remove_empty}{Logical. If TRUE, empty rows (with all scores being zero) will be removed from the output.}
+
+\item{date}{character. should be in format (YYYY-MM-DD). Optional if either groundtruth or predictions is a character to the tiffile.}
+
+\item{tile}{character. should be in format AA{N-S}_BBB{W-E}. Optional if either groundtruth or predictions is a character to the tiffile with a directory name.}
+
+\item{method}{character. the shorthand for the method used, which should also be included in the separate csv file for storing methods}
 }
 \value{
 A vector dataset containing calculated scores for each polygon.

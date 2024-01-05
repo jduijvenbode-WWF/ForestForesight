@@ -10,6 +10,9 @@
 #' @param analysis_polygons Optional vector or character vector representing analysis polygons.
 #' @param return_polygons Logical. If TRUE, the polygons with calculated scores will be returned.
 #' @param remove_empty Logical. If TRUE, empty rows (with all scores being zero) will be removed from the output.
+#' @param date character. should be in format (YYYY-MM-DD). Optional if either groundtruth or predictions is a character to the tiffile.
+#' @param tile character. should be in format AA{N-S}_BBB{W-E}. Optional if either groundtruth or predictions is a character to the tiffile with a directory name.
+#' @param method character. the shorthand for the method used, which should also be included in the separate csv file for storing methods
 #'
 #' @return A vector dataset containing calculated scores for each polygon.
 #'
@@ -20,12 +23,21 @@
 #'
 #' @export
 
-ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T){
+ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA){
+  if(is.null(date)){
+    if(class(predictions)=="character"){date=substr(predictions,nchar(predictions)-13,nchar(predictions)-4)}else{
+      if(class(groundtruth)=="character"){date=substr(groundtruth,nchar(groundtruth)-13,nchar(groundtruth)-4)}else{stop("no method to derive date from filename")}
+    }
+  }
+  if(is.null(tile)){
+    if(!class(predictions)=="character"){stop("tile ID not given and cannot be derived from raster itself")}
+    tile=basename(dirname(predictions))
+    if(tile=="."){stop("tile was not given and cannot be derived from directory name")}
+  }
   if(class(predictions)=="character"){predictions=rast(predictions)}
   if(class(groundtruth)=="character"){groundtruth=rast(groundtruth,win=ext(predictions))}
   groundtruth[is.na(groundtruth)]=0
-  date=substr(groundtruth,nchar(groundtruth)-13,nchar(groundtruth)-4)
-  tile=basename(dirname(predictions))
+  tile=names(predictions)
   if(!is.null(forestmask)){
     cat("using forest mask/n")
     if(class(forestmask)=="character"){forestmask=rast(forestmask)}
@@ -43,6 +55,7 @@ ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
   pols$TN=extract(cross==0,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$date=date
   pols$tile=tile
+  pols$method=method
   if(remove_empty){pols=pols[-which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm=T)==0),]}
   if(!is.null(csvfile)){
     if(append){pastdata=read.csv(csvfile)
