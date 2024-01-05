@@ -14,7 +14,7 @@ bbox <- st_bbox(terra::ext(forest_mask))
 # Retrieve data from ohsome API within the adjusted bounding box
 a <- ohsome_elements_geometry(
   boundary = bbox,
-  filter = "type:natural=water or waterway=* and geometry:line",
+  filter = "(waterway= river or waterway=canal) and geometry:line",
   time = "2023-12-01",
   clipGeometry = TRUE
 ) |> ohsome_post() |> svc()
@@ -22,7 +22,7 @@ a <- ohsome_elements_geometry(
 # Extract the first layer
 a <- a[[1]]
 a= aggregate(a)
-
+plot(a)
 # Set up raster parameters using the resolution of the forest mask
 tempras <-rast(ext(bbox), resolution= res(forest_mask))
 
