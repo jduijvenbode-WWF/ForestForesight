@@ -41,7 +41,7 @@ def fun_patchiness(input_array):
 
 
 
-def process_geotiff(input_file, output_file,relative_date,num_windows):
+def process_geotiff(input_file, output_file,relative_date,num_windows,groundtruth_called):
     # Open the GeoTIFF file
     with rasterio.open(input_file) as src:
         newtransform=src.transform*src.transform.scale(40,40)
@@ -64,6 +64,7 @@ def process_geotiff(input_file, output_file,relative_date,num_windows):
         create_totaldeforestation = not os.path.isfile(totaldeforestation_file)
         groundtruth_file=output_file.replace("layer","groundtruth")
         create_groundtruth = not os.path.isfile(groundtruth_file)
+        if not groundtruth_called: create_groundtruth=False
         confidence_file=output_file.replace("layer","confidence")
         create_confidence = not os.path.isfile(confidence_file)
         patchiness_file=output_file.replace("layer","patchiness")
@@ -174,6 +175,7 @@ if __name__ == "__main__":
     parser.add_argument("input_image", help="Path to the input geotiff image")
     parser.add_argument("output_image", help="Path to the output geotiff image")
     parser.add_argument("relative_date", help="relative date")
+    parser.add_argument("groundtruth", help="should groundtruth be processed",const=1)
     parser.add_argument("num_windows", help="number of windows, depends on RAM size.",const=4)
     args = parser.parse_args()
     # Replace 'your_geotiff_file.tif' with the actual file path
@@ -181,4 +183,4 @@ if __name__ == "__main__":
     output_geotiff = args.output_image
     reldate=int(args.relative_date)
     num_windows=int(args.num_windows)
-    process_geotiff(input_geotiff,output_geotiff,reldate,num_windows = num_windows)
+    process_geotiff(input_geotiff,output_geotiff,reldate,num_windows = num_windows,groundtruth_called=int(args.groundtruth))
