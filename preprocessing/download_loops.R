@@ -33,8 +33,9 @@ for(file in files){
   writeBin(b$content,filename)
 }
 
-library(terra)
-IA=vect("../integratedalerts.geojson")
+library(ForestForesight)
+data("gfw_tiles")
+IA=vect(gfw_tiles)
 setwd("../alerts/")
 for(id in seq(nrow(IA))){
   file=IA$download[id]
