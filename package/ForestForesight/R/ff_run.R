@@ -19,7 +19,7 @@
 #'
 #'
 
-ff_run=function(datafolder,tiles,model=NULL,start=c(2021,1),end=c(2021,12),pstart=c(2022,5),pend=c(2023,5),savemodel=T,savefolder=NULL,analyse=T,overwrite=F,csvfile=NULL,append_to_csv=T){
+ff_run=function(datafolder,tiles,model=NULL,start="2021-01-01",end="2021-12-01",pstart="2022-05-01",pend="2023-05-01",savemodel=T,savefolder=NULL,analyse=T,overwrite=F,csvfile=NULL,append_to_csv=T){
   if(is.null(model)){
     window=ff_dqc(file.path(datafolder,tile))$minextent
     if(!dir.exists(file.path(savefolder,tile))){dir.create(file.path(savefolder,tile))}
@@ -27,7 +27,7 @@ ff_run=function(datafolder,tiles,model=NULL,start=c(2021,1),end=c(2021,12),pstar
     model=ff_train(train_matrix = prepped_data$data_matrix)
   }
   if(savemodel){saveRDS(model,file.path(savefolder,tile,"predictor.rds"))}
-  daterange=as.character(seq(as.Date(paste0(pstart[1],"-",sprintf("%02d",pstart[2]),"-01")),as.Date(paste0(pend[1],"-",sprintf("%02d",pend[2]),"-01")),"1 month"))
+  daterange=as.character(seq(as.Date(pstart),as.Date(pend),"1 month"))
   for(i in daterange){
     newfilename=file.path(savefolder,tile,paste0("predictions_",i,".tif"))
     if(overwrite|!file.exists(newfilename)){
