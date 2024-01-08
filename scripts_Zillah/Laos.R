@@ -58,23 +58,24 @@ shap.plot.summary(shap_long)
 
 
 ## 12 months Itteration  ##
+ffdates <- list("2022-06-01", "2022-07-01", "2022-08-01", "2022-09-01", "2022-10-01",
+              "2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01", "2023-03-01", 
+              "2023-04-01", "2023-05-01")
 
-ffdates= list(c(2022,6),c(2022,7),c(2022,8),c(2022,9),c(2022,10),c(2022,11),c(2022,12),c(2023,1),c(2023,2),c(2023,3),c(2023,4),c(2023,5))
-append=F
+start_time = Sys.time()
 for(tile in tiles){
   for(date in ffdates){
-    laos_test =  ff_prep(tiles = tile, start = date)
+    laos_test =  ff_prep(tiles = tile, start = date, fltr_features = "forestmask2019", fltr_condition = ">500")
     results=ff_predict(laos_model,laos_test$data_matrix, 
                        groundtruth=laos_test$groundtruth, 
                        indices= laos_test$testindices,
                        templateraster = laos_test$groundtruthraster)
-    forest_mask <- rast(paste0("D:/ff-dev/results/", tile,"/forestmask2019.tif"))>500
+#    forest_mask <- rast(paste0("D:/ff-dev/results/", tile,"/forestmask2019.tif"))>500
     save_dir= "D:/ff-dev/predictionsZillah/Laos"
     method =  "train_12_forestmask_laos"
-    ff_analyse(results$predicted_raster, laos_test_1$groundtruthraster,forestmask = forest_mask,
-               csvfile= paste0(save_dir,"/",method,".csv"), tile=tile, method=method,append=F, date="2022-06-01")
-    
-    
+    ff_analyse(results$predicted_raster, laos_test$groundtruthraster,
+               csvfile= paste0(save_dir,"/",method,".csv"), tile=tile, method=method, date=date)
+    print(paste0("analyzed: ", tile , " on: ", date))
 }
-
 }
+print(paste0("Duration: ", Sys.time()-start_time))
