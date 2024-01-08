@@ -50,5 +50,5 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,
     templateraster[]=0
     templateraster[indices]=predictions>threshold
   }else{templateraster<-NA}
-  return(list(threshold=threshold,"precision"=precision,"recall"=recall,"F0.5"=F05,"predicted_raster"=templateraster))
+  return(list(threshold=threshold,"precision"=precision,"recall"=recall,"F0.5"=F05,"predicted_raster"=templateraster,"predictions"=predictions))
 }
