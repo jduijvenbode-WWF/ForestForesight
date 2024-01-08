@@ -9,12 +9,12 @@ ff_prep(
   country = NA,
   tiles = NULL,
   groundtruth_pattern = "groundtruth",
-  start = c(2021, 1),
+  start = "2021-01-01",
   end = NA,
   inc_features = NA,
   exc_features = NA,
-  fltr_features = "forestmask2019",
-  fltr_condition = ">0",
+  fltr_features = NULL,
+  fltr_condition = NULL,
   sample_size = 1,
   validation_sample = 0,
   relativedate = T,
@@ -33,17 +33,17 @@ ff_prep(
 
 \item{groundtruth_pattern}{Pattern to identify ground truth files. 'groundtruth'.}
 
-\item{start}{Start date for training data in the format c(YYYY, M). Default is c(2021, 1).}
+\item{start}{Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".}
 
-\item{end}{End date for training data in the format c(YYYY, M). Default is NA to only process the start month.}
+\item{end}{End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.}
 
 \item{inc_features}{Vector of included features. States which features to include in the data preparation.}
 
 \item{exc_features}{Vector of excluded features. States which features to exclude in the data preparation.}
 
-\item{fltr_features}{vector of features for filtering data. Default is 'forestmask2019'. needs to be combined with fltr_condition of the same length}
+\item{fltr_features}{vector of features for filtering data. Default is empty. EXAMPLE: 'forestmask2019'. needs to be combined with fltr_condition of the same length}
 
-\item{fltr_condition}{Vector of filtering conditions. Default is '>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector}
+\item{fltr_condition}{Vector of filtering conditions. Default is empty EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector}
 
 \item{sample_size}{Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1}
 

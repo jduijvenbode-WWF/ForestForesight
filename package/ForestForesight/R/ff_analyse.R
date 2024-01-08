@@ -24,15 +24,15 @@
 #' @export
 
 ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA){
-  if(!(class(predictions) %in% c("charachter","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
-  if(!(class(groundtruth) %in% c("charachter","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
+  if(!(class(predictions) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
+  if(!(class(groundtruth) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
   if(append==T&!file.exists(csvfile)){append=F;warning("CSV file did not yet exist, creating empty one")}
   if(is.null(date)){
     if(class(predictions)=="character"){date=substr(predictions,nchar(predictions)-13,nchar(predictions)-4)}else{
       if(class(groundtruth)=="character"){date=substr(groundtruth,nchar(groundtruth)-13,nchar(groundtruth)-4)}else{stop("no method to derive date from filename")}
     }
   }
-  if(is.null(tile)){
+  if(is.null(tile)&(!is.null(analysis_polygons))){
     if(!class(predictions)=="character"){stop("tile ID not given and cannot be derived from raster itself")}
     tile=basename(dirname(predictions))
     if(tile=="."){stop("tile was not given and cannot be derived from directory name")}
@@ -40,7 +40,6 @@ ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
   if(class(predictions)=="character"){predictions=rast(predictions)}
   if(class(groundtruth)=="character"){groundtruth=rast(groundtruth,win=ext(predictions))}
   groundtruth[is.na(groundtruth)]=0
-  tile=names(predictions)
   if(!is.null(forestmask)){
     cat("using forest mask\n")
     if(class(forestmask)=="character"){forestmask=rast(forestmask)}
@@ -57,7 +56,6 @@ ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
   pols$TP=extract(cross==3,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$TN=extract(cross==0,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$date=date
-  pols$tile=tile
   pols$method=method
   if(remove_empty){pols=pols[-which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm=T)==0),]}
   if(!is.null(csvfile)){
