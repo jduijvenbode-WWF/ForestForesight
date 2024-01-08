@@ -2,7 +2,7 @@
 source("C:/Users/EagleView/Documents/GitHub/ForestForesight/functions.R")
 files=list.files("D:/ff-dev/alerts/",full.names=T)
 files=sample(files,length(files))
-ffdates=paste(sort(rep(c(2021,2022,2023),12)),sprintf("%02d",seq(12)),"01",sep="-")[1:29]
+ffdates=paste(sort(rep(c(2021,2022,2023),12)),sprintf("%02d",seq(12)),"01",sep="-")[1:36]
 setwd("D:/ff-dev/results/")
 for(file in files){
   print(file);print(Sys.time())
