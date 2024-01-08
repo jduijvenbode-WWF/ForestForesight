@@ -174,7 +174,7 @@ if __name__ == "__main__":
     parser.add_argument("input_image", help="Path to the input geotiff image")
     parser.add_argument("output_image", help="Path to the output geotiff image")
     parser.add_argument("relative_date", help="relative date")
-    parser.add_argument("num_windows", help="number of windows, depends on RAM size.")
+    parser.add_argument("num_windows", help="number of windows, depends on RAM size.",const=4)
     args = parser.parse_args()
     # Replace 'your_geotiff_file.tif' with the actual file path
     input_geotiff =  args.input_image
