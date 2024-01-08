@@ -20,21 +20,23 @@
 #'
 
 ff_run=function(datafolder,tiles,model=NULL,start="2021-01-01",end="2021-12-01",pstart="2022-05-01",pend="2023-05-01",savemodel=T,savefolder=NULL,analyse=T,overwrite=F,csvfile=NULL,append_to_csv=T){
-  if(is.null(model)){
-    window=ff_dqc(file.path(datafolder,tile))$minextent
-    if(!dir.exists(file.path(savefolder,tile))){dir.create(file.path(savefolder,tile))}
-    prepped_data=ForestForesight::ff_prep(datafolder,tiles = tile,start=start,end=end,shrink = "extract",window = window)
-    model=ff_train(train_matrix = prepped_data$data_matrix)
-  }
-  if(savemodel){saveRDS(model,file.path(savefolder,tile,"predictor.rds"))}
-  daterange=as.character(seq(as.Date(pstart),as.Date(pend),"1 month"))
-  for(i in daterange){
-    newfilename=file.path(savefolder,tile,paste0("predictions_",i,".tif"))
-    if(overwrite|!file.exists(newfilename)){
-      future=ForestForesight::ff_prep(datafolder,tiles = tile,start=c(lubridate::year(i),lubridate::month(i)),shrink = "none",window = window)
-      results=ff_predict(model,future$data_matrix,groundtruth = future$groundtruth,templateraster = future$groundtruthraster,indices = future$testindices)
-      writeRaster(results$predicted_raster,newfilename)
-      if(analyse){ff_analyse(results$predicted_raster,future$groundtruthraster,csvfile = csvfile,append = append_to_csv,return_polygons = F)
+  for(tile in tiles){
+    if(is.null(model)){
+      window=ff_dqc(file.path(datafolder,tile))$minextent
+      if(!dir.exists(file.path(savefolder,tile))){dir.create(file.path(savefolder,tile))}
+      prepped_data=ForestForesight::ff_prep(datafolder,tiles = tile,start=start,end=end,shrink = "extract",window = window)
+      model=ff_train(train_matrix = prepped_data$data_matrix)
+    }
+    if(savemodel){saveRDS(model,file.path(savefolder,tile,"predictor.rds"))}
+    daterange=as.character(seq(as.Date(pstart),as.Date(pend),"1 month"))
+    for(i in daterange){
+      newfilename=file.path(savefolder,tile,paste0("predictions_",i,".tif"))
+      if(overwrite|!file.exists(newfilename)){
+        future=ForestForesight::ff_prep(datafolder,tiles = tile,start=c(lubridate::year(i),lubridate::month(i)),shrink = "none",window = window)
+        results=ff_predict(model,future$data_matrix,groundtruth = future$groundtruth,templateraster = future$groundtruthraster,indices = future$testindices)
+        writeRaster(results$predicted_raster,newfilename)
+        if(analyse){ff_analyse(results$predicted_raster,future$groundtruthraster,csvfile = csvfile,append = append_to_csv,return_polygons = F)
+        }
       }
     }
   }
