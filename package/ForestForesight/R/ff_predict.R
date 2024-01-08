@@ -46,9 +46,15 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,
    recall=c(recall,rec)
    F05=c(F05,1.25*prec*rec/(0.25*prec+rec))
   }
-  if(!is.na(indices[1])&(class(templateraster)=="SpatRaster")){
+  if(class(templateraster)=="SpatRaster"){
     templateraster[]=0
-    templateraster[indices]=predictions>threshold
+    if(!is.na(indices[1])){
+      templateraster[indices]=predictions>threshold
+  }else{
+  if(ncell(templateraster)=length(predictions)){
+    templateraster[]=predictions>threshold
+  }else{templateraster<-NA}
+  }
   }else{templateraster<-NA}
   return(list(threshold=threshold,"precision"=precision,"recall"=recall,"F0.5"=F05,"predicted_raster"=templateraster,"predictions"=predictions))
 }
