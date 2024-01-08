@@ -69,9 +69,9 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         create_confidence = not os.path.isfile(confidence_file)
         patchiness_file=output_file.replace("layer","patchiness")
         create_patchiness = not os.path.isfile(patchiness_file)
-        smoothedtotal_file=output_file.replace("layer","smoothedtotal")
+        smoothedtotal_file=output_file.replace("layer","smtotaldeforestation")
         create_smoothedtotal = not os.path.isfile(smoothedtotal_file)
-        smoothedsixmonths_file=output_file.replace("layer","smoothedsixmonths")
+        smoothedsixmonths_file=output_file.replace("layer","sm6months")
         create_smoothedsixmonths = not os.path.isfile(smoothedsixmonths_file)
         # Iterate over windows
         if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,
