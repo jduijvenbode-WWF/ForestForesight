@@ -24,6 +24,9 @@
 #' @export
 
 ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA){
+  if(!(class(predictions) %in% c("charachter","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
+  if(!(class(groundtruth) %in% c("charachter","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
+  if(append==T&!file.exists(csvfile)){append=F;warning("CSV file did not yet exist, creating empty one")}
   if(is.null(date)){
     if(class(predictions)=="character"){date=substr(predictions,nchar(predictions)-13,nchar(predictions)-4)}else{
       if(class(groundtruth)=="character"){date=substr(groundtruth,nchar(groundtruth)-13,nchar(groundtruth)-4)}else{stop("no method to derive date from filename")}
@@ -39,7 +42,7 @@ ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
   groundtruth[is.na(groundtruth)]=0
   tile=names(predictions)
   if(!is.null(forestmask)){
-    cat("using forest mask/n")
+    cat("using forest mask\n")
     if(class(forestmask)=="character"){forestmask=rast(forestmask)}
     cross=2*groundtruth+predictions*forestmask
   }else{cross=2*groundtruth+predictions}
