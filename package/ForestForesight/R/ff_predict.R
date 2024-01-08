@@ -30,7 +30,7 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,
   if (length(extra_features) > 0) {
     warning(paste("Removing extra features from the test matrix:", paste(extra_features, collapse = ", ")))
     test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
-     }
+  }
   # Convert the matrix to a DMatrix object
   test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)
 
@@ -39,22 +39,22 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,
   recall=c()
   F05=c()
   for(thresh in threshold){
-   res=table(2*(predictions>thresh)+groundtruth)
-   prec=as.numeric(res[4]/(res[4]+res[3]))
-   rec=as.numeric(res[4]/(res[4]+res[2]))
-   precision=c(precision,prec)
-   recall=c(recall,rec)
-   F05=c(F05,1.25*prec*rec/(0.25*prec+rec))
+    res=table(2*(predictions>thresh)+groundtruth)
+    prec=as.numeric(res[4]/(res[4]+res[3]))
+    rec=as.numeric(res[4]/(res[4]+res[2]))
+    precision=c(precision,prec)
+    recall=c(recall,rec)
+    F05=c(F05,1.25*prec*rec/(0.25*prec+rec))
   }
   if(class(templateraster)=="SpatRaster"){
     templateraster[]=0
     if(!is.na(indices[1])){
       templateraster[indices]=predictions>threshold
-  }else{
-  if(ncell(templateraster)=length(predictions)){
-    templateraster[]=predictions>threshold
-  }else{templateraster<-NA}
-  }
+    }else{
+      if(ncell(templateraster)=length(predictions)){
+        templateraster[]=predictions>threshold
+      }else{templateraster<-NA}
+    }
   }else{templateraster<-NA}
   return(list(threshold=threshold,"precision"=precision,"recall"=recall,"F0.5"=F05,"predicted_raster"=templateraster,"predictions"=predictions))
 }
