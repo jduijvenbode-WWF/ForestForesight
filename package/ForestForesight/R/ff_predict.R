@@ -51,7 +51,7 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,
     if(!is.na(indices[1])){
       templateraster[indices]=predictions>threshold
     }else{
-      if(ncell(templateraster)=length(predictions)){
+      if(ncell(templateraster)==length(predictions)){
         templateraster[]=predictions>threshold
       }else{templateraster<-NA}
     }
