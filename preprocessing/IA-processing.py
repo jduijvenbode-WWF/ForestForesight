@@ -41,7 +41,7 @@ def fun_patchiness(input_array):
 
 
 
-def process_geotiff(input_file, output_file,relative_date):
+def process_geotiff(input_file, output_file,relative_date,num_windows):
     # Open the GeoTIFF file
     with rasterio.open(input_file) as src:
         newtransform=src.transform*src.transform.scale(40,40)
@@ -50,7 +50,6 @@ def process_geotiff(input_file, output_file,relative_date):
         height = src.height
 
         # Calculate the number of windows (4 equal parts)
-        num_windows = 4
         window_width = width // 2
         window_height = height // 2
         latest_deforestation_file=output_file.replace("layer","latestdeforestation")
@@ -74,7 +73,8 @@ def process_geotiff(input_file, output_file,relative_date):
         smoothedsixmonths_file=output_file.replace("layer","smoothedsixmonths")
         create_smoothedsixmonths = not os.path.isfile(smoothedsixmonths_file)
         # Iterate over windows
-        if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,create_twelvetosixmonths,create_latest_deforestation,create_patchiness]):
+        if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,
+            create_twelvetosixmonths,create_latest_deforestation,create_patchiness,create_smoothedtotal,create_smoothedsixmonths]):
             for i in range(num_windows):
                 # Calculate the starting coordinates of the window
                 col_offset = (i % 2) * window_width
@@ -174,9 +174,11 @@ if __name__ == "__main__":
     parser.add_argument("input_image", help="Path to the input geotiff image")
     parser.add_argument("output_image", help="Path to the output geotiff image")
     parser.add_argument("relative_date", help="relative date")
+    parser.add_argument("num_windows", help="number of windows, depends on RAM size.")
     args = parser.parse_args()
     # Replace 'your_geotiff_file.tif' with the actual file path
     input_geotiff =  args.input_image
     output_geotiff = args.output_image
     reldate=int(args.relative_date)
-    process_geotiff(input_geotiff,output_geotiff,reldate)
+    num_windows=int(args.num_windows)
+    process_geotiff(input_geotiff,output_geotiff,reldate,num_windows = num_windows)
