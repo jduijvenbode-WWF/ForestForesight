@@ -6,12 +6,12 @@
 #' @param country Country for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.
 #' @param tiles Vector of tiles in the syntax of e.g. 10N_080W.
 #' @param groundtruth_pattern Pattern to identify ground truth files. 'groundtruth'.
-#' @param start Start date for training data in the format c(YYYY, M). Default is c(2021, 1).
-#' @param end End date for training data in the format c(YYYY, M). Default is NA to only process the start month.
+#' @param start Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".
+#' @param end End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.
 #' @param inc_features Vector of included features. States which features to include in the data preparation.
 #' @param exc_features Vector of excluded features. States which features to exclude in the data preparation.
-#' @param fltr_features vector of features for filtering data. Default is 'forestmask2019'. needs to be combined with fltr_condition of the same length
-#' @param fltr_condition Vector of filtering conditions. Default is '>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector
+#' @param fltr_features vector of features for filtering data. Default is empty. EXAMPLE: 'forestmask2019'. needs to be combined with fltr_condition of the same length
+#' @param fltr_condition Vector of filtering conditions. Default is empty EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector
 #' @param validation_sample float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3
 #' @param sample_size Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1
 #' @param relativedate Boolean indicating whether the date is relative. Default is \code{TRUE}.
@@ -30,7 +30,7 @@
 #' @name ff_prep
 
 
-ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start=c(2021,1),end=NA,inc_features=NA,exc_features=NA,fltr_features="forestmask2019",fltr_condition=">0",sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
+ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start="2021-01-01",end=NA,inc_features=NA,exc_features=NA,fltr_features=NULL,fltr_condition=NULL,sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
   if(is.na(country)){shrink="none"}
   if(is.na(start[1])){stop("no start date given")}
   if(is.null(tiles)&is.na(country)){stop("unknown what to process since no tiles or country were given")}
@@ -64,7 +64,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     if(length(inc_indices>0)){allfiles=allfiles[inc_indices]}}
   if(length(allfiles)==0){stop("after including and excluding the requested variables there are no files left")}
   #create the range between start and end date
-  daterange=as.character(seq(as.Date(paste0(start[1],"-",sprintf("%02d",start[2]),"-01")),as.Date(paste0(end[1],"-",sprintf("%02d",end[2]),"-01")),"1 month"))
+  daterange=as.character(seq(as.Date(start),as.Date(end),"1 month"))
   first=T
   if(length(tiles)>1){warning("No template raster will be returned because multiple tiles are processed together")
     sampleraster=F}
@@ -117,9 +117,11 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   }
   #filter training data on features that have been declared
   filterindices=c()
-  for(i in seq(length(fltr_features))){
-    sf_indices=which(sapply(fdts[,which(colnames(fdts)==fltr_features[i])],function(x) eval(parse(text = paste(x, fltr_condition[i])))))
-    filterindices=c(filterindices,sf_indices)
+  if(length(fltr_features)>0){
+    for(i in seq(length(fltr_features))){
+      sf_indices=which(sapply(fdts[,which(colnames(fdts)==fltr_features[i])],function(x) eval(parse(text = paste(x, fltr_condition[i])))))
+      filterindices=c(filterindices,sf_indices)
+    }
   }
   if(length(filterindices)>0){
     fdts=fdts[filterindices,]
