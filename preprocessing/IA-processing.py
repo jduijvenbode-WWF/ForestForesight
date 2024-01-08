@@ -6,6 +6,18 @@ import os
 from scipy.ndimage import label
 import time
 
+def weighted_smoothing(data, window_size):
+    # Create a weighted distance matrix
+    x, y = np.meshgrid(np.arange(window_size), np.arange(window_size))
+    distance = np.sqrt((x - window_size // 2)**2 + (y - window_size // 2)**2)
+    weight = 1.0 / (1.0 + distance)  # Weighted distance
+
+    # Normalize the weights
+    weight /= weight.sum()
+
+    # Apply convolution with the weighted kernel
+    smoothed_data = convolve(np.nan_to_num(data), weight, mode='constant', cval=0.0)
+    return smoothed_data
 
 
 def aggregate_by_40_max(input_array,fun):
@@ -57,6 +69,10 @@ def process_geotiff(input_file, output_file,relative_date):
         create_confidence = not os.path.isfile(confidence_file)
         patchiness_file=output_file.replace("layer","patchiness")
         create_patchiness = not os.path.isfile(patchiness_file)
+        smoothedtotal_file=output_file.replace("layer","smoothedtotal")
+        create_smoothedtotal = not os.path.isfile(smoothedtotal_file)
+        smoothedsixmonths_file=output_file.replace("layer","smoothedsixmonths")
+        create_smoothedsixmonths = not os.path.isfile(smoothedsixmonths_file)
         # Iterate over windows
         if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,create_twelvetosixmonths,create_latest_deforestation,create_patchiness]):
             for i in range(num_windows):
@@ -74,9 +90,9 @@ def process_geotiff(input_file, output_file,relative_date):
                     template=np.zeros((data.shape[1]//20,data.shape[2]//20))
                     if create_latest_deforestation: latest_deforestation=template.copy()
                     if create_threemonths: threemonths=template.copy()
-                    if create_sixmonths: sixmonths=template.copy()
+                    if create_sixmonths or create_smoothedsixmonths: sixmonths=template.copy()
                     if create_twelvetosixmonths: twelvetosixmonths=template.copy()
-                    if create_totaldeforestation: totaldeforestation=template.copy()
+                    if create_totaldeforestation or create_smoothedtotal: totaldeforestation=template.copy()
                     if create_groundtruth: groundtruth=template.copy()
                     if create_confidence: confidence=template.copy()
                     if create_patchiness: patchiness=template.copy()
@@ -96,11 +112,11 @@ def process_geotiff(input_file, output_file,relative_date):
 
                 #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.  
                 if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
-                if create_sixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-183)).astype(int),fun="sum")
+                if create_sixmonths or create_smoothedsixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-183)).astype(int),fun="sum")
                 #for now patchiness uses 6 months as well.
                 if create_patchiness: patchiness[offx1:offx2,offy1:offy2]=fun_patchiness((data>(relative_date-183)).astype(int))
                 if create_twelvetosixmonths: twelvetosixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date-183))&(data>(relative_date-366))).astype(int),fun="sum")
-                if create_totaldeforestation: totaldeforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>0).astype(int),fun="sum")
+                if create_totaldeforestation or create_smoothedtotal: totaldeforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>0).astype(int),fun="sum")
 
                    
             if create_latest_deforestation:
@@ -140,6 +156,17 @@ def process_geotiff(input_file, output_file,relative_date):
             if create_patchiness:
                 with rasterio.open(patchiness_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="uint16", crs=src.crs, transform=newtransform) as dst:
                     dst.write(patchiness.reshape(1,patchiness.shape[0],patchiness.shape[1]))
+
+            if create_smoothedtotal:
+                smoothedtotal=weighted_smoothing(totaldeforestation, window_size=21)
+                with rasterio.open(smoothedtotal_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="float32", crs=src.crs, transform=newtransform) as dst:
+                    dst.write(smoothedtotal.reshape(1,smoothedtotal.shape[0],smoothedtotal.shape[1]))
+
+            if create_smoothedsixmonths:
+                smoothedsixmonths=weighted_smoothing(sixmonths, window_size=21)
+                with rasterio.open(smoothedsixmonths_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="uint16", crs=src.crs, transform=newtransform) as dst:
+                    dst.write(smoothedsixmonths.reshape(1,smoothedsixmonths.shape[0],smoothedsixmonths.shape[1]))
+
 
 if __name__ == "__main__":
     # Create a command-line argument parser
