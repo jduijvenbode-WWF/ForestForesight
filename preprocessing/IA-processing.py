@@ -5,6 +5,7 @@ import argparse
 import os
 from scipy.ndimage import label
 import time
+from scipy.ndimage import convolve
 
 def weighted_smoothing(data, window_size):
     # Create a weighted distance matrix
