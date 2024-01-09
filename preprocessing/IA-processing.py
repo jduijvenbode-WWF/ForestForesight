@@ -53,15 +53,15 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         # Calculate the number of windows (4 equal parts)
         window_width = width // 2
         window_height = height // 2
-        latest_deforestation_file=output_file.replace("layer","latestdeforestation")
+        latest_deforestation_file=output_file.replace("layer","latestloss")
         create_latest_deforestation= not os.path.isfile(latest_deforestation_file)
-        threemonths_file=output_file.replace("layer","3months")
+        threemonths_file=output_file.replace("layer","lastthreemonths")
         create_threemonths = not os.path.isfile(threemonths_file)
-        sixmonths_file=output_file.replace("layer","6months")
+        sixmonths_file=output_file.replace("layer","lastsixmonths")
         create_sixmonths = not os.path.isfile(sixmonths_file) 
-        twelvetosixmonths_file=output_file.replace("layer","12-6months")
+        twelvetosixmonths_file=output_file.replace("layer","previoussameseason")
         create_twelvetosixmonths = not os.path.isfile(twelvetosixmonths_file)
-        totaldeforestation_file=output_file.replace("layer","totaldeforestation")
+        totaldeforestation_file=output_file.replace("layer","totallossalerts")
         create_totaldeforestation = not os.path.isfile(totaldeforestation_file)
         groundtruth_file=output_file.replace("layer","groundtruth")
         create_groundtruth = not os.path.isfile(groundtruth_file)
@@ -70,9 +70,9 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         create_confidence = not os.path.isfile(confidence_file)
         patchiness_file=output_file.replace("layer","patchiness")
         create_patchiness = not os.path.isfile(patchiness_file)
-        smoothedtotal_file=output_file.replace("layer","smtotaldeforestation")
+        smoothedtotal_file=output_file.replace("layer","smoothedtotal")
         create_smoothedtotal = not os.path.isfile(smoothedtotal_file)
-        smoothedsixmonths_file=output_file.replace("layer","sm6months")
+        smoothedsixmonths_file=output_file.replace("layer","smoothedsixmonths")
         create_smoothedsixmonths = not os.path.isfile(smoothedsixmonths_file)
         # Iterate over windows
         if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,
