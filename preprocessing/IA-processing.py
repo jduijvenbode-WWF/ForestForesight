@@ -53,7 +53,7 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         # Calculate the number of windows (4 equal parts)
         window_width = width // 2
         window_height = height // 2
-        latest_deforestation_file=output_file.replace("layer","latestloss")
+        latest_deforestation_file=output_file.replace("layer","timesinceloss")
         create_latest_deforestation= not os.path.isfile(latest_deforestation_file)
         threemonths_file=output_file.replace("layer","lastthreemonths")
         create_threemonths = not os.path.isfile(threemonths_file)
@@ -68,7 +68,7 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         if not groundtruth_called: create_groundtruth=False
         confidence_file=output_file.replace("layer","confidence")
         create_confidence = not os.path.isfile(confidence_file)
-        patchiness_file=output_file.replace("layer","patchiness")
+        patchiness_file=output_file.replace("layer","patchdensity")
         create_patchiness = not os.path.isfile(patchiness_file)
         smoothedtotal_file=output_file.replace("layer","smoothedtotal")
         create_smoothedtotal = not os.path.isfile(smoothedtotal_file)
