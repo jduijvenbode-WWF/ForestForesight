@@ -12,7 +12,7 @@ for(file in files){
     diffdate=as.numeric(as.Date(ffdate)-as.Date("2015-01-01"))
     commandtxt=paste("python","C:/Users/EagleView/Documents/GitHub/ForestForesight/preprocessing/IA-processing.py",file,newfile,diffdate)
     if(ffdate>"2023-06-01"){
-      commandtxt=paste("python","C:/Users/EagleView/Documents/GitHub/ForestForesight/preprocessing/IA-processing.py",file,newfile,diffdate,0)
+      commandtxt=paste("python","C:/Users/EagleView/Documents/GitHub/ForestForesight/preprocessing/IA-processing.py",file,newfile,diffdate,"--groundtruth 0")
     }
     print(commandtxt)
     system(commandtxt,intern=T)
