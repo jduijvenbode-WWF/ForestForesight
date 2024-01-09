@@ -9,7 +9,6 @@ files=c("D:/ff-dev/results/20N_100E","D:/ff-dev/results/30N_100E")
 tiles = c("20N_100E", "30N_100E")
 data("countries")
 laos= countries[countries$iso3=="LAO",]$geometry
-data("degree_polygons")
 
 ## data quality check ##
 quality_1 = ff_dqc(files[1])
@@ -28,10 +27,12 @@ laos_test_2 =  ff_prep(tiles = "20N_100E", start = c(2022,6),end= c(2023,5), sam
 ## Run XGBoost ##
 laos_model = ff_train(train_matrix = laos_train$data_matrix,validation_matrix=laos_train$validation_matrix, verbose=T)
 
-
+importance_matrix <- xgb.importance(model = laos_model)
+print(importance_matrix)
+xgb.plot.importance(importance_matrix = importance_matrix)
 ## Predict ##
-results=ff_predict(laos_model,laos_test_1$data_matrix, 
-                   groundtruth=laos_test_1$groundtruth, 
+results=ff_predict(laos_model,laos_test_1$data_matrix,
+                   groundtruth=laos_test_1$groundtruth,
                    indices= laos_test_1$testindices,
                    templateraster = laos_test_1$groundtruthraster)
 
@@ -59,15 +60,15 @@ shap.plot.summary(shap_long)
 
 ## 12 months Itteration  ##
 ffdates <- list("2022-06-01", "2022-07-01", "2022-08-01", "2022-09-01", "2022-10-01",
-              "2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01", "2023-03-01", 
+              "2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01", "2023-03-01",
               "2023-04-01", "2023-05-01")
 
 start_time = Sys.time()
 for(tile in tiles){
   for(date in ffdates){
     laos_test =  ff_prep(tiles = tile, start = date, fltr_features = "forestmask2019", fltr_condition = ">500")
-    results=ff_predict(laos_model,laos_test$data_matrix, 
-                       groundtruth=laos_test$groundtruth, 
+    results=ff_predict(laos_model,laos_test$data_matrix,
+                       groundtruth=laos_test$groundtruth,
                        indices= laos_test$testindices,
                        templateraster = laos_test$groundtruthraster)
 #    forest_mask <- rast(paste0("D:/ff-dev/results/", tile,"/forestmask2019.tif"))>500
