@@ -93,7 +93,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       dts=cbind(dts,coords)}
       if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)))}
       dts[is.na(dts)]=0
-      newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][1]))),"x","y")
+      newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))),"x","y")
       if(relativedate){newcolnames=c(newcolnames,"sin_month")}
       colnames(dts)=newcolnames
 
