@@ -10,7 +10,7 @@
 #' @param end End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.
 #' @param inc_features Vector of included features. States which features to include in the data preparation.
 #' @param exc_features Vector of excluded features. States which features to exclude in the data preparation.
-#' @param fltr_features vector of features for filtering data. Default is empty. EXAMPLE: 'forestmask2019'. needs to be combined with fltr_condition of the same length
+#' @param fltr_features vector of features for filtering data. Default is empty. EXAMPLE: 'initialforestcover'. needs to be combined with fltr_condition of the same length
 #' @param fltr_condition Vector of filtering conditions. Default is empty EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector
 #' @param validation_sample float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3
 #' @param sample_size Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1
@@ -74,7 +74,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       if(!exists("countries")){data(countries);borders=vect(countries)}
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
    for(i in daterange){
-      selected_files = sort(select_files_date(i, files))
+      selected_files = select_files_date(i, files)
       extent=ext(rast(selected_files[1]))
       if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
       if(shrink=="crop-deg"){
