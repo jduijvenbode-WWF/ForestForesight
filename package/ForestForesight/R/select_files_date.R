@@ -36,7 +36,7 @@ select_files_date <- function(given_date, listed_files) {
   unique_names <- unique(gsub(".*_\\d{4}-\\d{2}-\\d{2}_([^_]+).*", "\\1", matching_files))
   selected_files <- character(0)
 
-  for (feature in unique_names) {
+  for (feature in sort(unique_names)) {
     matching_files_feature <- grep(feature, matching_files, value = TRUE)
     dates_only <- gsub(".*_(\\d{4}-\\d{2}-\\d{2}).*", "\\1", matching_files_feature)
     date_vector <- ymd(dates_only)
