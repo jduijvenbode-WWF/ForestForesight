@@ -73,14 +73,9 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     if(is.na(country)&(shrink=="extract")){
       if(!exists("countries")){data(countries);borders=vect(countries)}
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
-    static_files= files[-grep("01\\.",files)]
-    #remove the loss files that would have predictive power
-    if(length(grep("loss2020",static_files))>0){if(min(year(daterange))<2021){static_files=static_files[-grep("loss2020",static_files)]}}
-    if(length(grep("loss2021",static_files))>0){if(min(year(daterange))<2022){static_files=static_files[-grep("loss2021",static_files)]}}
-    if(length(grep("loss2022",static_files))>0){if(min(year(daterange))<2023){static_files=static_files[-grep("loss2022",static_files)]}}
-    for(i in daterange){
-      dynamic_files = sort(files[grep(i,files)])
-      extent=ext(rast(static_files[1]))
+   for(i in daterange){
+      selected_files = sort(select_files_date(i, files))
+      extent=ext(rast(selected_files[1]))
       if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
       if(shrink=="crop-deg"){
         extent=ext(crop(as.polygons(extent),ext(selected_country)))
@@ -88,16 +83,17 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         extent[1]=floor(extent[1]);extent[2]=ceiling(extent[2]);extent[3]=floor(extent[3]);extent[4]=ceiling(extent[4])
       }
       if(!is.na(window[1])){extent=terra::intersect(extent,window)}
-      rasstack=rast(unlist(sapply(c(dynamic_files,static_files),function(x) rast(x,win=extent))))
-      if(first){if(sampleraster){groundtruth_raster=rast(dynamic_files[grep(groundtruth_pattern,dynamic_files)])}else{groundtruth_raster=NA}}
-      if(shrink=="extract"){dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)}
-      else{dts=as.matrix(rasstack)
+      rasstack=rast(sapply(selected_files,function(x) rast(x,win=extent)))
+      if(first){if(sampleraster){groundtruth_raster=rast(selected_files[grep(groundtruth_pattern,selected_files)])}else{groundtruth_raster=NA}}
+      if(shrink=="extract"){
+        dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)
+      }else{
+        dts=as.matrix(rasstack)
       coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
       dts=cbind(dts,coords)}
-
       if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)))}
       dts[is.na(dts)]=0
-      newcolnames=c(gsub(".tif","",c(sapply(basename(dynamic_files),function(x) strsplit(x,"_")[[1]][1]), basename(static_files))),"x","y")
+      newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][1]))),"x","y")
       if(relativedate){newcolnames=c(newcolnames,"sin_month")}
       colnames(dts)=newcolnames
 
@@ -132,7 +128,6 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   #make sure that label data is binary
   data_label[data_label>1]=1
   fdts=fdts[,-groundtruth_index]
-
   if(validation_sample>0){
     sample_indices=sample(seq(nrow(fdts)),round(validation_sample*nrow(fdts)))
     data_matrix=list(features= fdts[-sample_indices,], label=data_label[-sample_indices])
