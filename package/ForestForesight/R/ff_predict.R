@@ -33,7 +33,6 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,
   }
   # Convert the matrix to a DMatrix object
   test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)
-
   predictions=predict(model,test_matrix)
   precision=c()
   recall=c()
@@ -48,7 +47,8 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,
   }
   if(class(templateraster)=="SpatRaster"){
     templateraster[]=0
-    if(length(indices)<2){
+    print(length(indices))
+    if(length(indices)>1){
       templateraster[indices]=predictions>threshold
     }else{
       if(ncell(templateraster)==length(predictions)){
