@@ -41,8 +41,8 @@ ff_dqc <- function(folder_path,return_values=T) {
   allvals=as.data.frame(as.matrix(do.call(rbind,valuelist)))
   names(allvals)=names(valuelist[[1]])
   for(i in 1:ncol(allvals)){allvals[,i]=unlist(allvals[,i])}
-  allvals$featurenames=as.character(unlist(sapply(tif_files,function(x) strsplit(gsub(pattern = "\\.tif",replacement="",basename(x)),"_")[[1]][1])))
-  allvals$dates=as.character(unlist(sapply(tif_files,function(x) strsplit(gsub(pattern = "\\.tif",replacement="",basename(x)),"_")[[1]][2])))
+  allvals$featurenames=unlist(sapply(basename(tif_files),function(x) substr(x,21,nchar(x)-4)))
+  allvals$dates=substr(basename(tif_files),10,19)
   incorrect_dateformats=sum(!(nchar(allvals$dates)==10))
   allvals=allvals[,c(ncol(allvals)-1,ncol(allvals),seq(ncol(allvals)-2))]
   # Initialize data frame to store quality flags

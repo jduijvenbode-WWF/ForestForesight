@@ -19,9 +19,9 @@ def distance_to_nearest_nonzero_geotiff(input_geotiff, output_geotiff):
 
     # Calculate Euclidean distance transform
     distance_transform = distance_transform_edt(mask)
-
+    distance_transform=255-20*np.log(distance_transform)
     # Update metadata for the output GeoTIFF
-    metadata.update(dtype='float64', count=1)
+    metadata.update(dtype='uint8', count=1)
 
     # Write the distance transform array to a new GeoTIFF file
     with rasterio.open(output_geotiff, 'w', **metadata) as dst:
