@@ -43,3 +43,16 @@ for(id in seq(nrow(IA))){
   b=httr::GET(file)
   writeBin(b$content,paste0(name,".tif"))
 }
+
+for(i in gfw_tiles$tile_id){
+  file=paste0("https://glad.umd.edu/users/Potapov/GLCLUC2020/Forest_height_2020/2020_",i,".tif")
+  b=httr::GET(file)
+  writeBin(b$content,paste0(i,".tif"))
+}
+files=list.files()
+for(file in files){
+  print(file)
+  tempras=list.files(file.path("D:/ff-dev/results/preprocessed/",substr(file,1,8)),full.names = T,pattern="elevation")[1]
+  project(rast(file),rast(tempras),method="average",
+          filename=file.path(dirname(tempras),paste0(substr(basename(tempras),1,8),"_2020-01-01_forestheight.tif")))
+}
