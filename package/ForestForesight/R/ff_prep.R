@@ -10,7 +10,7 @@
 #' @param end End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.
 #' @param inc_features Vector of included features. States which features to include in the data preparation.
 #' @param exc_features Vector of excluded features. States which features to exclude in the data preparation.
-#' @param fltr_features vector of features for filtering data. Default is empty. EXAMPLE: 'forestmask2019'. needs to be combined with fltr_condition of the same length
+#' @param fltr_features vector of features for filtering data. Default is empty. EXAMPLE: 'initialforestcover'. needs to be combined with fltr_condition of the same length
 #' @param fltr_condition Vector of filtering conditions. Default is empty EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector
 #' @param validation_sample float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3
 #' @param sample_size Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1
@@ -73,14 +73,9 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     if(is.na(country)&(shrink=="extract")){
       if(!exists("countries")){data(countries);borders=vect(countries)}
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
-    static_files= files[-grep("01\\.",files)]
-    #remove the loss files that would have predictive power
-    if(length(grep("loss2020",static_files))>0){if(min(year(daterange))<2021){static_files=static_files[-grep("loss2020",static_files)]}}
-    if(length(grep("loss2021",static_files))>0){if(min(year(daterange))<2022){static_files=static_files[-grep("loss2021",static_files)]}}
-    if(length(grep("loss2022",static_files))>0){if(min(year(daterange))<2023){static_files=static_files[-grep("loss2022",static_files)]}}
-    for(i in daterange){
-      dynamic_files = sort(files[grep(i,files)])
-      extent=ext(rast(static_files[1]))
+   for(i in daterange){
+      selected_files = select_files_date(i, files)
+      extent=ext(rast(selected_files[1]))
       if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
       if(shrink=="crop-deg"){
         extent=ext(crop(as.polygons(extent),ext(selected_country)))
@@ -88,23 +83,24 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         extent[1]=floor(extent[1]);extent[2]=ceiling(extent[2]);extent[3]=floor(extent[3]);extent[4]=ceiling(extent[4])
       }
       if(!is.na(window[1])){extent=terra::intersect(extent,window)}
-      rasstack=rast(unlist(sapply(c(dynamic_files,static_files),function(x) rast(x,win=extent))))
-      if(first){if(sampleraster){groundtruth_raster=rast(dynamic_files[grep(groundtruth_pattern,dynamic_files)])}else{groundtruth_raster=NA}}
-      if(shrink=="extract"){dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)}
-      else{dts=as.matrix(rasstack)
+      rasstack=rast(sapply(selected_files,function(x) rast(x,win=extent)))
+      if(first){if(sampleraster){groundtruth_raster=rast(selected_files[grep(groundtruth_pattern,selected_files)])}else{groundtruth_raster=NA}}
+      if(shrink=="extract"){
+        dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)
+      }else{
+        dts=as.matrix(rasstack)
       coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
       dts=cbind(dts,coords)}
-
       if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)))}
       dts[is.na(dts)]=0
-      newcolnames=c(gsub(".tif","",c(sapply(basename(dynamic_files),function(x) strsplit(x,"_")[[1]][1]), basename(static_files))),"x","y")
+      newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))),"x","y")
       if(relativedate){newcolnames=c(newcolnames,"sin_month")}
       colnames(dts)=newcolnames
 
       #take a random sample if that was applied
       if(sample_size<1){dts=dts[sample(seq(nrow(dts)),round(nrow(dts)*sample_size)),]}
       if(first){first=F;fdts=dts}else{
-        common_cols <- intersect(colnames(dts), colnames(fdts))
+        common_cols <- sort(intersect(colnames(dts), colnames(fdts)))
         notin1=colnames(dts)[which(!(colnames(dts) %in% common_cols))]
         notin2=colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
         if(length(c(notin1,notin2))>0){warning(paste("the following columns are dropped because they are not present in the entire time series: ",paste(c(notin1,notin2),collapse=", ")))}
@@ -132,7 +128,6 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   #make sure that label data is binary
   data_label[data_label>1]=1
   fdts=fdts[,-groundtruth_index]
-
   if(validation_sample>0){
     sample_indices=sample(seq(nrow(fdts)),round(validation_sample*nrow(fdts)))
     data_matrix=list(features= fdts[-sample_indices,], label=data_label[-sample_indices])
