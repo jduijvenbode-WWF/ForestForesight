@@ -48,7 +48,7 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,
   }
   if(class(templateraster)=="SpatRaster"){
     templateraster[]=0
-    if(!is.na(indices[1])){
+    if(length(indices)<2){
       templateraster[indices]=predictions>threshold
     }else{
       if(ncell(templateraster)==length(predictions)){

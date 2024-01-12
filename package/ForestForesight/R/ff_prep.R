@@ -96,17 +96,18 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))),"x","y")
       if(relativedate){newcolnames=c(newcolnames,"sin_month")}
       colnames(dts)=newcolnames
-
+      dts=dts[,order(colnames(dts))]
       #take a random sample if that was applied
       if(sample_size<1){dts=dts[sample(seq(nrow(dts)),round(nrow(dts)*sample_size)),]}
       if(first){first=F;fdts=dts}else{
-        common_cols <- sort(intersect(colnames(dts), colnames(fdts)))
+        common_cols <- intersect(colnames(dts), colnames(fdts))
         notin1=colnames(dts)[which(!(colnames(dts) %in% common_cols))]
         notin2=colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
         if(length(c(notin1,notin2))>0){warning(paste("the following columns are dropped because they are not present in the entire time series: ",paste(c(notin1,notin2),collapse=", ")))}
         # Subset matrices based on common column names
         # Merge matrices by column names
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
+        fdts=fdts[,order(colnames(fdts))]
       }
     }
     if(verbose){cat(paste("features:",paste(newcolnames,collapse=", "),"\n"))}
