@@ -2,12 +2,11 @@
 ###LAOS###
 
 ## set environment ##
-Sys.setenv("xgboost_datafolder"="D:/ff-dev/results")
+Sys.setenv("xgboost_datafolder"="D:/ff-dev/results/preprocessed")
 
-## set variables ##
-files=c("D:/ff-dev/results/20N_100E","D:/ff-dev/results/30N_100E")
+_## set variables ##
+files=c("D:/ff-dev/results/preprocessed/20N_100E","D:/ff-dev/results/preprocessed/30N_100E")
 tiles = c("20N_100E", "30N_100E")
-data("countries")
 laos= countries[countries$iso3=="LAO",]$geometry
 
 ## data quality check ##
@@ -17,9 +16,9 @@ quality_2 = ff_dqc(files[2])
 print(quality_2$byfeature)
 
 ## data preperation ##
-laos_train = ff_prep(country = "LAO", end = c(2021,12),sample_size=0.2, validation_sample = 0.1, shrink="extract")
+laos_train = ff_prep(country = "LAO", start="2022-01-01", end = "2022-06-01",sample_size=0.2, validation_sample = 0.1, shrink="extract")
 
-laos_test =  ff_prep(country = "LAO", start = c(2022,6),end= c(2023,5), sample_size=0.2, shrink="extract")
+laos_test =  ff_prep(country = "LAO", start = "2023-01-01",end= "2023-05-01", sample_size=0.2, shrink="extract")
 
 laos_test_1 = ff_prep(tiles = "20N_100E", start = c(2022,6))
 laos_test_2 =  ff_prep(tiles = "20N_100E", start = c(2022,6),end= c(2023,5), sample_size=0.2)
@@ -30,6 +29,7 @@ laos_model = ff_train(train_matrix = laos_train$data_matrix,validation_matrix=la
 importance_matrix <- xgb.importance(model = laos_model)
 print(importance_matrix)
 xgb.plot.importance(importance_matrix = importance_matrix)
+
 ## Predict ##
 results=ff_predict(laos_model,laos_test_1$data_matrix,
                    groundtruth=laos_test_1$groundtruth,
@@ -58,22 +58,20 @@ shap.plot.summary(shap_long)
 
 
 
-## 12 months Itteration  ##
-ffdates <- list("2022-06-01", "2022-07-01", "2022-08-01", "2022-09-01", "2022-10-01",
-              "2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01", "2023-03-01",
+## 5 months Itteration  ##
+ffdates <- list( "2023-01-01", "2023-02-01", "2023-03-01",
               "2023-04-01", "2023-05-01")
 
 start_time = Sys.time()
 for(tile in tiles){
   for(date in ffdates){
-    laos_test =  ff_prep(tiles = tile, start = date, fltr_features = "forestmask2019", fltr_condition = ">500")
+    laos_test =  ff_prep(tiles = tile, start = date, fltr_features = "initialforestcover", fltr_condition = ">500")
     results=ff_predict(laos_model,laos_test$data_matrix,
                        groundtruth=laos_test$groundtruth,
                        indices= laos_test$testindices,
                        templateraster = laos_test$groundtruthraster)
-#    forest_mask <- rast(paste0("D:/ff-dev/results/", tile,"/forestmask2019.tif"))>500
     save_dir= "D:/ff-dev/predictionsZillah/Laos"
-    method =  "train_12_forestmask_laos"
+    method =  "train_6_forestmask_laos"
     ff_analyse(results$predicted_raster, laos_test$groundtruthraster,
                csvfile= paste0(save_dir,"/",method,".csv"), tile=tile, method=method, date=date)
     print(paste0("analyzed: ", tile , " on: ", date))

@@ -100,7 +100,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       #take a random sample if that was applied
       if(sample_size<1){dts=dts[sample(seq(nrow(dts)),round(nrow(dts)*sample_size)),]}
       if(first){first=F;fdts=dts}else{
-        common_cols <- intersect(colnames(dts), colnames(fdts))
+        common_cols <- sort(intersect(colnames(dts), colnames(fdts)))
         notin1=colnames(dts)[which(!(colnames(dts) %in% common_cols))]
         notin2=colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
         if(length(c(notin1,notin2))>0){warning(paste("the following columns are dropped because they are not present in the entire time series: ",paste(c(notin1,notin2),collapse=", ")))}
