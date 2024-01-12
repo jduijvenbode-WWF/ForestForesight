@@ -33,6 +33,7 @@ select_files_date <- function(given_date, listed_files) {
   matching_indices <- grep(".*_\\d{4}-\\d{2}-\\d{2}_([^_]+).*", listed_files)
   if (length(listed_files)!=length(matching_indices))
     {warning("Listed_files contains files with incorrect name. The correct file name should be in the format: tile_YYYY-MM-DD_feature.tif. Incorect files will be excluded and not processed")}
+  matching_files= listed_files[matching_indices]
   unique_names <- unique(gsub(".*_\\d{4}-\\d{2}-\\d{2}_([^_]+).*", "\\1", matching_files))
   selected_files <- character(0)
 
