@@ -19,7 +19,7 @@ def distance_to_nearest_nonzero_geotiff(input_geotiff, output_geotiff):
 
     # Calculate Euclidean distance transform
     distance_transform = distance_transform_edt(mask)
-    distance_transform=255-20*np.log(distance_transform)
+    distance_transform=255-20*np.log(distance_transform+1)
     # Update metadata for the output GeoTIFF
     metadata.update(dtype='uint8', count=1)
 
