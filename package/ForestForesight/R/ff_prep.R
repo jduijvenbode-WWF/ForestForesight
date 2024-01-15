@@ -107,8 +107,8 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         # Subset matrices based on common column names
         # Merge matrices by column names
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
-        fdts=fdts[,order(colnames(fdts))]
       }
+      fdts=fdts[,order(colnames(fdts))]
     }
     if(verbose){cat(paste("features:",paste(newcolnames,collapse=", "),"\n"))}
   }
