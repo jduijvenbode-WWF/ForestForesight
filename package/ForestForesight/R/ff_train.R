@@ -31,7 +31,7 @@
 
 
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
-                          subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,verbose=F) {
+                          subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,gamma=0.2,min_child_weight=1,verbose=F) {
 
   # Convert the matrix to a DMatrix object
   if(class(train_matrix)=="xgb.DMatrix"){dtrain <- train_matrix
@@ -43,7 +43,9 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     eval_metric = eval_metric,
     eta = eta,
     max_depth = max_depth,
-    subsample = subsample
+    subsample = subsample,
+    gamma=gamma,
+    min_child_weight=min_child_weight
   )
 
   if(any(is.na(validation_matrix))){watchlist=list(train = dtrain)
