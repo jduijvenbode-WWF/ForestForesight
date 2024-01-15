@@ -19,7 +19,7 @@ for (x in 1:nrow(gfw_tiles)) {
 
     tempras = rast(ncols = 10000, nrows = 10000, xmin = xmin(tile), xmax = xmax(tile), ymin = ymin(tile), ymax = ymax(tile))
 
-    rasterize(simplifyGeom(a, tolerance = 10/110000), tempras, filename = "D:/ff-dev/results/temprasterizedwaterways.tif", datatype = "INT1U", NAflag = NA, overwrite = TRUE)
+    rasterize(simplifyGeom(a, tolerance = 10/110000), tempras, filename = "D:/ff-dev/results/temprasterizedwaterways.tif", datatype = "INT1U", background=0,NAflag = NA, overwrite = TRUE)
 
     system(paste("python", "C:/Users/admin/Documents/GitHub/ForestForesight/preprocessing/distance.py", "D:/ff-dev/results/temprasterizedwaterways.tif", "D:/ff-dev/results/temprasterizedwaterwaysdist.tif"), intern = TRUE)
 
