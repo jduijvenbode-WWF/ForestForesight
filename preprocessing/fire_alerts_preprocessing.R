@@ -54,5 +54,5 @@ files=list.files(recursive=T,pattern="sensor")
 a=matrix(files,nrow=3)
 b=as.data.frame(t(a))
 for(x in 1:nrow(b)){
-  app(rast(as.character(b[x,])),"sum",na.rm=T,filename=file.path("D:/ff-dev/results/preprocessed/",dirname(b[x,1]),gsub(basename("sensor1","firealerts",b[x,1]))))
+  app(rast(as.character(b[x,])),"sum",na.rm=T,filename=file.path("D:/ff-dev/results/preprocessed/",dirname(b[x,1]),gsub("sensor1","firealerts",basename(b[x,1]))))
 }
