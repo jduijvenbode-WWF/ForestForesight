@@ -13,6 +13,8 @@ ff_train(
   subsample = 0.75,
   eval_metric = "aucpr",
   early_stopping_rounds = 10,
+  gamma = NULL,
+  min_child_weight = 1,
   verbose = F
 )
 }
@@ -32,6 +34,10 @@ ff_train(
 \item{eval_metric}{Evaluation metric. Default is "aucpr".}
 
 \item{early_stopping_rounds}{Early stopping rounds. Default is 10.}
+
+\item{gamma}{The gamma value, should be between 0 and 0.3. Determines level of pruning}
+
+\item{min_child_weight}{The minimum weight of the child, determines how quickly the tree grows}
 
 \item{verbose}{should the model run verbose. Default is FALSE.}
 }
