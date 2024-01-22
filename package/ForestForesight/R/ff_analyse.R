@@ -66,7 +66,7 @@ ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
   pols$method=method
   if(remove_empty){pols=pols[-which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm=T)==0),]}
   if(!is.null(csvfile)){
-    if(append){pastdata=read.csv(csvfile)
+    if(append&file.exists(csvfile)){pastdata=read.csv(csvfile)
     pastdata$X=NULL
     write.csv(rbind(pastdata,as.data.frame(pols)),csvfile)}else{
       write.csv(as.data.frame(pols),csvfile)
