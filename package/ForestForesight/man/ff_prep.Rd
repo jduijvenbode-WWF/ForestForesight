@@ -41,7 +41,7 @@ ff_prep(
 
 \item{exc_features}{Vector of excluded features. States which features to exclude in the data preparation.}
 
-\item{fltr_features}{vector of features for filtering data. Default is empty. EXAMPLE: 'forestmask2019'. needs to be combined with fltr_condition of the same length}
+\item{fltr_features}{vector of features for filtering data. Default is empty. EXAMPLE: 'initialforestcover'. needs to be combined with fltr_condition of the same length}
 
 \item{fltr_condition}{Vector of filtering conditions. Default is empty EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector}
 

@@ -15,7 +15,8 @@ ff_analyse(
   remove_empty = T,
   date = NULL,
   tile = NULL,
-  method = NA
+  method = NA,
+  verbose = F
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ ff_analyse(
 \item{tile}{character. should be in format AA{N-S}_BBB{W-E}. Optional if either groundtruth or predictions is a character to the tiffile with a directory name.}
 
 \item{method}{character. the shorthand for the method used, which should also be included in the separate csv file for storing methods}
+
+\item{verbose}{Logical. Whether the steps taken in the function should be verbose.}
 }
 \value{
 A vector dataset containing calculated scores for each polygon.
