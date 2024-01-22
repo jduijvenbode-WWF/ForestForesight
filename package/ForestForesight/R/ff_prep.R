@@ -91,10 +91,10 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         dts=as.matrix(rasstack)
       coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
       dts=cbind(dts,coords)}
-      if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)))}
+      if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)), rep(as.numeric(format(as.Date(i),"%m")),nrow(dts)))}
       dts[is.na(dts)]=0
       newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))),"x","y")
-      if(relativedate){newcolnames=c(newcolnames,"sin_month")}
+      if(relativedate){newcolnames=c(newcolnames,"sinmonth", "month")}
       colnames(dts)=newcolnames
       dts=dts[,order(colnames(dts))]
       #take a random sample if that was applied
@@ -107,8 +107,8 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         # Subset matrices based on common column names
         # Merge matrices by column names
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
-        fdts=fdts[,order(colnames(fdts))]
       }
+      fdts=fdts[,order(colnames(fdts))]
     }
     if(verbose){cat(paste("features:",paste(newcolnames,collapse=", "),"\n"))}
   }
