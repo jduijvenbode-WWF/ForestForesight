@@ -13,6 +13,7 @@
 #' @param date character. should be in format (YYYY-MM-DD). Optional if either groundtruth or predictions is a character to the tiffile.
 #' @param tile character. should be in format AA{N-S}_BBB{W-E}. Optional if either groundtruth or predictions is a character to the tiffile with a directory name.
 #' @param method character. the shorthand for the method used, which should also be included in the separate csv file for storing methods
+#' @param verbose Logical. Whether the steps taken in the function should be verbose.
 #'
 #' @return A vector dataset containing calculated scores for each polygon.
 #'
@@ -23,7 +24,7 @@
 #'
 #' @export
 
-ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA){
+ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA,verbose=F){
   if(!(class(predictions) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
   if(!(class(groundtruth) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
   if(append==T&!file.exists(csvfile)){append=F;warning("CSV file did not yet exist, creating empty one")}
@@ -39,9 +40,10 @@ ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
   }
   if(class(predictions)=="character"){predictions=rast(predictions)}
   if(class(groundtruth)=="character"){groundtruth=rast(groundtruth,win=ext(predictions))}
+  if(verbose){cat("rasters loaded\n")}
   groundtruth[is.na(groundtruth)]=0
   if(!is.null(forestmask)){
-    cat("using forest mask\n")
+    if(verbose){cat("using forest mask\n")}
     if(class(forestmask)=="character"){forestmask=rast(forestmask)}
     cross=2*groundtruth+predictions*forestmask
   }else{cross=2*groundtruth+predictions}
@@ -51,10 +53,15 @@ ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
       if(class(analysis_polygons=="character")){
         pols=vect(analysis_polygons)}else{
           pols=analysis_polygons}}
-  pols$FP=extract(cross==1,pols,fun="sum",na.rm=T,touches=F)[,2]
-  pols$FN=extract(cross==2,pols,fun="sum",na.rm=T,touches=F)[,2]
-  pols$TP=extract(cross==3,pols,fun="sum",na.rm=T,touches=F)[,2]
-  pols$TN=extract(cross==0,pols,fun="sum",na.rm=T,touches=F)[,2]
+  if(verbose){cat("summarizing statistics\n")}
+  print(summary(cross))
+  print(summary(pols))
+  return(list("pols"=pols,"cross"=cross))
+  pols$FP=terra::extract(cross==1,pols,fun="sum",na.rm=T,touches=F)[,2]
+  pols$FN=terra::extract(cross==2,pols,fun="sum",na.rm=T,touches=F)[,2]
+  pols$TP=terra::extract(cross==3,pols,fun="sum",na.rm=T,touches=F)[,2]
+  pols$TN=terra::extract(cross==0,pols,fun="sum",na.rm=T,touches=F)[,2]
+  if(verbose){cat("adding metadata\n")}
   pols$date=date
   pols$method=method
   if(remove_empty){pols=pols[-which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm=T)==0),]}
