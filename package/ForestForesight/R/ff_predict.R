@@ -20,7 +20,7 @@
 #' @name ff_predict
 
 
-ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,templateraster=NA){
+ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=NA,templateraster=NA){
   # Get the features
   model_features <- model$feature_names
   test_features <- colnames(test_matrix$features)
@@ -34,17 +34,19 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth,indices=NA,
   # Convert the matrix to a DMatrix object
   test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)
   predictions=predict(model,test_matrix)
-  precision=c()
-  recall=c()
-  F05=c()
-  for(thresh in threshold){
-    res=table(2*(predictions>thresh)+groundtruth)
-    prec=as.numeric(res[4]/(res[4]+res[3]))
-    rec=as.numeric(res[4]/(res[4]+res[2]))
-    precision=c(precision,prec)
-    recall=c(recall,rec)
-    F05=c(F05,1.25*prec*rec/(0.25*prec+rec))
-  }
+  if(!is.na(groundtruth[1])){
+    precision=c()
+    recall=c()
+    F05=c()
+    for(thresh in threshold){
+      res=table(2*(predictions>thresh)+groundtruth)
+      prec=as.numeric(res[4]/(res[4]+res[3]))
+      rec=as.numeric(res[4]/(res[4]+res[2]))
+      precision=c(precision,prec)
+      recall=c(recall,rec)
+      F05=c(F05,1.25*prec*rec/(0.25*prec+rec))
+    }
+  }else{precision=NA;recall=NA;F05=NA}
   if(class(templateraster)=="SpatRaster"){
     templateraster[]=0
     print(length(indices))
