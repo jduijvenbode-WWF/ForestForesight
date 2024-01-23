@@ -39,10 +39,11 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   if(datafolder==""){stop("No environment variable for xgboost_datafolder and no datafolder parameter set")}
   if(sampleraster&((validation_sample>0)|sample_size<1)){
     sampleraster=F
-    warning("No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}
+    if(verbose){warning("No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}}
   data(gfw_tiles)
   tilesvect=vect(gfw_tiles)
   if(!is.na(country)){
+    if(verbose){cat("selecting based on country\n")}
     data(countries)
     borders=vect(countries)
     selected_country=borders[which(borders$iso3==country)]
@@ -57,6 +58,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
 
   #remove features that are not wanted
   if(!is.na(exc_features[1])){
+    if(verbose){cat("excluding features\n")}
     exc_indices=unique(unlist(sapply(exc_features,function(x) which(startsWith(basename(allfiles),x)))))
     if(length(exc_indices)>0){allfiles=allfiles[-exc_indices]}}
   if(!is.na(inc_features[1])){
@@ -69,13 +71,15 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   if(length(tiles)>1){warning("No template raster will be returned because multiple tiles are processed together")
     sampleraster=F}
   for(tile in tiles){
+
     files=allfiles[grep(tile,allfiles)]
     if(is.na(country)&(shrink=="extract")){
       if(!exists("countries")){data(countries);borders=vect(countries)}
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
    for(i in daterange){
+     if(verbose){cat(paste("loading tile data from",tile,"for",i,"\n"))}
       selected_files = select_files_date(i, files)
-      extent=ext(rast(selected_files[1]))
+      for(file in selected_files){if(!exists("extent")){extent=ext(rast(file))}else{extent=terra::intersect(extent,ext(rast(file)))}}
       if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
       if(shrink=="crop-deg"){
         extent=ext(crop(as.polygons(extent),ext(selected_country)))
@@ -110,11 +114,12 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       }
       fdts=fdts[,order(colnames(fdts))]
     }
-    if(verbose){cat(paste("features:",paste(newcolnames,collapse=", "),"\n"))}
+    if(verbose){cat(paste("loading finished, features:",paste(newcolnames,collapse=", "),"\n"))}
   }
   #filter training data on features that have been declared
   filterindices=c()
   if(length(fltr_features)>0){
+    if(verbose){cat(paste("filtering features"))}
     for(i in seq(length(fltr_features))){
       sf_indices=which(sapply(fdts[,which(colnames(fdts)==fltr_features[i])],function(x) eval(parse(text = paste(x, fltr_condition[i])))))
       filterindices=c(filterindices,sf_indices)
