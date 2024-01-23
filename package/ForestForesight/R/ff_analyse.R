@@ -54,9 +54,6 @@ ff_analyse=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
         pols=vect(analysis_polygons)}else{
           pols=analysis_polygons}}
   if(verbose){cat("summarizing statistics\n")}
-  print(summary(cross))
-  print(summary(pols))
-  return(list("pols"=pols,"cross"=cross))
   pols$FP=terra::extract(cross==1,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$FN=terra::extract(cross==2,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$TP=terra::extract(cross==3,pols,fun="sum",na.rm=T,touches=F)[,2]
