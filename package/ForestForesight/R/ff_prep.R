@@ -94,8 +94,8 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
           if(length(grep(groundtruth_pattern,selected_files))>0){
             groundtruth_raster=rast(selected_files[grep(groundtruth_pattern,selected_files)])
           }else{
-            groundtruth_raster=NA}
-          else{groundtruth_raster=NA}}
+            groundtruth_raster=NA}}else{
+              groundtruth_raster=NA}
         if(shrink=="extract"){
           dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)
         }else{
