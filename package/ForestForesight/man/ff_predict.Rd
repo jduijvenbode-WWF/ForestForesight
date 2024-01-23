@@ -8,7 +8,7 @@ ff_predict(
   model,
   test_matrix,
   threshold = 0.5,
-  groundtruth,
+  groundtruth = NA,
   indices = NA,
   templateraster = NA
 )
