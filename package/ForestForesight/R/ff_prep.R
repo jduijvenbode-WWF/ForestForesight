@@ -66,7 +66,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     if(length(inc_indices>0)){allfiles=allfiles[inc_indices]}}
   if(length(allfiles)==0){stop("after including and excluding the requested variables there are no files left")}
   #create the range between start and end date
-  daterange=as.character(seq(as.Date(start),as.Date(end),"1 month"))
+  daterange=daterage(start,end)
   first=T
   if(length(tiles)>1){warning("No template raster will be returned because multiple tiles are processed together")
     sampleraster=F}
@@ -80,6 +80,8 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
      if(verbose){cat(paste("loading tile data from",tile,"for",i,"\n"))}
 
       selected_files = select_files_date(i, files)
+      #remove groundtruth if it is not of the same month
+      if(!(grep(groundtruth_pattern,selected_files) %in% grep(i,selected_files))){selected_files=selected_files[-grep(groundtruth_pattern,selected_files)]}
       for(file in selected_files){if(!exists("extent")){extent=ext(rast(file))}else{extent=terra::intersect(extent,ext(rast(file)))}}
       if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
       if(shrink=="crop-deg"){
