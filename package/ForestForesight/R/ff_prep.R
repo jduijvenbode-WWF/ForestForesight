@@ -66,7 +66,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     if(length(inc_indices>0)){allfiles=allfiles[inc_indices]}}
   if(length(allfiles)==0){stop("after including and excluding the requested variables there are no files left")}
   #create the range between start and end date
-  daterange=as.character(seq(as.Date(start),as.Date(end),"1 month"))
+  daterange=daterage(start,end)
   first=T
   if(length(tiles)>1){warning("No template raster will be returned because multiple tiles are processed together")
     sampleraster=F}
@@ -78,7 +78,10 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
    for(i in daterange){
      if(verbose){cat(paste("loading tile data from",tile,"for",i,"\n"))}
+
       selected_files = select_files_date(i, files)
+      #remove groundtruth if it is not of the same month
+      if(!(grep(groundtruth_pattern,selected_files) %in% grep(i,selected_files))){selected_files=selected_files[-grep(groundtruth_pattern,selected_files)]}
       for(file in selected_files){if(!exists("extent")){extent=ext(rast(file))}else{extent=terra::intersect(extent,ext(rast(file)))}}
       if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
       if(shrink=="crop-deg"){
@@ -88,13 +91,20 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       }
       if(!is.na(window[1])){extent=terra::intersect(extent,window)}
       rasstack=rast(sapply(selected_files,function(x) rast(x,win=extent)))
-      if(first){if(sampleraster){groundtruth_raster=rast(selected_files[grep(groundtruth_pattern,selected_files)])}else{groundtruth_raster=NA}}
-      if(shrink=="extract"){
-        dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)
-      }else{
-        dts=as.matrix(rasstack)
-      coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
-      dts=cbind(dts,coords)}
+      if(first){
+        if(sampleraster){
+          if(length(grep(groundtruth_pattern,selected_files))>0){
+            groundtruth_raster=rast(selected_files[grep(groundtruth_pattern,selected_files)])
+          }else{
+            groundtruth_raster=NA}}else{
+              groundtruth_raster=NA}
+        if(shrink=="extract"){
+          dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)
+        }else{
+          dts=as.matrix(rasstack)
+          coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
+          dts=cbind(dts,coords)}
+      }
       if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)), rep(as.numeric(format(as.Date(i),"%m")),nrow(dts)))}
       dts[is.na(dts)]=0
       newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))),"x","y")
@@ -130,10 +140,15 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   }
   #split data into feature data and label data
   groundtruth_index=which(colnames(fdts)==groundtruth_pattern)
-  data_label=fdts[,groundtruth_index]
+  if(length(groundtruth_index)==1){
+    data_label=fdts[,groundtruth_index]
+    data_label[data_label>1]=1
+    fdts=fdts[,-groundtruth_index]
+  }else{
+    if(verbose){warning("no groundtruth rasters found");data_label=NA}
+  }
   #make sure that label data is binary
-  data_label[data_label>1]=1
-  fdts=fdts[,-groundtruth_index]
+
   if(validation_sample>0){
     sample_indices=sample(seq(nrow(fdts)),round(validation_sample*nrow(fdts)))
     data_matrix=list(features= fdts[-sample_indices,], label=data_label[-sample_indices])
