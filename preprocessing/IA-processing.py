@@ -74,6 +74,8 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         create_smoothedtotal = not os.path.isfile(smoothedtotal_file)
         smoothedsixmonths_file=output_file.replace("layer","smoothedsixmonths")
         create_smoothedsixmonths = not os.path.isfile(smoothedsixmonths_file)
+        lastmonth_file=output_file.replace("layer","lastmonth")
+        create_lastmonth = not os.path.isfile(lastmonth_file)
         # Iterate over windows
         if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,
             create_twelvetosixmonths,create_latest_deforestation,create_patchiness,create_smoothedtotal,create_smoothedsixmonths]):
@@ -98,6 +100,7 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
                     if create_groundtruth: groundtruth=template.copy()
                     if create_confidence: confidence=template.copy()
                     if create_patchiness: patchiness=template.copy()
+                    if create_lastmonth: lastmonth=template.copy()
                 offx2=(offx1+(template.shape[0]//2))
                 offy2=(offy1+(template.shape[1]//2))
 
@@ -113,6 +116,7 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
                 if create_latest_deforestation: latest_deforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max(np.multiply(np.divide(data,relative_date),10000).astype(int),fun="max")
 
                 #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.  
+                if create_lastmonth: lastmonth[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
                 if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
                 if create_sixmonths or create_smoothedsixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-183)).astype(int),fun="sum")
                 #for now patchiness uses 6 months as well.
