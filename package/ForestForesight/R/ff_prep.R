@@ -98,7 +98,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       if(first){
         if(sampleraster){
           if(length(grep(groundtruth_pattern,selected_files))>0){
-            groundtruth_raster=rast(selected_files[grep(groundtruth_pattern,selected_files)])
+            groundtruth_raster=rast(selected_files[grep(groundtruth_pattern,selected_files)],win=extent)
           }else{
             groundtruth_raster=rast(selected_files[1],win=extent);groundtruth_raster[]=0}}else{
               groundtruth_raster=rast(selected_files[1],win=extent);groundtruth_raster[]=0}
