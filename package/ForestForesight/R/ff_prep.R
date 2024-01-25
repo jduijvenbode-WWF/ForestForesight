@@ -31,6 +31,7 @@
 
 
 ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start="2021-01-01",end=NA,inc_features=NA,exc_features=NA,fltr_features=NULL,fltr_condition=NULL,sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
+  ########quality check########
   if(is.na(country)){shrink="none"}
   if(is.na(start[1])){stop("no start date given")}
   if(is.null(tiles)&is.na(country)){stop("unknown what to process since no tiles or country were given")}
@@ -40,6 +41,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   if(sampleraster&((validation_sample>0)|sample_size<1)){
     sampleraster=F
     if(verbose){warning("No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}}
+  ########preprocess for by-country processing########
   data(gfw_tiles)
   tilesvect=vect(gfw_tiles)
   if(!is.na(country)){
@@ -52,7 +54,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     if(is.null(tiles)){tiles=tilesvect}
   }
 
-  #list all the files for the tiles that have been selected
+  ##########list files and exclude features######
   allfiles=as.character(unlist(sapply(tiles,function(x) list.files(path=file.path(datafolder,x),full.names=T,recursive=T,pattern="tif$"))))
   if(length(allfiles)==0){stop(paste("no folders with tif-files found that correspond to the given tile id's:",paste(tiles,collapse=",")))}
 
@@ -70,6 +72,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   first=T
   if(length(tiles)>1){warning("No template raster will be returned because multiple tiles are processed together")
     sampleraster=F}
+  #######load raster data as matrix#########
   for(tile in tiles){
 
     files=allfiles[grep(tile,allfiles)]
@@ -126,6 +129,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     }
     if(verbose){cat(paste("loading finished, features:",paste(newcolnames,collapse=", "),"\n"))}
   }
+  ######filter data based on features#######
   #filter training data on features that have been declared
   filterindices=c()
   if(length(fltr_features)>0){
@@ -138,6 +142,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   if(length(filterindices)>0){
     fdts=fdts[filterindices,]
   }
+  #######create groundtruth data#######
   #split data into feature data and label data
   groundtruth_index=which(colnames(fdts)==groundtruth_pattern)
   if(length(groundtruth_index)==1){
@@ -145,10 +150,11 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     data_label[data_label>1]=1
     fdts=fdts[,-groundtruth_index]
   }else{
-    if(verbose){warning("no groundtruth rasters found");data_label=NA}
+    if(verbose){warning("no groundtruth rasters found")}
+    data_label=NA
   }
   #make sure that label data is binary
-
+  ##########create validation sample#######
   if(validation_sample>0){
     sample_indices=sample(seq(nrow(fdts)),round(validation_sample*nrow(fdts)))
     data_matrix=list(features= fdts[-sample_indices,], label=data_label[-sample_indices])
@@ -157,7 +163,8 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     data_matrix=list(features= fdts, label=data_label)
     validation_matrix=NA
   }
-  if(sum(data_matrix$label)==0){stop("data contains no actuals, all labels are 0")}
+  ##########output data####
+  if(!is.na(data_matrix$label)){if(sum(data_matrix$label)==0){stop("data contains no actuals, all labels are 0")}}
   return(list("data_matrix"=data_matrix,"validation_matrix"=validation_matrix,"testindices"=filterindices,"groundtruth"=data_label,"groundtruthraster"=groundtruth_raster,features=colnames(fdts)))
 }
 
