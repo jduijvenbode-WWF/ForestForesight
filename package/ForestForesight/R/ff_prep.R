@@ -74,18 +74,20 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     sampleraster=F}
   #######load raster data as matrix#########
   for(tile in tiles){
+    if(exists("extent")){rm(extent)}
     files=allfiles[grep(tile,allfiles)]
     if(is.na(country)&(shrink=="extract")){
       if(!exists("countries")){data(countries);borders=vect(countries)}
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
     for(i in daterange){
       if(exists("dts")){rm(dts)}
-      if(verbose){cat(paste("loading tile data from",tile,"for",i,"\n"))}
+      if(verbose){cat(paste("loading tile data from",tile,"for",i," "))}
 
       selected_files = select_files_date(i, files)
       #remove groundtruth if it is not of the same month
       if(!(grep(groundtruth_pattern,selected_files) %in% grep(i,selected_files))){selected_files=selected_files[-grep(groundtruth_pattern,selected_files)]}
       for(file in selected_files){if(!exists("extent")){extent=ext(rast(file))}else{extent=terra::intersect(extent,ext(rast(file)))}}
+      if(verbose){cat(paste("with extent",extent[1],extent[2],extent[3],extent[4],"\n"))}
       if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
       if(shrink=="crop-deg"){
         extent=ext(crop(as.polygons(extent),ext(selected_country)))

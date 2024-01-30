@@ -2,12 +2,13 @@ library(lubridate)
 library(ForestForesight)
 maxdate=commandArgs(trailingOnly = T)
 #maxdate="2023-12-01"
+if(length(maxdate)==0){stop("no date given till when to process")}
 gtdate <- as.character(ymd(maxdate) %m-% months(6))
 
 
 ffdates=paste(sort(rep(seq(2021,2030),12)),sprintf("%02d",seq(12)),"01",sep="-")[]
 ffdates=ffdates[which(ymd(ffdates)<=ymd(maxdate))]
-layers=c("timesinceloss","patchdensity","lastsixmonths","totallossalerts","previoussameseason","confidence","smoothedtotal","smoothedsixmonths","groundtruth")
+layers=c("timesinceloss","patchdensity","lastsixmonths","totallossalerts","previoussameseason","confidence","smoothedtotal","smoothedsixmonths","groundtruth","lastmonth")
 comb1=apply(expand.grid(ffdates, layers), 1, paste, collapse="_")
 
 data("gfw_tiles")
