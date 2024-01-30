@@ -78,7 +78,7 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         create_lastmonth = not os.path.isfile(lastmonth_file)
         # Iterate over windows
         if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,
-            create_twelvetosixmonths,create_latest_deforestation,create_patchiness,create_smoothedtotal,create_smoothedsixmonths]):
+            create_twelvetosixmonths,create_latest_deforestation,create_patchiness,create_smoothedtotal,create_smoothedsixmonths,create_lastmonth]):
             for i in range(num_windows):
                 # Calculate the starting coordinates of the window
                 col_offset = (i % 2) * window_width
@@ -116,7 +116,7 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
                 if create_latest_deforestation: latest_deforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max(np.multiply(np.divide(data,relative_date),10000).astype(int),fun="max")
 
                 #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.  
-                if create_lastmonth: lastmonth[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
+                if create_lastmonth: lastmonth[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-30)).astype(int),fun="sum")
                 if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
                 if create_sixmonths or create_smoothedsixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-183)).astype(int),fun="sum")
                 #for now patchiness uses 6 months as well.
