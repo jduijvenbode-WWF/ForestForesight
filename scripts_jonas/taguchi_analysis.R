@@ -35,7 +35,7 @@ for(tile in tiles){
       if(start){start=F
       results=iteration
       }else{results=rbind(results,iteration)}
-      print("writing results to csv")
+      print(paste0("writing results of experiment ", i,"on date: ",date, " and tile ", tile, " to csv"))
       write.csv(results,"D:/ff-dev/experiment_landscape_newparameters.csv")
     }
 
