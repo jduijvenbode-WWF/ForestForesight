@@ -5,7 +5,9 @@
 ## Author
 - [@Jonas van Duijvenbode](https://www.linkedin.com/in/jonas-van-duijvenbode-576a1b43?original_referer=https%3A%2F%2Fwww%2Egoogle%2Ecom%2F&originalSubdomain=nl)
 
-This R package provides tools for generating 6-month deforestation predictions, facilitating analysis at various spatial scales. The predictions are based on data divided into 10x10 degree tiles and can be conducted at the country, tile, or group-of-tiles level. It leverages both user-provided data and preprocessed datasets available on an open S3 bucket, covering the entire land-covered pantropical belt between -30 and 30 degrees latitude.
+This R package provides tools for generating 6-month deforestation predictions, facilitating analysis at various spatial scales. The predictions are based on data divided into 10x10 degree tiles and can be conducted at the country, tile, or group-of-tiles level. It leverages both user-provided data and preprocessed datasets available on an open S3 bucket, covering the entire land-covered pantropical belt between -30 and 30 degrees latitude. The system makes for our global model extensive use of the GlobalForestWatch Integrated Alerts, which can be found [here](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/).
+
+![Logo](https://content.globalforestwatch.org/wp-content/uploads/2021/12/integrated-deforestation-alerts-layer-2021.png)
 
 ## Features
 | function | usage     |
