@@ -24,6 +24,8 @@ def weighted_smoothing(data, window_size):
 def aggregate_by_40_max(input_array,fun):
     if fun=="max":
         small = input_array.reshape([int(input_array.shape[1]//40), 40,int(input_array.shape[1]//40), 40]).max(3).max(1)
+    if fun=="min":
+        small = input_array.reshape([int(input_array.shape[1]//40), 40,int(input_array.shape[1]//40), 40]).min(3).min(1)
     elif fun=="mean":
         small = input_array.reshape([int(input_array.shape[1]//40), 40,int(input_array.shape[1]//40), 40]).mean(3).mean(1)
     elif fun=="nanmean":
@@ -109,13 +111,14 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
                 if create_confidence: confidence[offx1:offx2,offy1:offy2]=aggregate_by_40_max((np.remainder(np.nan_to_num(data), 10000)<relative_date).astype(int)*data//10000,fun="nanmean")
                 data = np.remainder(np.nan_to_num(data), 10000)
                 if create_groundtruth: groundtruth[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date+182))&(data>relative_date)).astype(int),fun="max")
+                #remove all future data for the next features
                 data[data>relative_date]=0
 
 
-                #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.     
+                #remove current date from data to get relative date, ignoring 0's, then aggregate by 40.     
                 if create_latest_deforestation: latest_deforestation[offx1:offx2,offy1:offy2]=aggregate_by_40_max(np.multiply(np.divide(data,relative_date),10000).astype(int),fun="max")
 
-                #remove current date from data to get relative date, ignoring 0's, then remove everything below 0 to remove future deforestation. then aggregate by 40.  
+                #remove current date from data to get relative date, ignoring 0's, then aggregate by 40.  
                 if create_lastmonth: lastmonth[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-30)).astype(int),fun="sum")
                 if create_threemonths: threemonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-92)).astype(int),fun="sum")
                 if create_sixmonths or create_smoothedsixmonths: sixmonths[offx1:offx2,offy1:offy2]=aggregate_by_40_max((data>(relative_date-183)).astype(int),fun="sum")
@@ -172,6 +175,11 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
                 smoothedsixmonths=weighted_smoothing(sixmonths, window_size=21)
                 with rasterio.open(smoothedsixmonths_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="uint16", crs=src.crs, transform=newtransform) as dst:
                     dst.write(smoothedsixmonths.reshape(1,smoothedsixmonths.shape[0],smoothedsixmonths.shape[1]))
+            
+            if create_lastmonth:
+                lastmonth[lastmonth==0]=65535
+                with rasterio.open(lastmonth_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="uint16", crs=src.crs, transform=newtransform) as dst:
+                    dst.write(lastmonth.reshape(1,lastmonth.shape[0],lastmonth.shape[1]))
 
 
 if __name__ == "__main__":
