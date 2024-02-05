@@ -23,4 +23,10 @@ for (tile in tiles){
 }
 
 
-t1=rast("C:/Users/admin/Downloads/cec_0-5cm_mean.vrt.ovr")
+t1=rast("C:/data/cec/cec_0-5cm_mean.vrt",win=ext(c(-10,-8,-3,-1)))
+for(rasje in tempras){
+  rasjeras=rast(rasje)
+  cecras=project(rast("C:/data/cec/testtiff2.tif"),rasjeras,method="mode")
+  cecras[is.na(cecras)]=0
+  writeRaster(cecras,gsub("elevation","catexcap",rasje),datatype="INT2U",gdal="COMPRESS=DEFLATE")
+}
