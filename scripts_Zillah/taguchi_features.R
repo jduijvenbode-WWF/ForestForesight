@@ -3,13 +3,13 @@
 ## set environment ##
 Sys.setenv("xgboost_datafolder"="D:/ff-dev/results/preprocessed")
 abr ="LAO"
-feature_exp=(read.csv("D:/ff-dev/taguchi/Taguchi31f2l.csv")==1)[,1:29]
+feature_exp=(read.csv("D:/ff-dev/taguchi/Taguchi31f2l.csv")==1)
 start=T
-laos_train = ff_prep(country = abr, start="2022-01-01", end = "2022-06-01",sample_size=0.3, shrink="extract", fltr_features = "initialforestcover", fltr_condition = ">0")
+laos_train = ff_prep(country = abr, start="2022-01-01", end = "2022-06-01",sample_size=0.3, shrink="extract")
 colnames(feature_exp)=laos_train$features
 
 for(i in 1:nrow(feature_exp)){
-  print("Start experiment 1")
+  print(paste("Start experiment", i))
   features_sel= feature_exp[i,]
   train_matrix=list(features= laos_train$data_matrix$features[,features_sel],
                     label=laos_train$data_matrix$label)
@@ -29,7 +29,7 @@ for(i in 1:nrow(feature_exp)){
                       label=test_data$data_matrix$label)
     predres=ff_predict(model_laos_taguchi,test_matrix,
                        groundtruth=test_data$groundtruth)
-    iteration=c(date,features_sel,predres$F0.5,predres$precision,predres$recall)
+    iteration=c(date=date,features_sel,F05=predres$F0.5,precision=predres$precision,recall=predres$recall)
     print(iteration)
     if(start){start=F
     results=iteration
