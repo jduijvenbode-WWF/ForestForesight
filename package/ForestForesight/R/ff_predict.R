@@ -6,6 +6,9 @@
 #' @param test_matrix The xgbd test matrix
 #' @param threshold Vector with chosen threshold(s). Default 0.5, which has shown to be the best in almost all scenarios
 #' @param groundtruth A vector of the same length as the test matrix to verify against
+#' @param indices. a vector of the indices of the template raster that need to be filled in.
+#' @param templateraster. a spatraster that can serve as the template to fill in the predictions
+#' @param verbose. whether the output should be verbose
 #'
 #' @return list with precision, recall and F0.5
 #'
@@ -20,7 +23,7 @@
 #' @name ff_predict
 
 
-ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=NA,templateraster=NA){
+ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=NA,templateraster=NA,verbose=T){
   # Get the features
   model_features <- model$feature_names
   test_features <- colnames(test_matrix$features)
@@ -32,9 +35,10 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=
     test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
   }
   # Convert the matrix to a DMatrix object
-  test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)
+  if(!is.na(test_matrix$label[1])){test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)}else{test_matrix = xgb.DMatrix(test_matrix$features)}
   predictions=predict(model,test_matrix)
   if(!is.na(groundtruth[1])){
+    if(verbose){cat("calculationg scores\n")}
     precision=c()
     recall=c()
     F05=c()
@@ -49,8 +53,8 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=
   }else{precision=NA;recall=NA;F05=NA}
   if(class(templateraster)=="SpatRaster"){
     templateraster[]=0
-    print(length(indices))
     if(length(indices)>1){
+      if(verbose){cat("filling raster\n")}
       templateraster[indices]=predictions>threshold
     }else{
       if(ncell(templateraster)==length(predictions)){

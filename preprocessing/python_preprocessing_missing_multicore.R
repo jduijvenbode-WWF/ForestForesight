@@ -1,5 +1,6 @@
 library(lubridate)
 library(ForestForesight)
+library(parallel)
 maxdate=commandArgs(trailingOnly = T)
 #maxdate="2023-12-01"
 if(length(maxdate)==0){stop("no date given till when to process")}
@@ -29,6 +30,10 @@ commandtxts=paste("python",
                   "--groundtruth",
                   as.numeric(!(as.Date(substr(basename(utbp),10,19))>as.Date(gtdate))))
 
-for(cmdt in commandtxts){
-  print(cmdt);system(cmdt)
-}
+cl <- makeCluster(getOption("cl.cores", 7))
+clusterExport(cl, "commandtxts")
+results <- clusterApply(cl, commandtxts, system)
+
+# Stop the cluster
+stopCluster(cl)
+

@@ -36,8 +36,10 @@ start=T
       if(start){start=F
       results=iteration
       }else{results=rbind(results,iteration)}
+
       print("writing results to csv")
       write.csv(results,"D:/ff-dev/experiment_laos_param_final.csv")
+
     }
 
   }
