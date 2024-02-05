@@ -8,11 +8,13 @@
 #' @param eta Learning rate. Default is 0.1.
 #' @param max_depth Maximum tree depth. Default is 5.
 #' @param subsample Subsample ratio of the training instances. Default is 0.75.
-#' @param eval_metric Evaluation metric. Default is "aucpr".
+#' @param eval_metric Evaluation metric. Default is "aucpr". This can also be a custom evaluation metric.
+#' @param maximize Default is NULL. Should be True or False in case a custom evaluation metric is used.
 #' @param early_stopping_rounds Early stopping rounds. Default is 10.
 #' @param gamma The gamma value, should be between 0 and 0.3. Determines level of pruning
 #' @param min_child_weight The minimum weight of the child, determines how quickly the tree grows
 #' @param verbose should the model run verbose. Default is FALSE.
+#'
 #'
 #' @return Trained XGBoost model.
 #'
@@ -33,7 +35,8 @@
 
 
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
-                          subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,gamma=NULL,min_child_weight=1,verbose=F) {
+                     subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,
+                     gamma=NULL, maximize=NULL, min_child_weight=1,verbose=F) {
 
   # Convert the matrix to a DMatrix object
   if(class(train_matrix)=="xgb.DMatrix"){dtrain <- train_matrix
@@ -63,7 +66,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     nrounds=nrounds,
     data = dtrain,
     watchlist = watchlist,
-    early_stopping_rounds = early_stopping_rounds,verbose=verbose
+    early_stopping_rounds = early_stopping_rounds,maximize=maximize, verbose=verbose
   )
 
   # Return the trained model
