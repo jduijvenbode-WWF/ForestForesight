@@ -10,7 +10,9 @@ ff_predict(
   threshold = 0.5,
   groundtruth = NA,
   indices = NA,
-  templateraster = NA
+  templateraster = NA,
+  verbose = T,
+  certainty = F
 )
 }
 \arguments{
@@ -21,6 +23,14 @@ ff_predict(
 \item{threshold}{Vector with chosen threshold(s). Default 0.5, which has shown to be the best in almost all scenarios}
 
 \item{groundtruth}{A vector of the same length as the test matrix to verify against}
+
+\item{indices.}{a vector of the indices of the template raster that need to be filled in.}
+
+\item{templateraster.}{a spatraster that can serve as the template to fill in the predictions}
+
+\item{verbose.}{whether the output should be verbose}
+
+\item{certainty.}{if True the certainty in percentage of the prediction will be returned, otherwise just true or false}
 }
 \value{
 list with precision, recall and F0.5
