@@ -27,10 +27,10 @@
 ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA,verbose=F){
   if(!(class(predictions) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
   if(!(class(groundtruth) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
-  if(append==T&!file.exists(csvfile)){append=F;warning("CSV file did not yet exist, creating empty one")}
+  if(!is.null(csvfile)){if(append==T&!file.exists(csvfile)){append=F;warning("CSV file did not yet exist, creating empty one")}}
   if(is.null(date)){
-    if(class(predictions)=="character"){date=substr(predictions,nchar(predictions)-13,nchar(predictions)-4)}else{
-      if(class(groundtruth)=="character"){date=substr(groundtruth,nchar(groundtruth)-13,nchar(groundtruth)-4)}else{stop("no method to derive date from filename")}
+    if(class(predictions)=="character"){date=substr(basename(predictions),10,19)}else{
+      if(class(groundtruth)=="character"){date=substr(basename(predictions),10,19)}else{stop("no method to derive date from filename")}
     }
   }
   if(is.null(tile)&(!is.null(analysis_polygons))){
