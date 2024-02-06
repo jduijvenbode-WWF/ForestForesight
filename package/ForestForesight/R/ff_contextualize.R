@@ -14,12 +14,13 @@
 #' @param WDPA Logical. Whether the WDPA classification should be added. Default is TRUE
 #' @param GADM Logical. Whether the GADM classification should be added. Default is TRUE
 #' @param ECOBIOME Logical. Whether the ECOBIOME classifications should be added. Default is TRUE
+#' @param centers Logical. Whether the centers should also be written. Default is FALSE
 #'
 #' @return A vector dataset containing the input data with all columns of the files in the context folder added
 #'
 #' @export
 
-ff_contextualize=function(hotzones=NA,hotzonesfolder=NA,contextfolder,NA_label="Unknown",country=NA,date=NA,outputfile=NA,return_vector=F,overwrite=T,WDPA=TRUE,GADM=TRUE,ECOBIOME=TRUE){
+ff_contextualize=function(hotzones=NA,hotzonesfolder=NA,contextfolder,NA_label="Unknown",country=NA,date=NA,outputfile=NA,centers=F,return_vector=F,overwrite=T,WDPA=TRUE,GADM=TRUE,ECOBIOME=TRUE){
   if(is.na(hotzones[1])&any(is.na(country),is.na(date),is.na(hotzonesfolder))){stop("either a raster for predictions should be given or the datafolder that contains the prediction tiles along with tile and date")}
   if(all(is.na(outputfile),!return_vector)){stop("return_polygons is set to False and outputfile is not given so this function does nothing")}
   if(is.null(contextfolder)){stop("contextfolder needs to be provided")}
@@ -67,7 +68,13 @@ ff_contextualize=function(hotzones=NA,hotzonesfolder=NA,contextfolder,NA_label="
     if(!exists("allhz")){allhz=hz}else{allhz=rbind(allhz,hz)}
   }
   if(exists("proc_country")){allhz=allhz[proc_country]}
-  if(!is.na(outputfile)){writeVector(allhz,outputfile,overwrite=overwrite)}
+  if(!is.na(outputfile)){
+    writeVector(allhz,outputfile,overwrite=overwrite)
+    if(centers){
+      ext=strsplit(basename(outputfile),"\\.")[[1]][2]
+      centerfile=gsub(paste0(".",ext),paste0("_centers.",ext),outputfile)
+      writeVector(centroids(allhz),centerfile,overwrite=overwrite)}
+    }
   if(return_vector){return(allhz)}
 }
 
