@@ -38,7 +38,7 @@ ff_contextualize=function(hotzones=NA,hotzonesfolder=NA,contextfolder,NA_label="
     hotzones=files[intersect(tilefileinds,datefileinds)]
   }else{
     if(length(hotzones)==0){stop("no files found")}
-    if(!class(hotzones) %in% c("character","SpatRaster")){stop("predictions is not a raster or path to a raster")}
+    if(!class(hotzones[[1]]) %in% c("character","SpatVector")){stop("predictions is not a vector or path to a raster")}
   }
   if(GADM){GADMp=vect(file.path(contextfolder,"GADM.gpkg"))}
   if(WDPA){WDPAp=vect(file.path(contextfolder,"WDPA.gpkg"))}
