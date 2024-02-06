@@ -5,6 +5,8 @@ groups=unique(gfw_tiles$group)
 for(group in groups){
   tiles=gfw_tiles$tile_id[which(gfw_tiles$group==group)]
   model=readRDS(file.path("D:/ff-dev/results/models/",group,paste0(group,"_model.rds")))
+  data_prep=ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",tiles=tiles,start = "2020-06-01",end="2022-06-01")
+  model2=ff_train(train_matrix = data_prep$)
   for(tile in tiles){
     cat(paste(tile,"\n"))
     datr=daterange("2022-12-01","2024-01-01")

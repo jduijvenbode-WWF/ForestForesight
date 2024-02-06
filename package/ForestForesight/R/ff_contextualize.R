@@ -46,6 +46,7 @@ ff_contextualize=function(hotzones=NA,hotzonesfolder=NA,contextfolder,NA_label="
   for(i in 1:length(hotzones)){
     if(class(hotzones[[i]])=="character"){hz=vect(hotzones[[i]])}else{hz=hotzones[[i]]}
     hz$TID=seq(length(hz))
+    print(hz)
     if(GADM){
       GADMvals=extract(GADMp,centroids(hz))
       GADMvals[is.na(GADMvals)]=NA_label
