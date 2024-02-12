@@ -63,9 +63,12 @@ ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
   pols$method=method
   if(remove_empty){pols=pols[-which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm=T)==0),]}
   if(!is.null(csvfile)){
-    if(append&file.exists(csvfile)){pastdata=read.csv(csvfile)
+    if(append&file.exists(csvfile)){
+      if(verbose){cat("appending to existing dataset")}
+      pastdata=read.csv(csvfile)
     pastdata$X=NULL
     write.csv(rbind(pastdata,as.data.frame(pols)),csvfile)}else{
+      if(!file.exists(csvfile)&append&verbose){warning("the given file does not exist, while append was set to TRUE")}
       write.csv(as.data.frame(pols),csvfile)
     }
   }
