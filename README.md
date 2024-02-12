@@ -54,6 +54,10 @@ The package requires the following packages:
 ## Data preparation
 We strongly suggest starting with our preprocessed data which can be downloaded [here](https://s3.console.aws.amazon.com/s3/buckets/wwf-ff-global?region=eu-west-1). Use [Cyberduck](https://cyberduck.io) or your other preferred S3-client to download the tiles you want.
 
+The S3 bucket contains multiple folders which are structured like this
+![Folder overview](https://github.com/jduijvenbode-WWF/ForestForesight/blob/main/data%20structure.jpg)
+
+
 At the moment we have the following features:
 |feature|name|periodicity|source|processing|
 | :-------- | :------- | :-------- | :------- | :-------- |
