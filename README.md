@@ -117,19 +117,28 @@ We put all the data per 10x10 degree tile on an S3 server, which you can find
 - The date in the filename should always be the first of the month, the maximum temporal resolution of ForestForesight is monthly (predicting six months ahead)
 - The data should always have per tile and per month at least 1 dataset for groundtruth if you want to train and/or analyse the score of your model/predictions.
 
-## Roadmap
+## Feature Wishlist & Roadmap
 
-- Develop the processing chain in python
-- Addition of more features
-- Improved model awareness of seasonality
-- Using categorical data
+- Addition of more model features that are a proxy for deforestation drivers.
+- Improved model awareness of seasonality. We have thus far used expected precipitation and the current month and sine of the month to mitigate for seasonal trends but feel that this could still be better
+- Model awareness of trends. The model relies on the same number of deforestation events occurring in the future. If this would increase or decrease then either the model should take this into account or the classification threshold should be changed accordingly. We have nothing for this yet.
+- Using categorical data. This is currently not working in R on XGboost and we would like to implement the one-hot encoding for this
+- Develop the processing chain in python.
+- Either a separate model or a different classification for new deforestation, meaning in hotzones where no previous deforestation has occurred.
+- Testing of algorithms other than XGBoost
+- Usefulness of ForestForesight with different timespans in the future. For now we predict six months in the future but how useful would 2 months or 12 months be?
+- An accuracy and accuracy metric for Forest Foresight as a continuous deforestation risk. For the moment we have thought of implementing the RMSE as a metric and comparing it to the baseline. Groundtruth should be changed to an amount for this.
+- Smart grouping of predictions so that it is easier for users to go to areas. There is however a very large non-technical discussion required to make this step
+- Automatic updating of our prediction dashboards through ArcGIS Online API
+- Quality control scripts that check whether the Integrated Alerts have been sufficiently updated. We do not know at the moment what the last moment of update from the three underlying systems of the Integrated Alerts are.
+
 
 
 ## Contributing
 
 Contributions are always welcome and encouraged! Help us predict and prevent deforestation and help the people using our predictions by making them better!
 
-See `contributing.md` for ways to get started.
+To find out how you can contribute, email jduijvenbode@wwf.nl
 
 Please adhere to this project's `code of conduct`.
 ## License
