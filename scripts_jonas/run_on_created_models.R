@@ -18,9 +18,9 @@ for(group in groups){
         cat(paste("predict\n"))
       res=ff_predict(model = model,test_matrix = dat$data_matrix,templateraster = dat$groundtruthraster,certainty=T)
       cat(paste("visualize\n"))
-      vis=ff_visualize(res$predicted_raster,return_polygons = T,t_cutoff = 50)
+      vis=ff_visualize(res$predicted_raster,return_polygons = T,t_cutoff = 50,outputfile_pols = file.path("D:/ff-dev/results/hotzones",tile,paste0(tile,"_hotzones.json")),outputfile_centers = outputfile_pols = file.path("D:/ff-dev/results/hotzones",tile,paste0(tile,"_hotzones_centers.json")))
       cat(paste("contextualize\n"))
-      con_vis=ff_contextualize(contextfolder = "D:/ff-dev/results/contextualization/",hotzones=list(vis),return_vector = T,outputfile = file.path("D:/ff-dev/results/hotzones",tile,paste0(tile,"_hotzones.json")),,centers=T)
+      #con_vis=ff_contextualize(contextfolder = "D:/ff-dev/results/contextualization/",hotzones=list(vis),return_vector = T,outputfile = file.path("D:/ff-dev/results/hotzones",tile,paste0(tile,"_hotzones.json")),centers=T)
       }else{
         cat(paste("predict\n"))
         res=ff_predict(model = model,test_matrix = dat$data_matrix,templateraster = dat$groundtruthraster)

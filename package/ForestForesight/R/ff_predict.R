@@ -24,7 +24,7 @@
 #' @name ff_predict
 
 
-ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=NA,templateraster=NA,verbose=T,certainty=F){
+ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=NA,templateraster=NA,verbose=F,certainty=F){
   # Get the features
   model_features <- model$feature_names
   test_features <- colnames(test_matrix$features)
@@ -37,6 +37,7 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=
   }
   # Convert the matrix to a DMatrix object
   if(!is.na(test_matrix$label[1])){test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)}else{test_matrix = xgb.DMatrix(test_matrix$features)}
+  if(verbose){cat("calculating predictions\n")}
   predictions=predict(model,test_matrix)
   if(certainty){predictions=as.integer(predictions*100)}
   if(!is.na(groundtruth[1])){
@@ -65,5 +66,6 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=
       }else{templateraster<-NA}
     }
   }else{templateraster<-NA}
+  if(verbose){cat(paste("F0.5:",F05,"\n"))}
   return(list(threshold=threshold,"precision"=precision,"recall"=recall,"F0.5"=F05,"predicted_raster"=templateraster,"predictions"=predictions))
 }
