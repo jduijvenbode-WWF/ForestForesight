@@ -47,20 +47,20 @@ ff_contextualize=function(hotzones=NA,hotzonesfolder=NA,contextfolder,NA_label="
   for(i in 1:length(hotzones)){
     if(class(hotzones[[i]])=="character"){hz=vect(hotzones[[i]])}else{hz=hotzones[[i]]}
     hz$TID=seq(length(hz))
-    print(hz)
+    c_hz=centroids(hz)
     if(GADM){
-      GADMvals=extract(GADMp,centroids(hz))
+      GADMvals=extract(GADMp,c_hz)
       GADMvals[is.na(GADMvals)]=NA_label
       hz=merge(hz,GADMvals,by.x="TID",by.y="id.y")
     }
     if(WDPA){
       WDPAp$wdpa="yes"
-      WDPAvals=extract(WDPAp,centroids(hz))
+      WDPAvals=extract(WDPAp,c_hz)
       WDPAvals[is.na(WDPAvals)]="no"
       hz=merge(hz,WDPAvals,by.x="TID",by.y="id.y")
     }
     if(ECOBIOME){
-      ECOBIOMEvals=extract(ECOBIOMEp,centroids(hz))
+      ECOBIOMEvals=extract(ECOBIOMEp,c_hz)
       ECOBIOMEvals[is.na(ECOBIOMEvals)]=NA_label
       hz=merge(hz,ECOBIOMEvals,by.x="TID",by.y="id.y")
     }
