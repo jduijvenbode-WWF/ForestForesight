@@ -55,7 +55,7 @@ The package requires the following packages:
 We strongly suggest starting with our preprocessed data which can be downloaded [here](https://s3.console.aws.amazon.com/s3/buckets/wwf-ff-global?region=eu-west-1). Use [Cyberduck](https://cyberduck.io) or your other preferred S3-client to download the tiles you want.
 
 At the moment we have the following features:
-|feature|name|periodicity|[source](source link)|processing|
+|feature|name|periodicity|source|processing|
 | :-------- | :------- | :-------- | :------- | :-------- |
 |closenesstoroads|closeness to roads|yearly|[OSM](https://wiki.openstreetmap.org/wiki/Downloading_data)|This is downloaded using the ohsome package with the filter type:way and highway=* and geometry:line and then further filtered on only lines. The lines are simplified on 10 meters. then the distance in hotzones is calculated in python. the distance is then converted by the formula 255-20*log(distance+1)|
 |closenesstowaterways|closeness to waterways|static|[OSM](https://wiki.openstreetmap.org/wiki/Downloading_data)|This is downloaded using the ohsome package with the filter type:way and highway=* and geometry:line and then further filtered on only lines. The lines are simplified on 10 meters. then the distance in hotzones is calculated in python|
