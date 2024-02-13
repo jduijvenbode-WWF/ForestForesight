@@ -9,7 +9,7 @@ gtdate <- as.character(ymd(maxdate) %m-% months(6))
 
 ffdates=paste(sort(rep(seq(2021,2030),12)),sprintf("%02d",seq(12)),"01",sep="-")[]
 ffdates=ffdates[which(ymd(ffdates)<=ymd(maxdate))]
-layers=c("timesinceloss","patchdensity","lastsixmonths","totallossalerts","previoussameseason","confidence","smoothedtotal","smoothedsixmonths","groundtruth","lastmonth")
+layers=c("timesinceloss","patchdensity","lastsixmonths","totallossalerts","previoussameseason","confidence","smoothedtotal","smoothedsixmonths","groundtruth","lastmonth","groundtruth1m","groundtruth3m","groundtruth6m","groundtruth12m")
 comb1=apply(expand.grid(ffdates, layers), 1, paste, collapse="_")
 
 data("gfw_tiles")
@@ -30,7 +30,7 @@ commandtxts=paste("python",
                   "--groundtruth",
                   as.numeric(!(as.Date(substr(basename(utbp),10,19))>as.Date(gtdate))))
 
-cl <- makeCluster(getOption("cl.cores", 7))
+cl <- makeCluster(getOption("cl.cores", 9))
 clusterExport(cl, "commandtxts")
 results <- clusterApply(cl, commandtxts, system)
 
