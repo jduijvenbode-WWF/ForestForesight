@@ -18,7 +18,7 @@ comb2=apply(expand.grid(tiles, comb1), 1, paste, collapse="_")
 allfiles=paste0(file.path("D:/ff-dev/results/preprocessed",substr(comb2,1,8),comb2),".tif")
 allfiles=allfiles[-which(grepl("groundtruth",basename(allfiles))&(ymd(gtdate)<ymd(substr(basename(allfiles),10,19))))]
 tobeprocessed=allfiles[which(!file.exists(allfiles))]
-utbp=unique(unlist(unlist(sapply(layers,function(x) gsub(x,"layer",tobeprocessed)))))
+utbp=unique(file.path(dirname(tobeprocessed),paste0(substr(basename(tobeprocessed),1,19),"_layer.tif")))
 utbp=utbp[grep("layer",utbp)]
 utbp=unique(utbp)
 utbp=sample(utbp,length(utbp))
