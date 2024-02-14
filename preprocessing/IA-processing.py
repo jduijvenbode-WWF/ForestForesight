@@ -88,7 +88,7 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         create_lastmonth = not os.path.isfile(lastmonth_file)
         # Iterate over windows
         if any([create_confidence,create_groundtruth,create_totaldeforestation,create_sixmonths,create_threemonths,
-            create_twelvetosixmonths,create_latest_deforestation,create_patchiness,create_smoothedtotal,create_smoothedsixmonths,create_lastmonth]):
+            create_twelvetosixmonths,create_latest_deforestation,create_patchiness,create_smoothedtotal,create_smoothedsixmonths,create_lastmonth,create_groundtruth12m,create_groundtruth1m,create_groundtruth3m,create_groundtruth6m]):
             for i in range(num_windows):
                 # Calculate the starting coordinates of the window
                 col_offset = (i % 2) * window_width
