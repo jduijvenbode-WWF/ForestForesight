@@ -9,26 +9,29 @@ ff_visualize(
   predfolder = NA,
   country = NA,
   date = NA,
-  outputfile,
+  outputfile_pols = NA,
+  outputfile_centers = NA,
   t_cutoff = 0.5,
   return_polygons = F,
   overwrite = T
 )
 }
 \arguments{
-\item{predictions}{A character vector or raster object representing the predictions.can be empty if country and date and predfolder are not empty}
+\item{predictions}{A character vector or raster object representing the predictions. Can be empty if country and date and datafolder are not empty}
 
 \item{predfolder}{A path to the folder containing the tiles with predictions.}
 
 \item{country}{A character vector of the iso3 code of the country that you want to process}
 
-\item{date}{character. should be in format (YYYY-MM-DD). Optional if either groundtruth or predictions is a character to the tiffile.}
+\item{date}{character. should be in format (YYYY-MM-DD). Optional if predictions is a character to the tiffile.}
 
-\item{outputfile}{character. The filename of the hotzone outputs}
+\item{outputfile_pols}{character. The filename of the hotzone outputs}
 
-\item{t_cutoff}{The cutoff value below which no polygons should be returned. normally set at 0.5}
+\item{outputfile_centers}{character. The filename of the hotzone centroids outputs}
 
-\item{return_polygons}{Logical. If TRUE, the hotzone polygons.}
+\item{t_cutoff}{The cutoff value below which no polygons should be returned. Default is 0.5}
+
+\item{return_polygons}{Logical. If TRUE, returns the hotzone polygons as SpatVector, otherwise nothing is returned}
 
 \item{overwrite.}{Whether existing polygons should be overwritten. default is TRUE}
 }
