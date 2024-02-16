@@ -32,6 +32,7 @@
 
 ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start="2021-01-01",end=NA,inc_features=NA,exc_features=NA,fltr_features=NULL,fltr_condition=NULL,sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
   ########quality check########
+  if(as.Date(start)<as.Date("2021-01-01")){stop("the earliest date available is 2021-01-01")}
   if(is.na(country)){shrink="none"}
   if(is.na(start[1])){stop("no start date given")}
   if(is.null(tiles)&is.na(country)){stop("unknown what to process since no tiles or country were given")}

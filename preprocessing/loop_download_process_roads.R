@@ -12,7 +12,13 @@ for (x in 1:nrow(gfw_tiles)) {
     if(!file.exists(newfilename)){
       tryCatch({
         a = ohsome_elements_geometry(
-          boundary = st_bbox(c(xmin = xmin(tile), xmax = xmax(tile), ymax = ymax(tile), ymin = ymin(tile)), crs = st_crs(4326)),
+          boundary = st_bbox(c(xmin = xmin(tile), xmax = xmax(tile)-5, ymax = ymax(tile), ymin = ymin(tile)), crs = st_crs(4326)),
+          filter = "type:way and highway=* and geometry:line",
+          time = date,
+          clipGeometry = TRUE
+        ) |> ohsome_post() |> svc()
+        b = ohsome_elements_geometry(
+          boundary = st_bbox(c(xmin = xmin(tile)+5, xmax = xmax(tile), ymax = ymax(tile), ymin = ymin(tile)), crs = st_crs(4326)),
           filter = "type:way and highway=* and geometry:line",
           time = date,
           clipGeometry = TRUE
@@ -22,7 +28,7 @@ for (x in 1:nrow(gfw_tiles)) {
         # You can add additional handling or logging here
       })
       if(exists("a")){
-        a = a[[1]]
+        a = rbind(a[[1]],b[[1]])
 
         start = Sys.time()
 
