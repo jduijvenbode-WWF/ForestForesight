@@ -3,6 +3,7 @@ GADMv=as.data.frame(vect("D:/ff-dev/results/contextualization/GADM.gpkg"))
 GADMv$ID=seq(nrow(GADMv))
 EBv=as.data.frame(vect("D:/ff-dev/results/contextualization/ECOBIOME.gpkg"))
 EBv$ID=seq(nrow(EBv))
+GADMv
 for(predras in tempras[89:103]){
   print(predras)
   GADM=file.path("D:/ff-dev/results/contextualization/GADM",paste0(substr(basename(predras),1,8),"_2021-01-01_GADM.tif"))
