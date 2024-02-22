@@ -158,9 +158,6 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       if(operator=="<="){sf_indices=which(fdts[,filtercolumn]<=value)}
 
       if(verbose){cat(paste("filtering feature",fltr_features[i],"on",fltr_condition[i],"\n"))}
-      print(nrow(fdts))
-      print(head(sf_indices),10)
-      print(head(which(fdts[,which(colnames(fdts)==fltr_features[i])]>0)),10)
       sf_indices=c(sf_indices,sf_indices)
     }
     sf_indices=unique(sf_indices)
@@ -190,7 +187,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     validation_matrix=NA
   }
   ##########output data####
-  if(!is.na(data_matrix$label[1])){if(sum(data_matrix$label)==0){warning("data contains no actuals, all labels are 0")}}
-  return(list("data_matrix"=data_matrix,"validation_matrix"=validation_matrix,"testindices"=sf_indices,"groundtruth"=data_label,"groundtruthraster"=groundtruth_raster,features=colnames(fdts)))
+  if(!is.na(data_matrix$label[1])){if(sum(data_matrix$label)==0){stop("data contains no actuals, all labels are 0")}}
+  return(list("data_matrix"=data_matrix,"validation_matrix"=validation_matrix,"testindices"=sf_indices,"groundtruthraster"=groundtruth_raster,features=colnames(fdts)))
 }
 
