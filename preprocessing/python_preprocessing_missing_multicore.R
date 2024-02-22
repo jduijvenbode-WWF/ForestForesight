@@ -5,6 +5,7 @@ maxdate=commandArgs(trailingOnly = T)
 #maxdate="2023-12-01"
 if(length(maxdate)==0){stop("no date given till when to process")}
 gtdate <- as.character(ymd(maxdate) %m-% months(6))
+print(gtdate)
 
 
 ffdates=paste(sort(rep(seq(2021,2030),12)),sprintf("%02d",seq(12)),"01",sep="-")[]
