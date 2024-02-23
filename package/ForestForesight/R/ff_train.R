@@ -14,7 +14,7 @@
 #' @param gamma The gamma value, should be between 0 and 0.3. Determines level of pruning
 #' @param min_child_weight The minimum weight of the child, determines how quickly the tree grows
 #' @param verbose should the model run verbose. Default is FALSE.
-#'
+#' @param xgb_model Previous build model to continue the training from. Could be an object of class "xgb.Booster", its raw data, or a file name. Default = NULL
 #'
 #' @return Trained XGBoost model.
 #'
@@ -36,7 +36,7 @@
 
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
                      subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,
-                     gamma=NULL, maximize=NULL, min_child_weight=1,verbose=F) {
+                     gamma=NULL, maximize=NULL, min_child_weight=1,verbose=F, xgb_model = NULL) {
 
   # Convert the matrix to a DMatrix object
   if(class(train_matrix)=="xgb.DMatrix"){dtrain <- train_matrix
@@ -66,7 +66,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     nrounds=nrounds,
     data = dtrain,
     watchlist = watchlist,
-    early_stopping_rounds = early_stopping_rounds,maximize=maximize, verbose=verbose
+    early_stopping_rounds = early_stopping_rounds, maximize=maximize, xgb_model=xgb_model, verbose=verbose
   )
 
   # Return the trained model
