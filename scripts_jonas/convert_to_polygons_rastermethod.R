@@ -4,12 +4,13 @@ GADMvect = vect("D:/ff-dev/results/contextualization/GADM.gpkg")
 GADMv$ID=seq(nrow(GADMv))
 EBv=as.data.frame(vect("D:/ff-dev/results/contextualization/ECOBIOME.gpkg"))
 EBv$ID=seq(nrow(EBv))
-GADMv
+
 MadredeDios = GADMvect[GADMvect$country=="Peru" & GADMvect$province == "Madre de Dios",]
 plot(ext(MadredeDios))
 
 
 for(predras in c(tempras[10], tempras[47], tempras[48])){
+
   print(predras)
   GADM=file.path("D:/ff-dev/results/contextualization/GADM",paste0(substr(basename(predras),1,8),"_2021-01-01_GADM.tif"))
   WDPA=file.path("D:/ff-dev/results/contextualization/WDPA",paste0(substr(basename(predras),1,8),"_2021-01-01_WDPA.tif"))
