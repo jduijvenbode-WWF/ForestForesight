@@ -30,7 +30,7 @@
 #' @name ff_prep
 
 
-ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth",start="2021-01-01",end=NA,inc_features=NA,exc_features=NA,fltr_features=NULL,fltr_condition=NULL,sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
+ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth6m",start="2021-01-01",end=NA,inc_features=NA,exc_features=NA,fltr_features=NULL,fltr_condition=NULL,sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
   ########quality check########
   if(as.Date(start)<as.Date("2021-01-01")){stop("the earliest date available is 2021-01-01")}
   if(is.na(country)){shrink="none"}
@@ -39,6 +39,8 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   if(is.na(end[1])){end=start}
   if(is.na(datafolder)){datafolder=Sys.getenv("xgboost_datafolder")}
   if(datafolder==""){stop("No environment variable for xgboost_datafolder and no datafolder parameter set")}
+  inputdatafolder=file.path(datafolder,"input")
+  groundtruthdatafolder=file.path(datafolder,"groundtruth")
   if(sampleraster&((validation_sample>0)|sample_size<1)){
     sampleraster=F
     if(verbose){warning("No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}}
@@ -56,13 +58,16 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   }
 
   ##########list files and exclude features######
-  allfiles=as.character(unlist(sapply(tiles,function(x) list.files(path=file.path(datafolder,x),full.names=T,recursive=T,pattern="tif$"))))
+  allfiles=as.character(unlist(sapply(tiles,function(x) list.files(path=file.path(inputdatafolder,x),full.names=T,recursive=T,pattern="tif$"))))
+  allgroundtruth=as.character(unlist(sapply(tiles,function(x) list.files(path=file.path(groundtruthdatafolder,x),full.names=T,recursive=T,pattern="tif$"))))
+  allgroundtruth=allgroundtruth[endsWith(gsub(".tif","",allgroundtruth),groundtruth_pattern)]
+  allfiles=c(allfiles,allgroundtruth)
   if(length(allfiles)==0){stop(paste("no folders with tif-files found that correspond to the given tile id's:",paste(tiles,collapse=",")))}
 
   #remove features that are not wanted
   if(!is.na(exc_features[1])){
     if(verbose){cat("excluding features\n")}
-    exc_indices=unique(unlist(sapply(exc_features,function(x) which(startsWith(basename(allfiles),x)))))
+    exc_indices=unique(unlist(sapply(exc_features,function(x) which(endsWith(basename(allfiles),x)))))
     if(length(exc_indices)>0){allfiles=allfiles[-exc_indices]}}
   if(!is.na(inc_features[1])){
     inc_indices=unique(unlist(sapply(inc_features,function(x) which(startsWith(basename(allfiles),x)))))
@@ -170,7 +175,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   groundtruth_index=which(colnames(fdts)==groundtruth_pattern)
   if(length(groundtruth_index)==1){
     data_label=fdts[,groundtruth_index]
-    data_label[data_label>1]=1
+    #data_label[data_label>1]=1
     fdts=fdts[,-groundtruth_index]
   }else{
     if(verbose){warning("no groundtruth rasters found")}
