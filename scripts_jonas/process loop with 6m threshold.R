@@ -27,7 +27,7 @@ files=c(files[tilinds],files[-tilinds])
 m6files=file.path("D:/ff-dev/results/preprocessed/input/",gsub("predictions","lastsixmonths", files))
 gtfiles=file.path("D:/ff-dev/results/preprocessed/groundtruth/",gsub("predictions","groundtruth6mbin", files))
 alldat=data.frame()
-for(i in seq(length(files))[105:length(files)]){
+for(i in seq(length(files))[1:length(files)]){
   tryCatch({
   if(all(file.exists(c(files[i],m6files[i],gtfiles[i])))){
     pred=rast(files[i])
@@ -53,15 +53,16 @@ for(i in seq(length(files))[105:length(files)]){
     # 
     # # Output F0.5 scores for each scenario
     print(basename(files[i]))
+    print(basename(files[i]))
     print(i)
     # print(paste("F0.5 score for Scenario 1:", f05_scenario1))
     # print(paste("F0.5 score for Scenario 2:", f05_scenario2))
-    ff_analyze(predictions = pred>threshold,groundtruth = gt,return_polygons = F,tile=basename(dirname(files[i])),date=substr(basename(files[i]),10,19),csvfile = "D:/ff-dev/newres4.csv",append=T)
+    ff_analyze(predictions = pred>threshold,groundtruth = gt,return_polygons = F,tile=basename(dirname(files[i])),date=substr(basename(files[i]),10,19),csvfile = "D:/ff-dev/newres6.csv",append=T)
     #alldat=rbind(alldat,c(files[i],threshold,as.numeric(f05_scenario1),as.numeric(f05_scenario2)))
   }}, error = function(e) {
     # Print the error message
     cat("Error occurred for iteration", i, ": ", conditionMessage(e), "\n")
     # Continue to the next iteration
-    next})
+    })
   
 }
