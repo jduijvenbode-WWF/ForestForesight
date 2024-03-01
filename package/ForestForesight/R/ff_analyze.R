@@ -7,6 +7,7 @@
 #' @param forestmask An optional character vector or raster object representing the forest mask.
 #' @param csvfile An optional CSV file to which the results will be written.
 #' @param append Logical. If TRUE, results will be appended to the existing CSV file.
+#' @param country Character. If NULL all the overlapping polygons will be processed. Otherwise the ISO3 code should be given and the analysis_polygons dataset should contain a column called iso3
 #' @param analysis_polygons Optional vector or character vector representing analysis polygons.
 #' @param return_polygons Logical. If TRUE, the polygons with calculated scores will be returned.
 #' @param remove_empty Logical. If TRUE, empty rows (with all scores being zero) will be removed from the output.
@@ -17,14 +18,9 @@
 #'
 #' @return A vector dataset containing calculated scores for each polygon.
 #'
-#' @examples
-#' \dontrun{
-#' calculate_scores(predictions, groundtruth, forestmask, csvfile, append, analysis_polygons, return_polygons, remove_empty)
-#' }
-#'
 #' @export
 
-ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA,verbose=F){
+ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,country=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA,verbose=F){
   if(!(class(predictions) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
   if(!(class(groundtruth) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
   if(!is.null(csvfile)){if(append==T&!file.exists(csvfile)){append=F;warning("CSV file did not yet exist, creating empty one")}}
@@ -53,6 +49,7 @@ ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
       if(class(analysis_polygons=="character")){
         pols=vect(analysis_polygons)}else{
           pols=analysis_polygons}}
+  if(!is.null(country)){pols=pols[which(pols$iso3==country)]}
   if(verbose){cat("summarizing statistics\n")}
   pols$FP=terra::extract(cross==1,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$FN=terra::extract(cross==2,pols,fun="sum",na.rm=T,touches=F)[,2]
