@@ -12,6 +12,7 @@ ff_contextualize(
   country = NA,
   date = NA,
   outputfile = NA,
+  centers = F,
   return_vector = F,
   overwrite = T,
   WDPA = TRUE,
@@ -33,6 +34,8 @@ ff_contextualize(
 \item{date}{character. should be in format (YYYY-MM-DD). Optional if either groundtruth or predictions is a character to the tiffile.}
 
 \item{outputfile}{character. The filename of the hotzone outputs}
+
+\item{centers}{Logical. Whether the centers should also be written. Default is FALSE}
 
 \item{return_vector}{Logical. If TRUE, the SpatVector that was used as input is returned.}
 
