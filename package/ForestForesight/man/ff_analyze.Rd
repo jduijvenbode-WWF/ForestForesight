@@ -9,6 +9,7 @@ ff_analyze(
   groundtruth,
   forestmask = NULL,
   csvfile = NULL,
+  country = NULL,
   append = T,
   analysis_polygons = NULL,
   return_polygons = T,
@@ -27,6 +28,8 @@ ff_analyze(
 \item{forestmask}{An optional character vector or raster object representing the forest mask.}
 
 \item{csvfile}{An optional CSV file to which the results will be written.}
+
+\item{country}{Character. If NULL all the overlapping polygons will be processed. Otherwise the ISO3 code should be given and the analysis_polygons dataset should contain a column called iso3}
 
 \item{append}{Logical. If TRUE, results will be appended to the existing CSV file.}
 
@@ -49,10 +52,4 @@ A vector dataset containing calculated scores for each polygon.
 }
 \description{
 This function calculates scores based on predictions, ground truth, and optional parameters.
-}
-\examples{
-\dontrun{
-calculate_scores(predictions, groundtruth, forestmask, csvfile, append, analysis_polygons, return_polygons, remove_empty)
-}
-
 }
