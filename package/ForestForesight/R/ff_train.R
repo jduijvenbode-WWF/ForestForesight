@@ -1,6 +1,6 @@
 #' Train an XGBoost Model
 #'
-#' This function trains an XGBoost model with default parameters.
+#' This function trains an XGBoost model with default parameters. The optimal parameters have been derived by running the algorithm worldwide on many tiles for over a year of training data.
 #'
 #' @param train_matrix The training matrix for XGBoost. should be of type xgb.Dmatrix
 #' @param validation_matrix The matrix to run for the model for XGBoost. should be of type xgb.Dmatrix
@@ -29,6 +29,7 @@
 #'
 #' @references
 #' Jonas van Duijvenbode (2023)
+#' Zillah Calle (2023)
 #'
 #' @keywords XGBoost data preparation
 #' @rdname ff_train

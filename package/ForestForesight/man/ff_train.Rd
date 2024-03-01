@@ -14,8 +14,11 @@ ff_train(
   eval_metric = "aucpr",
   early_stopping_rounds = 10,
   gamma = NULL,
+  maximize = NULL,
   min_child_weight = 1,
-  verbose = F
+  verbose = F,
+  xgb_model = NULL,
+  weight = NULL
 )
 }
 \arguments{
@@ -31,21 +34,27 @@ ff_train(
 
 \item{subsample}{Subsample ratio of the training instances. Default is 0.75.}
 
-\item{eval_metric}{Evaluation metric. Default is "aucpr".}
+\item{eval_metric}{Evaluation metric. Default is "aucpr". This can also be a custom evaluation metric.}
 
 \item{early_stopping_rounds}{Early stopping rounds. Default is 10.}
 
 \item{gamma}{The gamma value, should be between 0 and 0.3. Determines level of pruning}
 
+\item{maximize}{Default is NULL. Should be True or False in case a custom evaluation metric is used.}
+
 \item{min_child_weight}{The minimum weight of the child, determines how quickly the tree grows}
 
 \item{verbose}{should the model run verbose. Default is FALSE.}
+
+\item{xgb_model}{Previous build model to continue the training from. Could be an object of class "xgb.Booster", its raw data, or a file name. Default = NULL}
+
+\item{weight}{Vector with weight for each row in the input. Default = NULL}
 }
 \value{
 Trained XGBoost model.
 }
 \description{
-This function trains an XGBoost model with default parameters.
+This function trains an XGBoost model with default parameters. The optimal parameters have been derived by running the algorithm worldwide on many tiles for over a year of training data.
 }
 \examples{
 # Example usage:
@@ -55,6 +64,7 @@ model <- train_xgboost(train_matrix)
 }
 \references{
 Jonas van Duijvenbode (2023)
+Zillah Calle (2023)
 }
 \keyword{XGBoost}
 \keyword{data}

@@ -1,17 +1,17 @@
-#' Prepare data for machine learning.
+#' Prepare data for XGboost training, validating and predicting.
 #'
-#' This function prepares data for machine learning tasks based on specified parameters.
+#' This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
 #'
 #' @param datafolder Path to the data folder. Default is the system variable xgboost_datafolder. should contain the degrees folders
 #' @param country Country for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.
 #' @param tiles Vector of tiles in the syntax of e.g. 10N_080W.
-#' @param groundtruth_pattern Pattern to identify ground truth files. 'groundtruth'.
+#' @param groundtruth_pattern Pattern to identify ground truth files. Default is groundtruth6mbin (groundtruth of future six months in binary format).
 #' @param start Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".
 #' @param end End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.
 #' @param inc_features Vector of included features. States which features to include in the data preparation.
 #' @param exc_features Vector of excluded features. States which features to exclude in the data preparation.
 #' @param fltr_features vector of features for filtering data. Default is empty. EXAMPLE: 'initialforestcover'. needs to be combined with fltr_condition of the same length
-#' @param fltr_condition Vector of filtering conditions. Default is empty EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector
+#' @param fltr_condition Vector of filtering conditions. Default is empty. EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector
 #' @param validation_sample float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3
 #' @param sample_size Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1
 #' @param relativedate Boolean indicating whether the date is relative. Default is \code{TRUE}.
@@ -24,13 +24,16 @@
 #'
 #' @references
 #' Jonas van Duijvenbode (2023)
+#' Zillah Calle (2023)
 #'
 #' @keywords XGBoost data preparation
 #' @rdname ff_prep
 #' @name ff_prep
 
 
-ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth6m",start="2021-01-01",end=NA,inc_features=NA,exc_features=NA,fltr_features=NULL,fltr_condition=NULL,sample_size=1,validation_sample=0,relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
+ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth6mbin",start="2021-01-01",end=NA,
+                 inc_features=NA,exc_features=NA,fltr_features=NULL,fltr_condition=NULL,sample_size=1,validation_sample=0,
+                 relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
   ########quality check########
   if(as.Date(start)<as.Date("2021-01-01")){stop("the earliest date available is 2021-01-01")}
   if(is.na(country)){shrink="none"}
@@ -67,10 +70,10 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   #remove features that are not wanted
   if(!is.na(exc_features[1])){
     if(verbose){cat("excluding features\n")}
-    exc_indices=unique(unlist(sapply(exc_features,function(x) which(endsWith(basename(allfiles),x)))))
+    exc_indices=unique(unlist(sapply(exc_features,function(x) which(endsWith(gsub(".tif","",basename(allfiles)),x)))))
     if(length(exc_indices)>0){allfiles=allfiles[-exc_indices]}}
   if(!is.na(inc_features[1])){
-    inc_indices=unique(unlist(sapply(inc_features,function(x) which(startsWith(basename(allfiles),x)))))
+    inc_indices=unique(unlist(sapply(inc_features,function(x) which(endsWith(gsub(".tif","",basename(allfiles)),x)))))
     if(length(inc_indices>0)){allfiles=allfiles[inc_indices]}}
   if(length(allfiles)==0){stop("after including and excluding the requested variables there are no files left")}
   #create the range between start and end date
@@ -148,7 +151,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   }
   ######filter data based on features#######
   #filter training data on features that have been declared
-  sf_indices=c()
+  sfa_indices=c()
   if(length(fltr_features)>0){
     if(verbose){cat(paste("filtering features\n"))}
     for(i in seq(length(fltr_features))){
@@ -163,9 +166,9 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       if(operator=="<="){sf_indices=which(fdts[,filtercolumn]<=value)}
 
       if(verbose){cat(paste("filtering feature",fltr_features[i],"on",fltr_condition[i],"\n"))}
-      sf_indices=c(sf_indices,sf_indices)
+      if(length(sfa_indices)==0){sfa_indices=c(sfa_indices,sf_indices)}else{sfa_indices=intersect(sfa_indices,sf_indices)}
     }
-    sf_indices=unique(sf_indices)
+    sf_indices=unique(sfa_indices)
   }
   if(length(sf_indices)>0){
     fdts=fdts[sf_indices,]
