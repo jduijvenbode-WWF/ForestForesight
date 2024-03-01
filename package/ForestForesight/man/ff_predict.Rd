@@ -11,7 +11,7 @@ ff_predict(
   groundtruth = NA,
   indices = NA,
   templateraster = NA,
-  verbose = T,
+  verbose = F,
   certainty = F
 )
 }

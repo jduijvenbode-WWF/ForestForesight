@@ -1,15 +1,18 @@
 
 ## set environment ##
 Sys.setenv("xgboost_datafolder"="D:/ff-dev/results/preprocessed")
+input_dir = "D:/ff-dev/results/preprocessed"
 save_dir= "D:/ff-dev/predictionsZillah/Countries"
 
 data(gfw_tiles)
 tilesvect=vect(gfw_tiles)
 data(countries)
 borders=vect(countries)
-abr_countries= c("GAB","COL","PER","BOL","LAO")
+
 ## choice country ##
-abr = "LAO"
+abr_countries= c("COL","PER","BOL","LAO")
+
+
 for (abr in abr_countries){
   ## Get tiles ## (Needed for ff_analysis)
   selected_country=borders[which(borders$iso3==abr)]
@@ -65,10 +68,13 @@ for (abr in abr_countries){
                          indices= test_data$testindices,
                          templateraster = test_data$groundtruthraster)
       method =  "itterative_training"
-      forest_mask = rast(paste0("D:/ff-dev/results/preprocessed/", tile, "/", tile,"_2021-01-01_initialforestcover.tif"))>0
+      extent_elev = ext(rast(paste0(input_dir,"/", tile,"/", tile,"_2021-01-01_elevation.tif")))
+      forest_mask = rast(paste0(input_dir,"/", tile,"/", tile,"_2021-01-01_initialforestcover.tif"))>0
+      forest_mask= crop(forest_mask, extent_elev)
+
       ff_analyze(results$predicted_raster, test_data$groundtruthraster,forestmask=forest_mask,
                  csvfile= paste0(save_dir,"/",method,".csv"), tile=tile, method=method, date=date)
-      print(paste0("analyzed: ", tile , " on: ", date, ", F05:", round(results$F0.5,3),
+      print(paste0("analyzed: ",abr," tile : " , tile , ", on: ", date, ", F05:", round(results$F0.5,3),
                    ", precision: ", round(results$precision,3), ", recall: ", round(results$recall,3)))
     }
 

@@ -2,13 +2,13 @@
 % Please edit documentation in R/ff_prep.R
 \name{ff_prep}
 \alias{ff_prep}
-\title{Prepare data for machine learning.}
+\title{Prepare data for XGboost training, validating and predicting.}
 \usage{
 ff_prep(
   datafolder = NA,
   country = NA,
   tiles = NULL,
-  groundtruth_pattern = "groundtruth",
+  groundtruth_pattern = "groundtruth6mbin",
   start = "2021-01-01",
   end = NA,
   inc_features = NA,
@@ -31,7 +31,7 @@ ff_prep(
 
 \item{tiles}{Vector of tiles in the syntax of e.g. 10N_080W.}
 
-\item{groundtruth_pattern}{Pattern to identify ground truth files. 'groundtruth'.}
+\item{groundtruth_pattern}{Pattern to identify ground truth files. Default is groundtruth6mbin (groundtruth of future six months in binary format).}
 
 \item{start}{Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".}
 
@@ -43,7 +43,7 @@ ff_prep(
 
 \item{fltr_features}{vector of features for filtering data. Default is empty. EXAMPLE: 'initialforestcover'. needs to be combined with fltr_condition of the same length}
 
-\item{fltr_condition}{Vector of filtering conditions. Default is empty EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector}
+\item{fltr_condition}{Vector of filtering conditions. Default is empty. EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector}
 
 \item{sample_size}{Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1}
 
@@ -59,10 +59,11 @@ ff_prep(
 A prepared dataset for machine learning.
 }
 \description{
-This function prepares data for machine learning tasks based on specified parameters.
+This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
 }
 \references{
 Jonas van Duijvenbode (2023)
+Zillah Calle (2023)
 }
 \keyword{XGBoost}
 \keyword{data}
