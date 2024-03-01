@@ -3,7 +3,7 @@
 #' This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
 #'
 #' @param datafolder Path to the data folder. Default is the system variable xgboost_datafolder. should contain the degrees folders
-#' @param country Country for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.
+#' @param country Country or countries for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.
 #' @param tiles Vector of tiles in the syntax of e.g. 10N_080W.
 #' @param groundtruth_pattern Pattern to identify ground truth files. Default is groundtruth6mbin (groundtruth of future six months in binary format).
 #' @param start Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".
@@ -54,7 +54,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     if(verbose){cat("selecting based on country\n")}
     data(countries)
     borders=vect(countries)
-    selected_country=borders[which(borders$iso3==country)]
+    selected_country=borders[which(borders$iso3 %in% country)]
     tilesvect=tilesvect[selected_country]$tile_id
     cat(paste("country contains the following tiles that will be processed:",paste(tilesvect,collapse=", "),"\n"))
     if(is.null(tiles)){tiles=tilesvect}
@@ -91,7 +91,6 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     for(i in daterange){
       if(exists("dts")){rm(dts)}
       if(verbose){cat(paste("loading tile data from",tile,"for",i," "))}
-
       selected_files = select_files_date(i, files)
       #remove groundtruth if it is not of the same month
       if(!(grep(groundtruth_pattern,selected_files) %in% grep(i,selected_files))){selected_files=selected_files[-grep(groundtruth_pattern,selected_files)]}
