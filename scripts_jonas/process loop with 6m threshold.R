@@ -21,7 +21,7 @@ data("gfw_tiles")
 gfw_tiles=vect(gfw_tiles)
 tids=gfw_tiles[countries[which(countries$iso3 %in% c("IDN","GAB","BOL","PER","COL","LAO")),],]$tile_id
 setwd("D:/ff-dev/results/predictions/")
-files=list.files(recursive=T,pattern="predictions.tif",full.names = T)
+files=list.files(recursive=T,pattern="_predictions.tif",full.names = T)
 tilinds=unique(as.numeric(unlist(sapply(tids,function(x) grep(x,files)))))
 files=c(files[tilinds],files[-tilinds])
 m6files=file.path("D:/ff-dev/results/preprocessed/input/",gsub("predictions","lastsixmonths", files))
@@ -57,7 +57,7 @@ for(i in seq(length(files))[1:length(files)]){
     print(i)
     # print(paste("F0.5 score for Scenario 1:", f05_scenario1))
     # print(paste("F0.5 score for Scenario 2:", f05_scenario2))
-    ff_analyze(predictions = pred>threshold,groundtruth = gt,return_polygons = F,tile=basename(dirname(files[i])),date=substr(basename(files[i]),10,19),csvfile = "D:/ff-dev/newres6.csv",append=T)
+    ff_analyze(predictions = pred>threshold,groundtruth = gt,return_polygons = F,tile=basename(dirname(files[i])),date=substr(basename(files[i]),10,19),csvfile = "D:/ff-dev/newres6.csv",append=T,verbose=T)
     #alldat=rbind(alldat,c(files[i],threshold,as.numeric(f05_scenario1),as.numeric(f05_scenario2)))
   }}, error = function(e) {
     # Print the error message

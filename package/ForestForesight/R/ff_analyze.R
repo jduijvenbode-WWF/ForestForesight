@@ -58,6 +58,10 @@ ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,append=
   pols$FN=terra::extract(cross==2,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$TP=terra::extract(cross==3,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$TN=terra::extract(cross==0,pols,fun="sum",na.rm=T,touches=F)[,2]
+  if(verbose){
+    pr=sum(pols$TP,na.rm=T)/(sum(pols$TP,na.rm=T)+sum(pols$FP,na.rm=T));re=sum(pols$TP,na.rm=T)/(sum(pols$TP,na.rm=T)+sum(pols$FN,na.rm=T))
+    print(pr);print(re)
+    cat(paste("F0.5 score is:",1.25*pr*re/(0.25*pr+re)))}
   if(verbose){cat("adding metadata\n")}
   pols$date=date
   pols$method=method
