@@ -83,13 +83,13 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     sampleraster=F}
   #######load raster data as matrix#########
   for(tile in tiles){
-    if(exists("extent")){rm(extent)}
+    if(exists("extent",inherits=F)){rm(extent)}
     files=allfiles[grep(tile,allfiles)]
     if(is.na(country[1])&(shrink=="extract")){
-      if(!exists("countries")){data(countries);borders=vect(countries)}
+      if(!exists("countries",inherits=F)){data(countries);borders=vect(countries)}
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
     for(i in daterange){
-      if(exists("dts")){rm(dts)}
+      if(exists("dts",inherits=F)){rm(dts)}
       if(verbose){cat(paste("loading tile data from",tile,"for",i," "))}
       selected_files = select_files_date(i, files)
       #remove groundtruth if it is not of the same month
