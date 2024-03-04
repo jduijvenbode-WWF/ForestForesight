@@ -27,6 +27,7 @@
 ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=NA,templateraster=NA,verbose=F,certainty=F){
   # Get the features
   model_features <- model$feature_names
+  if(!is.null(model_features)){
   test_features <- colnames(test_matrix$features)
   # Check for features in the test matrix not present in the model
   extra_features <- setdiff(test_features, model_features)
@@ -35,12 +36,14 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=
     warning(paste("Removing extra features from the test matrix:", paste(extra_features, collapse = ", ")))
     test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
   }
+  }
   # Convert the matrix to a DMatrix object
   if(!is.na(test_matrix$label[1])){test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)}else{test_matrix = xgb.DMatrix(test_matrix$features)}
   if(verbose){cat("calculating predictions\n")}
   predictions=predict(model,test_matrix)
   if(certainty){predictions=as.integer(predictions*100)}
   if(!is.na(groundtruth[1])){
+    if(class(groundtruth)=="SpatRaster"){groundtruth=as.numeric(as.matrix(groundtruth))}
     if(verbose){cat("calculationg scores\n")}
     precision=c()
     recall=c()
