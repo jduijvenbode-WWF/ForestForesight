@@ -36,9 +36,9 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
                  relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
   ########quality check########
   if(as.Date(start)<as.Date("2021-01-01")){stop("the earliest date available is 2021-01-01")}
-  if(is.na(country)){shrink="none"}
+  if(is.na(country[1])){shrink="none"}
   if(is.na(start[1])){stop("no start date given")}
-  if(is.null(tiles)&is.na(country)){stop("unknown what to process since no tiles or country were given")}
+  if(is.null(tiles)&is.na(country[1])){stop("unknown what to process since no tiles or country were given")}
   if(is.na(end[1])){end=start}
   if(is.na(datafolder)){datafolder=Sys.getenv("xgboost_datafolder")}
   if(datafolder==""){stop("No environment variable for xgboost_datafolder and no datafolder parameter set")}
@@ -50,7 +50,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   ########preprocess for by-country processing########
   data(gfw_tiles)
   tilesvect=vect(gfw_tiles)
-  if(!is.na(country)){
+  if(!is.na(country[1])){
     if(verbose){cat("selecting based on country\n")}
     data(countries)
     borders=vect(countries)
@@ -85,7 +85,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   for(tile in tiles){
     if(exists("extent")){rm(extent)}
     files=allfiles[grep(tile,allfiles)]
-    if(is.na(country)&(shrink=="extract")){
+    if(is.na(country[1])&(shrink=="extract")){
       if(!exists("countries")){data(countries);borders=vect(countries)}
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
     for(i in daterange){
@@ -95,14 +95,16 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       #remove groundtruth if it is not of the same month
       if(!(grep(groundtruth_pattern,selected_files) %in% grep(i,selected_files))){selected_files=selected_files[-grep(groundtruth_pattern,selected_files)]}
       for(file in selected_files){if(!exists("extent")){extent=ext(rast(file))}else{extent=terra::intersect(extent,ext(rast(file)))}}
-      if(verbose){cat(paste("with extent",extent[1],extent[2],extent[3],extent[4],"\n"))}
+
       if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
+
       if(shrink=="crop-deg"){
         extent=ext(crop(as.polygons(extent),ext(selected_country)))
         #crop to the nearest degree by changing the extent
         extent[1]=floor(extent[1]);extent[2]=ceiling(extent[2]);extent[3]=floor(extent[3]);extent[4]=ceiling(extent[4])
       }
       if(!is.na(window[1])){extent=terra::intersect(extent,window)}
+      if(verbose){cat(paste("with extent",extent[1],extent[2],extent[3],extent[4],"\n"))}
       rasstack=rast(sapply(selected_files,function(x) rast(x,win=extent)))
 
       if(first){
@@ -168,7 +170,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       if(length(sfa_indices)==0){sfa_indices=c(sfa_indices,sf_indices)}else{sfa_indices=intersect(sfa_indices,sf_indices)}
     }
     sf_indices=unique(sfa_indices)
-  }
+  }else{sf_indices=NULL}
   if(length(sf_indices)>0){
     fdts=fdts[sf_indices,]
   }
