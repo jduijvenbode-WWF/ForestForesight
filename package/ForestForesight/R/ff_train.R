@@ -38,7 +38,7 @@
 
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
                      subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,
-                     gamma=NULL, maximize=NULL, min_child_weight=1,verbose=F, xgb_model = NULL, weight=NULL) {
+                     gamma=NULL, maximize=NULL, min_child_weight=1,verbose=F, xgb_model = NULL, weight=NULL,modelfilename=NULL) {
 
   # Convert the matrix to a DMatrix object
   if(class(train_matrix)=="xgb.DMatrix"){dtrain <- train_matrix
@@ -55,7 +55,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     min_child_weight=min_child_weight
   )
   if(is.null(params$gamma)){params$gamma=NULL}
-
+  if(!is.null(modelfilename)){}
   if(any(is.na(validation_matrix))){watchlist=list(train = dtrain)
   }else{
     if(class(validation_matrix)=="xgb.DMatrix"){deval= validation_matrix
@@ -63,14 +63,23 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     watchlist=list(train = dtrain,eval= deval)}
 
   # Train the XGBoost model
-  model <- xgboost::xgb.train(
+  if(!is.null(modelfilename)){
+    cat("saving model")
+    model <- xgboost::xgb.train(
+    params = params,
+    nrounds=nrounds,
+    data = dtrain,
+    watchlist = watchlist,
+    early_stopping_rounds = early_stopping_rounds, maximize=maximize,
+    xgb_model=xgb_model, weight=weight, verbose=verbose,save_name=modelfilename)}else{
+    model <- xgboost::xgb.train(
     params = params,
     nrounds=nrounds,
     data = dtrain,
     watchlist = watchlist,
     early_stopping_rounds = early_stopping_rounds, maximize=maximize,
     xgb_model=xgb_model, weight=weight, verbose=verbose)
-
+}
   # Return the trained model
   return(model)
 }
