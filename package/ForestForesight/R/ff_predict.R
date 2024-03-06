@@ -26,16 +26,25 @@
 
 ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=NA,templateraster=NA,verbose=F,certainty=F){
   # Get the features
+  if(class(model)=="character"){
+    if(file.exists(model)){
+      xgb.load(model)
+      if(file.exists(gsub("\\.model","\\.rda",model))){
+        features=load(gsub("\\.model","\\.rda",model))
+        attr(model,"feature_names")=features
+      }
+    }
+  }
   model_features <- model$feature_names
   if(!is.null(model_features)){
-  test_features <- colnames(test_matrix$features)
-  # Check for features in the test matrix not present in the model
-  extra_features <- setdiff(test_features, model_features)
-  # If there are extra features, remove them from the test matrix
-  if (length(extra_features) > 0) {
-    warning(paste("Removing extra features from the test matrix:", paste(extra_features, collapse = ", ")))
-    test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
-  }
+    test_features <- colnames(test_matrix$features)
+    # Check for features in the test matrix not present in the model
+    extra_features <- setdiff(test_features, model_features)
+    # If there are extra features, remove them from the test matrix
+    if (length(extra_features) > 0) {
+      warning(paste("Removing extra features from the test matrix:", paste(extra_features, collapse = ", ")))
+      test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
+    }
   }
   # Convert the matrix to a DMatrix object
   if(!is.na(test_matrix$label[1])){test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)}else{test_matrix = xgb.DMatrix(test_matrix$features)}
