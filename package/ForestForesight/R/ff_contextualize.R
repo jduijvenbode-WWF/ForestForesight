@@ -25,10 +25,10 @@ ff_contextualize=function(hotzones=NA,hotzonesfolder=NA,contextfolder,NA_label="
   if(all(is.na(outputfile),!return_vector)){stop("return_polygons is set to False and outputfile is not given so this function does nothing")}
   if(is.null(contextfolder)){stop("contextfolder needs to be provided")}
   if(is.na(hotzones[1])){
-    data("countries")
+    data("countries",envir=environment())
     countries=vect(countries)
     proc_country=countries[which(countries$iso3==country),]
-    data("gfw_tiles")
+    data("gfw_tiles",envir=environment())
     gfw_tiles=vect(gfw_tiles)
     tiles=gfw_tiles[proc_country,]$tile_id
     files=list.files(path=hotzonesfolder,recursive=T,full.names = T)
