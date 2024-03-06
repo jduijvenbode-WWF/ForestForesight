@@ -44,7 +44,7 @@ ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,country
     cross=2*groundtruth+predictions*forestmask
   }else{cross=2*groundtruth+predictions}
   if(is.null(analysis_polygons)){
-    data("degree_polygons")
+    data("degree_polygons",envir=environment())
     pols=vect(degree_polygons)}else{
       if(class(analysis_polygons=="character")){
         pols=vect(analysis_polygons)}else{
