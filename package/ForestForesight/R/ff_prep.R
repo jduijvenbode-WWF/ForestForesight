@@ -31,9 +31,9 @@
 #' @name ff_prep
 
 
-ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth6mbin",start="2021-01-01",end=NA,
+ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth6m",start="2021-01-01",end=NA,
                  inc_features=NA,exc_features=NA,fltr_features=NULL,fltr_condition=NULL,sample_size=1,validation_sample=0,
-                 relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
+                 relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA,label_threshold=NA,addxy=T){
   ########quality check########
   if(as.Date(start)<as.Date("2021-01-01")){stop("the earliest date available is 2021-01-01")}
   if(is.na(country[1])){shrink="none"}
@@ -116,20 +116,25 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
               groundtruth_raster=rast(selected_files[1],win=extent);groundtruth_raster[]=0}
       }
       if(shrink=="extract"){
-        dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)
+        dts=extract(rasstack,selected_country,raw=T,ID=F, xy=addxy)
       }else{
 
         dts=as.matrix(rasstack)
-        coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
-        dts=cbind(dts,coords)}
+        if(addxy){
+          coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
+          dts=cbind(dts,coords)}
+      }
 
       if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)), rep(as.numeric(format(as.Date(i),"%m")),nrow(dts)))}
 
       dts[is.na(dts)]=0
-      newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))),"x","y")
+      newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))))
+      if(addxy){newcolnames=c(newcolnames,"x","y")}
       if(relativedate){newcolnames=c(newcolnames,"sinmonth", "month")}
 
+
       colnames(dts)=newcolnames
+
       dts=dts[,order(colnames(dts))]
       #take a random sample if that was applied
       if(sample_size<1){dts=dts[sample(seq(nrow(dts)),round(nrow(dts)*sample_size)),]}
@@ -179,12 +184,14 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   groundtruth_index=which(colnames(fdts)==groundtruth_pattern)
   if(length(groundtruth_index)==1){
     data_label=fdts[,groundtruth_index]
+    if(!is.na(label_threshold)){data_label=as.numeric(data_label>label_threshold)}
     #data_label[data_label>1]=1
     fdts=fdts[,-groundtruth_index]
   }else{
     if(verbose){warning("no groundtruth rasters found")}
     data_label=NA
   }
+
   #make sure that label data is binary
   ##########create validation sample#######
   if(validation_sample>0){
