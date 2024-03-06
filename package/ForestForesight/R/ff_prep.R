@@ -48,11 +48,11 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     sampleraster=F
     if(verbose){warning("No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}}
   ########preprocess for by-country processing########
-  data(gfw_tiles)
+  data(gfw_tiles,envir=environment())
   tilesvect=vect(gfw_tiles)
   if(!is.na(country[1])){
     if(verbose){cat("selecting based on country\n")}
-    data(countries)
+    data(countries,envir=environment())
     borders=vect(countries)
     selected_country=borders[which(borders$iso3 %in% country)]
     tilesvect=tilesvect[selected_country]$tile_id
@@ -86,7 +86,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     if(exists("extent",inherits=F)){rm(extent)}
     files=allfiles[grep(tile,allfiles)]
     if(is.na(country[1])&(shrink=="extract")){
-      if(!exists("countries",inherits=F)){data(countries);borders=vect(countries)}
+      if(!exists("countries",inherits=F)){data(countries,envir=environment());borders=vect(countries)}
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
     for(i in daterange){
       if(exists("dts",inherits=F)){rm(dts)}

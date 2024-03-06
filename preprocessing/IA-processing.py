@@ -11,8 +11,9 @@ def weighted_smoothing(data, window_size):
     # Create a weighted distance matrix
     x, y = np.meshgrid(np.arange(window_size), np.arange(window_size))
     distance = np.sqrt((x - window_size // 2)**2 + (y - window_size // 2)**2)
-    weight = 1.0 / (1.0 + distance)  # Weighted distance
-
+    weight = 1.0 / (1.0 + distance**1.5)  # Weighted distance
+    threshold=np.quantile(weight,0.17)
+    weight[weight<threshold]=0
     # Normalize the weights
     weight /= weight.sum()
 
@@ -188,12 +189,12 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
                     dst.write(patchiness.reshape(1,patchiness.shape[0],patchiness.shape[1]))
 
             if create_smoothedtotal:
-                smoothedtotal=weighted_smoothing(totaldeforestation, window_size=21)
+                smoothedtotal=weighted_smoothing(totaldeforestation, window_size=31)
                 with rasterio.open(smoothedtotal_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="float32", crs=src.crs, transform=newtransform) as dst:
                     dst.write(smoothedtotal.reshape(1,smoothedtotal.shape[0],smoothedtotal.shape[1]))
 
             if create_smoothedsixmonths:
-                smoothedsixmonths=weighted_smoothing(sixmonths, window_size=21)
+                smoothedsixmonths=weighted_smoothing(sixmonths, window_size=31)
                 with rasterio.open(smoothedsixmonths_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="uint16", crs=src.crs, transform=newtransform) as dst:
                     dst.write(smoothedsixmonths.reshape(1,smoothedsixmonths.shape[0],smoothedsixmonths.shape[1]))
             
