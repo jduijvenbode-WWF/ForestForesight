@@ -18,7 +18,8 @@ ff_train(
   min_child_weight = 1,
   verbose = F,
   xgb_model = NULL,
-  weight = NULL
+  weight = NULL,
+  modelfilename = NULL
 )
 }
 \arguments{

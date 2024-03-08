@@ -23,7 +23,7 @@
 ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,country=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA,verbose=F){
   if(!(class(predictions) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
   if(!(class(groundtruth) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
-  if(!is.null(csvfile)){if(append==T&!file.exists(csvfile)){append=F;warning("CSV file did not yet exist, creating empty one")}}
+  if(!is.null(csvfile)){if(append==T&!file.exists(csvfile)){append=F;cat("CSV file did not yet exist, creating empty one\n")}}
   if(is.null(date)){
     if(class(predictions)=="character"){date=substr(basename(predictions),10,19)}else{
       if(class(groundtruth)=="character"){date=substr(basename(predictions),10,19)}else{stop("no method to derive date from filename")}
@@ -44,7 +44,7 @@ ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,country
     cross=2*groundtruth+predictions*forestmask
   }else{cross=2*groundtruth+predictions}
   if(is.null(analysis_polygons)){
-    data("degree_polygons")
+    data("degree_polygons",envir=environment())
     pols=vect(degree_polygons)}else{
       if(class(analysis_polygons=="character")){
         pols=vect(analysis_polygons)}else{
@@ -55,6 +55,11 @@ ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,country
   pols$FN=terra::extract(cross==2,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$TP=terra::extract(cross==3,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$TN=terra::extract(cross==0,pols,fun="sum",na.rm=T,touches=F)[,2]
+  if(verbose){
+    cat("calculating F0.5 score\n")
+    pr=sum(pols$TP,na.rm=T)/(sum(pols$TP,na.rm=T)+sum(pols$FP,na.rm=T));re=sum(pols$TP,na.rm=T)/(sum(pols$TP,na.rm=T)+sum(pols$FN,na.rm=T))
+    print(pr);print(re)
+    cat(paste("F0.5 score is:",1.25*pr*re/(0.25*pr+re)))}
   if(verbose){cat("adding metadata\n")}
   pols$date=date
   pols$method=method

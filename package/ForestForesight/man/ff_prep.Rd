@@ -27,7 +27,7 @@ ff_prep(
 \arguments{
 \item{datafolder}{Path to the data folder. Default is the system variable xgboost_datafolder. should contain the degrees folders}
 
-\item{country}{Country for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.}
+\item{country}{Country or countries for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.}
 
 \item{tiles}{Vector of tiles in the syntax of e.g. 10N_080W.}
 
