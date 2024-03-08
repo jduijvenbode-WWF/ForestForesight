@@ -16,6 +16,8 @@
 #' @param verbose should the model run verbose. Default is FALSE.
 #' @param xgb_model Previous build model to continue the training from. Could be an object of class "xgb.Booster", its raw data, or a file name. Default = NULL
 #' @param weight Vector with weight for each row in the input. Default = NULL
+#' @param modelfilename character where to save the model. should end with the extension model
+#' @param features Vector with the feature names of the training dataset. Should be given when modelfilename is given so that the next time the model is loaded the model knows which features were used
 #'
 #' @return Trained XGBoost model.
 #'
@@ -38,8 +40,9 @@
 
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
                      subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,
-                     gamma=NULL, maximize=NULL, min_child_weight=1,verbose=F, xgb_model = NULL, weight=NULL) {
+                     gamma=NULL, maximize=NULL, min_child_weight=1,verbose=F, xgb_model = NULL, weight=NULL,modelfilename=NULL,features=NULL) {
 
+  if(!is.null(modelfilename)){save(features,file=gsub("\\.model","\\.rda",modelfilename))}
   # Convert the matrix to a DMatrix object
   if(class(train_matrix)=="xgb.DMatrix"){dtrain <- train_matrix
   }else{dtrain <- xgb.DMatrix(train_matrix$features, label=train_matrix$label)}
@@ -55,7 +58,6 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     min_child_weight=min_child_weight
   )
   if(is.null(params$gamma)){params$gamma=NULL}
-
   if(any(is.na(validation_matrix))){watchlist=list(train = dtrain)
   }else{
     if(class(validation_matrix)=="xgb.DMatrix"){deval= validation_matrix
@@ -63,14 +65,25 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     watchlist=list(train = dtrain,eval= deval)}
 
   # Train the XGBoost model
-  model <- xgboost::xgb.train(
+  if(!is.null(modelfilename)){
+    cat("saving model")
+    model <- xgboost::xgb.train(
+    params = params,
+    nrounds=nrounds,
+    data = dtrain,
+    watchlist = watchlist,
+    early_stopping_rounds = early_stopping_rounds, maximize=maximize,
+    xgb_model=xgb_model, weight=weight, verbose=verbose,save_name=modelfilename)
+
+    }else{
+    model <- xgboost::xgb.train(
     params = params,
     nrounds=nrounds,
     data = dtrain,
     watchlist = watchlist,
     early_stopping_rounds = early_stopping_rounds, maximize=maximize,
     xgb_model=xgb_model, weight=weight, verbose=verbose)
-
+}
   # Return the trained model
   return(model)
 }

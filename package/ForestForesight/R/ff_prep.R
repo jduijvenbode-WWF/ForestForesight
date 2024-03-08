@@ -3,7 +3,7 @@
 #' This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
 #'
 #' @param datafolder Path to the data folder. Default is the system variable xgboost_datafolder. should contain the degrees folders
-#' @param country Country for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.
+#' @param country Country or countries for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.
 #' @param tiles Vector of tiles in the syntax of e.g. 10N_080W.
 #' @param groundtruth_pattern Pattern to identify ground truth files. Default is groundtruth6mbin (groundtruth of future six months in binary format).
 #' @param start Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".
@@ -31,14 +31,14 @@
 #' @name ff_prep
 
 
-ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth6mbin",start="2021-01-01",end=NA,
+ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="groundtruth6m",start="2021-01-01",end=NA,
                  inc_features=NA,exc_features=NA,fltr_features=NULL,fltr_condition=NULL,sample_size=1,validation_sample=0,
-                 relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA){
+                 relativedate=T,sampleraster=T,verbose=F,shrink="none",window=NA,label_threshold=NA,addxy=T){
   ########quality check########
   if(as.Date(start)<as.Date("2021-01-01")){stop("the earliest date available is 2021-01-01")}
-  if(is.na(country)){shrink="none"}
+  if(is.na(country[1])){shrink="none"}
   if(is.na(start[1])){stop("no start date given")}
-  if(is.null(tiles)&is.na(country)){stop("unknown what to process since no tiles or country were given")}
+  if(is.null(tiles)&is.na(country[1])){stop("unknown what to process since no tiles or country were given")}
   if(is.na(end[1])){end=start}
   if(is.na(datafolder)){datafolder=Sys.getenv("xgboost_datafolder")}
   if(datafolder==""){stop("No environment variable for xgboost_datafolder and no datafolder parameter set")}
@@ -48,13 +48,13 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     sampleraster=F
     if(verbose){warning("No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}}
   ########preprocess for by-country processing########
-  data(gfw_tiles)
+  data(gfw_tiles,envir=environment())
   tilesvect=vect(gfw_tiles)
-  if(!is.na(country)){
+  if(!is.na(country[1])){
     if(verbose){cat("selecting based on country\n")}
-    data(countries)
+    data(countries,envir=environment())
     borders=vect(countries)
-    selected_country=borders[which(borders$iso3==country)]
+    selected_country=borders[which(borders$iso3 %in% country)]
     tilesvect=tilesvect[selected_country]$tile_id
     cat(paste("country contains the following tiles that will be processed:",paste(tilesvect,collapse=", "),"\n"))
     if(is.null(tiles)){tiles=tilesvect}
@@ -83,27 +83,28 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
     sampleraster=F}
   #######load raster data as matrix#########
   for(tile in tiles){
-    if(exists("extent")){rm(extent)}
+    if(exists("extent",inherits=F)){rm(extent)}
     files=allfiles[grep(tile,allfiles)]
-    if(is.na(country)&(shrink=="extract")){
-      if(!exists("countries")){data(countries);borders=vect(countries)}
+    if(is.na(country[1])&(shrink=="extract")){
+      if(!exists("countries",inherits=F)){data(countries,envir=environment());borders=vect(countries)}
       selected_country=aggregate(intersect(as.polygons(ext(rast(files[1]))),borders))}
     for(i in daterange){
-      if(exists("dts")){rm(dts)}
+      if(exists("dts",inherits=F)){rm(dts)}
       if(verbose){cat(paste("loading tile data from",tile,"for",i," "))}
-
       selected_files = select_files_date(i, files)
       #remove groundtruth if it is not of the same month
       if(!(grep(groundtruth_pattern,selected_files) %in% grep(i,selected_files))){selected_files=selected_files[-grep(groundtruth_pattern,selected_files)]}
       for(file in selected_files){if(!exists("extent")){extent=ext(rast(file))}else{extent=terra::intersect(extent,ext(rast(file)))}}
-      if(verbose){cat(paste("with extent",extent[1],extent[2],extent[3],extent[4],"\n"))}
+
       if(shrink %in% c("extract","crop")){extent=ext(crop(as.polygons(extent),ext(selected_country)))}
+
       if(shrink=="crop-deg"){
         extent=ext(crop(as.polygons(extent),ext(selected_country)))
         #crop to the nearest degree by changing the extent
         extent[1]=floor(extent[1]);extent[2]=ceiling(extent[2]);extent[3]=floor(extent[3]);extent[4]=ceiling(extent[4])
       }
       if(!is.na(window[1])){extent=terra::intersect(extent,window)}
+      if(verbose){cat(paste("with extent",extent[1],extent[2],extent[3],extent[4],"\n"))}
       rasstack=rast(sapply(selected_files,function(x) rast(x,win=extent)))
 
       if(first){
@@ -115,20 +116,25 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
               groundtruth_raster=rast(selected_files[1],win=extent);groundtruth_raster[]=0}
       }
       if(shrink=="extract"){
-        dts=extract(rasstack,selected_country,raw=T,ID=F, xy=TRUE)
+        dts=extract(rasstack,selected_country,raw=T,ID=F, xy=addxy)
       }else{
 
         dts=as.matrix(rasstack)
-        coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
-        dts=cbind(dts,coords)}
+        if(addxy){
+          coords=xyFromCell(rasstack,seq(ncol(rasstack)*nrow(rasstack)))
+          dts=cbind(dts,coords)}
+      }
 
       if(relativedate){dts=cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)), rep(as.numeric(format(as.Date(i),"%m")),nrow(dts)))}
 
       dts[is.na(dts)]=0
-      newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))),"x","y")
+      newcolnames=c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))))
+      if(addxy){newcolnames=c(newcolnames,"x","y")}
       if(relativedate){newcolnames=c(newcolnames,"sinmonth", "month")}
 
+
       colnames(dts)=newcolnames
+
       dts=dts[,order(colnames(dts))]
       #take a random sample if that was applied
       if(sample_size<1){dts=dts[sample(seq(nrow(dts)),round(nrow(dts)*sample_size)),]}
@@ -169,7 +175,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
       if(length(sfa_indices)==0){sfa_indices=c(sfa_indices,sf_indices)}else{sfa_indices=intersect(sfa_indices,sf_indices)}
     }
     sf_indices=unique(sfa_indices)
-  }
+  }else{sf_indices=NULL}
   if(length(sf_indices)>0){
     fdts=fdts[sf_indices,]
   }
@@ -178,12 +184,14 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   groundtruth_index=which(colnames(fdts)==groundtruth_pattern)
   if(length(groundtruth_index)==1){
     data_label=fdts[,groundtruth_index]
+    if(!is.na(label_threshold)){data_label=as.numeric(data_label>label_threshold)}
     #data_label[data_label>1]=1
     fdts=fdts[,-groundtruth_index]
   }else{
     if(verbose){warning("no groundtruth rasters found")}
     data_label=NA
   }
+
   #make sure that label data is binary
   ##########create validation sample#######
   if(validation_sample>0){
