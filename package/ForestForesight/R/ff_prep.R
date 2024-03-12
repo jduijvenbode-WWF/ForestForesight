@@ -142,6 +142,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         fdts=dts
 
       }else{
+        if(nrow(dts)>0){
 
         common_cols <- intersect(colnames(dts), colnames(fdts))
         notin1=colnames(dts)[which(!(colnames(dts) %in% common_cols))]
@@ -150,7 +151,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         # Subset matrices based on common column names
         # Merge matrices by column names
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
-      }
+      }}
       fdts=fdts[,order(colnames(fdts))]
       first=F}
     if(verbose){cat(paste("loading finished, features:",paste(newcolnames,collapse=", "),"\n"))}
