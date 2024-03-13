@@ -142,6 +142,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         fdts=dts
 
       }else{
+        if(nrow(dts)>0){
 
         common_cols <- intersect(colnames(dts), colnames(fdts))
         notin1=colnames(dts)[which(!(colnames(dts) %in% common_cols))]
@@ -150,7 +151,7 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
         # Subset matrices based on common column names
         # Merge matrices by column names
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
-      }
+      }}
       fdts=fdts[,order(colnames(fdts))]
       first=F}
     if(verbose){cat(paste("loading finished, features:",paste(newcolnames,collapse=", "),"\n"))}
@@ -184,7 +185,9 @@ ff_prep=function(datafolder=NA,country=NA,tiles=NULL,groundtruth_pattern="ground
   groundtruth_index=which(colnames(fdts)==groundtruth_pattern)
   if(length(groundtruth_index)==1){
     data_label=fdts[,groundtruth_index]
-    if(!is.na(label_threshold)){data_label=as.numeric(data_label>label_threshold)}
+    if(!is.na(label_threshold)){
+      data_label=as.numeric(data_label>label_threshold)
+      groundtruth_raster= as.numeric(groundtruth_raster>label_threshold)}
     #data_label[data_label>1]=1
     fdts=fdts[,-groundtruth_index]
   }else{
