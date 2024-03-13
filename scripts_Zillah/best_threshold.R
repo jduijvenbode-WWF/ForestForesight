@@ -1,9 +1,9 @@
-## Find best treshold over time ##
+## Find best threshold over time ##
 F05 <- function(gt, pred) {
   # Calculate true positives, false positives, and false negatives
-  tp <- global(gt == 1 & pred == 1,"sum")
-  fp <- global(gt == 0 & pred == 1,"sum")
-  fn <- global(gt == 1 & pred == 0,"sum")
+  tp <- global(gt == 1 & pred == 1,"sum", na.rm=T)
+  fp <- global(gt == 0 & pred == 1,"sum", na.rm=T)
+  fn <- global(gt == 1 & pred == 0,"sum", na.rm=T)
 
   # Calculate precision and recall
   precision <- tp / (tp + fp)
@@ -19,36 +19,50 @@ F05 <- function(gt, pred) {
 Sys.setenv("xgboost_datafolder"="D:/ff-dev/results/preprocessed")
 
 library(ForestForesight)
-data("countries")
-countries=vect(countries)
+
 data("gfw_tiles")
 gfw_tiles=vect(gfw_tiles)
-tids=gfw_tiles[countries[which(countries$iso3 %in% c("LAO")),],]$tile_id
+groups = c("Lao People's Democratic Republic","Middle Africa 1", "Colombia","Peru", "Bolivia")
 setwd("D:/ff-dev/results/predictions/")
-files=list.files(recursive=T,pattern="predictions.tif",full.names = T)
-tilinds=unique(as.numeric(unlist(sapply(tids,function(x) grep(x,files)))))
-#files=c(files[tilinds],files[-tilinds])
-files=c(files[tilinds])
-gtfiles=file.path("D:/ff-dev/results/preprocessed/groundtruth/",gsub("predictions","groundtruth6mbin", files))
+files_all=list.files(recursive=T,pattern="predictions.tif",full.names = T)
 alldat=data.frame()
-for(i in seq(length(files))[12:length(files)]){
-  tryCatch({
-    if(all(file.exists(c(files[i],gtfiles[i])))){
-      pred=rast(files[i])
-      gt=rast(gtfiles[i],win=ext(pred))
-      thresholds= seq(0.1,0.7,0.02)
-      F05values= F05(gt,as.numeric(pred>thresholds*100))
-      bestf05= max(F05values)
-      increasef05= bestf05-F05values$sum[21]
-      threshold <- thresholds[which.max(F05values$sum)]
-      print(paste(basename(dirname(files[i])),substr(basename(files[i]),10,19), "Best treshold:", threshold, ", F0.5 score: ", round(bestf05,2),
-            " F05 increase:", round(increasef05,2)))
-      # ff_analyze(predictions = pred>threshold,groundtruth = gt,return_polygons = F,tile=basename(dirname(files[i])),date=substr(basename(files[i]),10,19),csvfile = "D:/ff-dev/newres6.csv",append=T)
-      alldat=rbind(alldat,c(basename(dirname(files[i])),substr(basename(files[i]),10,19),threshold,round(bestf05,4),round(increasef05,4)))
-    }}, error = function(e) {
-      # Print the error message
-      cat("Error occurred for iteration", i, ": ", conditionMessage(e), "\n")
-      # Continue to the next iteration
+for (group in groups[1:2]){
+  data("countries")
+  group_geom = countries[countries$group==group,]$geometry
+  plot(group_geom)
+  countries=vect(countries)
+  tids=gfw_tiles[countries[which(countries$group == group),],]$tile_id
+  tilinds=unique(as.numeric(unlist(sapply(tids,function(x) grep(x,files_all)))))
+  #files=c(files[tilinds],files[-tilinds])
+  files=c(files_all[tilinds])
+  gtfiles=file.path("D:/ff-dev/results/preprocessed/groundtruth/",gsub("predictions","groundtruth6mbin", files))
+  #dates= daterange(substr(basename(files[1]),10,19),substr(basename(files[length(files)]),10,19))
+  dates= daterange(substr(basename(files[1]),10,19),"2023-06-01")
+  for(date in dates){
+    id= unique(as.numeric(unlist(sapply(date,function(x) grep(x,files)))))
+    pred_list <- lapply(id, function(i) {
+      crop(rast(files[i]), vect(group_geom), mask = TRUE)
     })
+
+    gt_list <- lapply(id, function(i) {
+      crop(rast(gtfiles[i]), vect(group_geom), mask = TRUE)
+    })
+
+    # Merge the list of cropped rasters into a single raster
+    pred <- do.call(merge, pred_list)
+    gt <- do.call(merge, gt_list)
+    plot(pred)
+    thresholds= seq(0.1,0.8,0.02)
+    pred[is.na(pred)]=0
+    gt[is.na(gt)]=0
+    F05values= F05(gt,as.numeric(pred>thresholds*100))
+    bestf05= max(F05values)
+    increasef05= bestf05-F05values$sum[21]
+    threshold <- thresholds[which.max(F05values$sum)]
+    print(paste(group, date, "Best treshold:", threshold, ", F0.5 score: ", round(bestf05,2),
+                ", F05 increase:", round(increasef05,2)))
+    # ff_analyze(predictions = pred>threshold,groundtruth = gt,return_polygons = F,tile=basename(dirname(files[i])),date=substr(basename(files[i]),10,19),csvfile = "D:/ff-dev/newres6.csv",append=T)
+    alldat=rbind(alldat,c(group, date,threshold,round(bestf05,4),round(increasef05,4)))
+  }
 
 }
