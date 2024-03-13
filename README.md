@@ -59,8 +59,8 @@ The S3 bucket contains multiple folders which are structured like this
 
 
 At the moment we have the following features:
-|feature|name|periodicity|source|processing|maximum DN|
-| :-------- | :------- | :-------- | :------- | :-------- |
+|feature|name|periodicity|source|processing|maximumDN|
+| :-------- | :------- | :-------- | :------- | :-------- | :-------- | 
 |groundtruth6mbin|binary groundtruth of oncoming six months|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|every 400x400m pixel where at least 1 deforestation event happens is classified as an actual (value 1)|1|
 |groundtruth1m|groundtruth of oncoming month in amount of pixels|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|every 400x400m pixel with the total number of deforestation events in the oncoming 1 months as a value (betwen 0 and 1600)|1600|
 |groundtruth3m|groundtruth of oncoming 3 months in amount of pixels|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|every 400x400m pixel with the total number of deforestation events in the oncoming 3 months as a value (betwen 0 and 1600)|1600|
