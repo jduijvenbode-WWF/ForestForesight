@@ -46,8 +46,8 @@ results2= read.csv("D:ff-dev/experiment_features_laos.csv")
 df=as.data.frame(results2)
 result_list <- list()
 
-for (i in colnames(df)[2:30]) {
-  result <- aggregate(df$X.3, by = list(df[[i]]), FUN = mean)
+for (i in colnames(df)[1:33]) {
+  result <- aggregate(df$X.2, by = list(df[[i]]), FUN = mean)
   result_list[[i]] <- result
 }
 result_df <- do.call(rbind, result_list)
