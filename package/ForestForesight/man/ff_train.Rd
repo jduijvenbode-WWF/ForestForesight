@@ -18,8 +18,8 @@ ff_train(
   min_child_weight = 1,
   verbose = F,
   xgb_model = NULL,
-  weight = NULL,
-  modelfilename = NULL
+  modelfilename = NULL,
+  features = NULL
 )
 }
 \arguments{
@@ -49,7 +49,9 @@ ff_train(
 
 \item{xgb_model}{Previous build model to continue the training from. Could be an object of class "xgb.Booster", its raw data, or a file name. Default = NULL}
 
-\item{weight}{Vector with weight for each row in the input. Default = NULL}
+\item{modelfilename}{character where to save the model. should end with the extension model}
+
+\item{features}{Vector with the feature names of the training dataset. Should be given when modelfilename is given so that the next time the model is loaded the model knows which features were used}
 }
 \value{
 Trained XGBoost model.
