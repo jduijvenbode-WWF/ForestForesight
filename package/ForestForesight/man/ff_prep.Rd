@@ -8,7 +8,7 @@ ff_prep(
   datafolder = NA,
   country = NA,
   tiles = NULL,
-  groundtruth_pattern = "groundtruth6mbin",
+  groundtruth_pattern = "groundtruth6m",
   start = "2021-01-01",
   end = NA,
   inc_features = NA,
@@ -21,7 +21,9 @@ ff_prep(
   sampleraster = T,
   verbose = F,
   shrink = "none",
-  window = NA
+  window = NA,
+  label_threshold = NA,
+  addxy = F
 )
 }
 \arguments{
