@@ -11,12 +11,12 @@
 getFscore <- function(gt, pred, threshold = 0.5, beta = 0.5) {
 
   # Convert predictions to binary
-  pred <- as.numeric(pred > threshold)
+  pred <- as.numeric(pred >= threshold) + gt*2
 
   # Calculate true positives, false positives, and false negatives
-  tp <- sum(gt == 1 & pred == 1)
-  fp <- sum(gt == 0 & pred == 1)
-  fn <- sum(gt == 1 & pred == 0)
+  tp <- sum(pred == 3)
+  fp <- sum(pred == 1)
+  fn <- sum(pred == 2)
 
   # Calculate precision and recall
   precision <- tp / (tp + fp)
