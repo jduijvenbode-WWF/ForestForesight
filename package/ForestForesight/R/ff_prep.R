@@ -3,8 +3,9 @@
 #' This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
 #'
 #' @param datafolder Path to the data folder. Default is the system variable xgboost_datafolder. should contain the degrees folders
-#' @param country Country or countries for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.
-#' @param tiles Vector of tiles in the syntax of e.g. 10N_080W.
+#' @param country Country or countries for which the data is prepared. Is optional when either shape or tiles is given. Should be the ISO3 code.
+#' @param shape SpatVector for which the data is prepared. Is optional when either country or tiles is given.
+#' @param tiles Vector of tiles in the syntax of e.g. 10N_080W.optional when either shape or country is given.
 #' @param groundtruth_pattern Pattern to identify ground truth files. Default is groundtruth6mbin (groundtruth of future six months in binary format).
 #' @param start Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".
 #' @param end End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.
@@ -31,15 +32,16 @@
 #' @name ff_prep
 
 
-ff_prep <- function(datafolder=NA, country=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", start="2021-01-01", end=NA,
+ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", start="2021-01-01", end=NA,
                  inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=1, validation_sample=0,
-                 relativedate=T, sampleraster=T, verbose=F, shrink="none", window=NA, label_threshold=NA, addxy=F){
+                 adddate=T, sampleraster=T, verbose=F, shrink="none", window=NA, label_threshold=NA, addxy=F){
   ########quality check########
   if (as.Date(start) < as.Date("2021-01-01")) {stop("the earliest date available is 2021-01-01")}
-  if (!hasvalue(country)) {shrink <- "none"}
+  if (!hasvalue(country) & !hasvalue(shape)) {shrink <- "none"}
   if (!hasvalue(start)) {stop("no start date given")}
-  if (!hasvalue(tiles) & !hasvalue(country)) {stop("unknown what to process since no tiles or country were given")}
+  if (!hasvalue(tiles) & !hasvalue(country) & !hasvalue(shape)) {stop("unknown what to process since no tiles or country or shape were given")}
   if (!hasvalue(end)) {end <- start}
+  if (hasvalue(shape) & !class(shape) == "SpatVector") {stop("shape should be of class spatVector")}
   if (!hasvalue(datafolder)) {datafolder <- Sys.getenv("xgboost_datafolder")}
   if (datafolder == "") {stop("No environment variable for xgboost_datafolder and no datafolder parameter set")}
   inputdatafolder <- file.path(datafolder,"input")
@@ -53,14 +55,21 @@ ff_prep <- function(datafolder=NA, country=NA, tiles=NULL, groundtruth_pattern="
   if (hasvalue(country)) {
     if (verbose) {cat("selecting based on country\n")}
     data(countries,envir = environment())
-    borders <- terra::vect(countries)
-    selected_country <- borders[which(borders$iso3 %in% country)]
-    tilesvect <- tilesvect[selected_country]$tile_id
+    countries <- terra::vect(countries)
+    shape <- countries[which(countries$iso3 %in% country)]
+    tilesvect <- tilesvect[shape]$tile_id
     cat(paste("country contains the following tiles that will be processed:",paste(tilesvect,collapse = ", "),"\n"))
     if (is.null(tiles)) {tiles <- tilesvect}
+  }else{
+    if (hasvalue(shape)) {
+      shape <- terra::project(shape,"epsg:4326")
+      if (verbose) {cat("selecting based on shape\n")}
+      tiles <- tilesvect[shape]$tile_id
+    }
   }
 
   ##########list files and exclude features######
+  if (verbose) {cat("searching",inputdatafolder,"for tiles",paste(tiles,collapse=", "),"\n")}
   allfiles <- as.character(unlist(sapply(tiles,function(x) list.files(path = file.path(inputdatafolder,x),full.names = T,recursive = T,pattern = "tif$"))))
   allgroundtruth = as.character(unlist(sapply(tiles,function(x) list.files(path = file.path(groundtruthdatafolder,x),full.names = T,recursive = T,pattern = "tif$"))))
   allgroundtruth = allgroundtruth[endsWith(gsub(".tif","",allgroundtruth),groundtruth_pattern)]
@@ -85,9 +94,9 @@ ff_prep <- function(datafolder=NA, country=NA, tiles=NULL, groundtruth_pattern="
   for (tile in tiles) {
     if (exists("extent",inherits = F)) {rm(extent)}
     files <- allfiles[grep(tile,allfiles)]
-    if (!hasvalue(country) & (shrink == "extract")) {
+    if (!hasvalue(shape) & (shrink == "extract")) {
       if (!exists("countries",inherits = F)) {data(countries,envir = environment());borders <- terra::vect(countries)}
-      selected_country <- aggregate(intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))),borders))}
+      shape <- aggregate(intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))),borders))}
     for (i in daterange) {
       if (exists("dts",inherits = F)) {rm(dts)}
       if (verbose) {cat(paste("loading tile data from",tile,"for",i," "))}
@@ -96,10 +105,10 @@ ff_prep <- function(datafolder=NA, country=NA, tiles=NULL, groundtruth_pattern="
       if (!(grep(groundtruth_pattern,selected_files) %in% grep(i,selected_files))) {selected_files <- selected_files[-grep(groundtruth_pattern,selected_files)]}
       for (file in selected_files) {if (!exists("extent")) {extent <- terra::ext(terra::rast(file))}else{extent <- terra::intersect(extent,terra::ext(terra::rast(file)))}}
 
-      if (shrink %in% c("extract","crop")) {extent <- terra::ext(terra::crop(terra::as.polygons(extent),terra::ext(selected_country)))}
+      if (shrink %in% c("extract","crop")) {extent <- terra::ext(terra::crop(terra::as.polygons(extent),terra::ext(shape)))}
 
       if (shrink == "crop-deg") {
-        extent <- terra::ext(terra::crop(terra::as.polygons(extent),terra::ext(selected_country)))
+        extent <- terra::ext(terra::crop(terra::as.polygons(extent),terra::ext(shape)))
         #crop to the nearest degree by changing the extent
         extent[1] <- floor(extent[1])
         extent[2] <- ceiling(extent[2])
@@ -121,7 +130,7 @@ ff_prep <- function(datafolder=NA, country=NA, tiles=NULL, groundtruth_pattern="
               groundtruth_raster[] <- 0}
       }
       if (shrink == "extract") {
-        dts <- terra::extract(rasstack,selected_country,raw = T,ID = F, xy = addxy)
+        dts <- terra::extract(rasstack,shape,raw = T,ID = F, xy = addxy)
       }else{
 
         dts <- as.matrix(rasstack)
@@ -130,14 +139,17 @@ ff_prep <- function(datafolder=NA, country=NA, tiles=NULL, groundtruth_pattern="
           dts <- cbind(dts,coords)}
       }
 
-      if (relativedate) {dts <- cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)), rep(as.numeric(format(as.Date(i),"%m")),nrow(dts)))}
+      if (adddate) {dts <- cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)),
+                                 rep(as.numeric(format(as.Date(i),"%m")),nrow(dts)),
+      #add the months since 2019
+      rep(round(as.numeric(lubridate::as.period(as.Date(i) - as.Date("2019-01-01"),"months"),"months")),nrow(dts)))}
+      }
 
       dts[is.na(dts)] <- 0
       newcolnames <- c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))))
       if (addxy) {newcolnames <- c(newcolnames,"x","y")}
-      if (relativedate) {newcolnames <- c(newcolnames,"sinmonth", "month")}
+      if (adddate) {newcolnames <- c(newcolnames,"sinmonth", "month","monthssince2019")}
       colnames(dts) <- newcolnames
-
       dts <- dts[,order(colnames(dts))]
       #take a random sample if that was applied
       if (sample_size < 1) {dts <- dts[sample(seq(nrow(dts)),max(round(nrow(dts)*sample_size),1)),]}
@@ -147,7 +159,7 @@ ff_prep <- function(datafolder=NA, country=NA, tiles=NULL, groundtruth_pattern="
         common_cols <- intersect(colnames(dts), colnames(fdts))
         notin1 <- colnames(dts)[which(!(colnames(dts) %in% common_cols))]
         notin2 <- colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
-        if (length(c(notin1,notin2)) > 0) {warning(paste("the following columns are dropped because they are not present in the entire time series: ",paste(c(notin1,notin2),collapse = ", ")))}
+        if (length(c(notin1,notin2)) > 0) {warning(paste(i,": the following columns are dropped because they are not present in the entire time series: ",paste(c(notin1,notin2),collapse = ", ")))}
         # Subset matrices based on common column names
         # Merge matrices by column names
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
