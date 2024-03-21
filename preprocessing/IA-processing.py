@@ -45,7 +45,7 @@ def fun_patchiness(input_array):
 
 
 
-def process_geotiff(input_file, output_file,relative_date,num_windows,groundtruth_called):
+def process_geotiff(input_file, output_file,relative_date,num_windows,groundtruth1m_called,groundtruth3m_called,groundtruth6m_called,groundtruth12m_called):
     # Open the GeoTIFF file
     with rasterio.open(input_file) as src:
         newtransform=src.transform*src.transform.scale(40,40)
@@ -66,16 +66,13 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         create_twelvetosixmonths = not os.path.isfile(twelvetosixmonths_file)
         totaldeforestation_file=output_file.replace("layer","totallossalerts")
         create_totaldeforestation = not os.path.isfile(totaldeforestation_file)
-        groundtruth_file=output_file.replace("layer","groundtruth")
-        create_groundtruth = not os.path.isfile(groundtruth_file)
-        if not groundtruth_called: create_groundtruth=False
-        groundtruth1m_file=output_file.replace("layer","groundtruth1m")
+        groundtruth1m_file=output_file.replace("layer","groundtruth1m").replace("input","groundtruth")
         create_groundtruth1m = not os.path.isfile(groundtruth1m_file)
-        groundtruth3m_file=output_file.replace("layer","groundtruth3m")
+        groundtruth3m_file=output_file.replace("layer","groundtruth3m").replace("input","groundtruth")
         create_groundtruth3m = not os.path.isfile(groundtruth3m_file)
-        groundtruth6m_file=output_file.replace("layer","groundtruth6m")
+        groundtruth6m_file=output_file.replace("layer","groundtruth6m").replace("input","groundtruth")
         create_groundtruth6m = not os.path.isfile(groundtruth6m_file)
-        groundtruth12m_file=output_file.replace("layer","groundtruth12m")
+        groundtruth12m_file=output_file.replace("layer","groundtruth12m").replace("input","groundtruth")
         create_groundtruth12m = not os.path.isfile(groundtruth12m_file)
         confidence_file=output_file.replace("layer","confidence")
         create_confidence = not os.path.isfile(confidence_file)
@@ -108,7 +105,6 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
                     if create_sixmonths or create_smoothedsixmonths: sixmonths=template.copy()
                     if create_twelvetosixmonths: twelvetosixmonths=template.copy()
                     if create_totaldeforestation or create_smoothedtotal: totaldeforestation=template.copy()
-                    if create_groundtruth: groundtruth=template.copy()
                     if create_confidence: confidence=template.copy()
                     if create_patchiness: patchiness=template.copy()
                     if create_lastmonth: lastmonth=template.copy()
@@ -123,8 +119,6 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
                 # Take the remainder of 10000 for every pixel
                 if create_confidence: confidence[offx1:offx2,offy1:offy2]=aggregate_by_40_max((np.remainder(np.nan_to_num(data), 10000)<relative_date).astype(int)*data//10000,fun="nanmean")
                 data = np.remainder(np.nan_to_num(data), 10000)
-                if create_groundtruth: 
-                    groundtruth[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date+182))&(data>relative_date)).astype(int),fun="max")
                 if create_groundtruth1m: 
                     groundtruth1m[offx1:offx2,offy1:offy2]=aggregate_by_40_max(((data<=(relative_date+30))&(data>relative_date)).astype(int),fun="sum")
                 if create_groundtruth3m: 
@@ -173,12 +167,6 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
             if create_totaldeforestation:
                 with rasterio.open(totaldeforestation_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
                     dst.write(totaldeforestation.reshape(1,totaldeforestation.shape[0],totaldeforestation.shape[1]))
-
-            
-            if create_groundtruth:
-                with rasterio.open(groundtruth_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype=src.dtypes[0], crs=src.crs, transform=newtransform) as dst:
-                    dst.write(groundtruth.reshape(1,groundtruth.shape[0],groundtruth.shape[1]))
-
             
             if create_confidence:
                 with rasterio.open(confidence_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="float32", crs=src.crs, transform=newtransform) as dst:
@@ -225,7 +213,10 @@ if __name__ == "__main__":
     parser.add_argument("input_image", help="Path to the input geotiff image")
     parser.add_argument("output_image", help="Path to the output geotiff image")
     parser.add_argument("relative_date", help="relative date")
-    parser.add_argument("--groundtruth", help="should groundtruth be processed",default=1,required=False)
+    parser.add_argument("--groundtruth1m", help="should groundtruth1m be processed",default=1,required=False)
+    parser.add_argument("--groundtruth3m", help="should groundtruth3m be processed",default=1,required=False)
+    parser.add_argument("--groundtruth6m", help="should groundtruth6m be processed",default=1,required=False)
+    parser.add_argument("--groundtruth12m", help="should groundtruth12m be processed",default=1,required=False)
     parser.add_argument("--num_windows", help="number of windows, depends on RAM size.",default=4,required=False)
     args = parser.parse_args()
     # Replace 'your_geotiff_file.tif' with the actual file path
@@ -233,4 +224,5 @@ if __name__ == "__main__":
     output_geotiff = args.output_image
     reldate=int(args.relative_date)
     num_windows=int(args.num_windows)
-    process_geotiff(input_geotiff,output_geotiff,reldate,num_windows = num_windows,groundtruth_called=int(args.groundtruth))
+    process_geotiff(input_geotiff,output_geotiff,reldate,num_windows = num_windows,
+        groundtruth1m_called=int(args.groundtruth1m),groundtruth3m_called=int(args.groundtruth1m),groundtruth6m_called=int(args.groundtruth1m),groundtruth12m_called=int(args.groundtruth1m))
