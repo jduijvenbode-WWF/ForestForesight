@@ -2,7 +2,7 @@
 #'
 #' This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
 #'
-#' @param datafolder Path to the data folder. Default is the system variable xgboost_datafolder. should contain the degrees folders
+#' @param datafolder Path to the data folder. Default is the system variable ff_datafolder. should contain the degrees folders
 #' @param country Country or countries for which the data is prepared. Is optional when either shape or tiles is given. Should be the ISO3 code.
 #' @param shape SpatVector for which the data is prepared. Is optional when either country or tiles is given.
 #' @param tiles Vector of tiles in the syntax of e.g. 10N_080W.optional when either shape or country is given.
@@ -33,8 +33,8 @@
 
 
 ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", start="2021-01-01", end=NA,
-                 inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=1, validation_sample=0,
-                 adddate=T, sampleraster=T, verbose=F, shrink="none", window=NA, label_threshold=NA, addxy=F){
+                    inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=1, validation_sample=0,
+                    adddate=T, sampleraster=T, verbose=F, shrink="none", window=NA, label_threshold=NA, addxy=F){
   ########quality check########
   if (as.Date(start) < as.Date("2021-01-01")) {stop("the earliest date available is 2021-01-01")}
   if (!hasvalue(country) & !hasvalue(shape)) {shrink <- "none"}
@@ -42,8 +42,8 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   if (!hasvalue(tiles) & !hasvalue(country) & !hasvalue(shape)) {stop("unknown what to process since no tiles or country or shape were given")}
   if (!hasvalue(end)) {end <- start}
   if (hasvalue(shape) & !class(shape) == "SpatVector") {stop("shape should be of class spatVector")}
-  if (!hasvalue(datafolder)) {datafolder <- Sys.getenv("xgboost_datafolder")}
-  if (datafolder == "") {stop("No environment variable for xgboost_datafolder and no datafolder parameter set")}
+  if (!hasvalue(datafolder)) {datafolder <- Sys.getenv("ff_datafolder")}
+  if (datafolder == "") {stop("No environment variable for ff_datafolder and no datafolder parameter set")}
   inputdatafolder <- file.path(datafolder,"input")
   groundtruthdatafolder <- file.path(datafolder,"groundtruth")
   if (sampleraster & ((validation_sample > 0) | sample_size < 1)) {
@@ -65,11 +65,12 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
       shape <- terra::project(shape,"epsg:4326")
       if (verbose) {cat("selecting based on shape\n")}
       tiles <- tilesvect[shape]$tile_id
+      if (verbose) {cat("processing tiles:",paste(tiles,collapse = ", "),"\n")}
     }
   }
 
   ##########list files and exclude features######
-  if (verbose) {cat("searching",inputdatafolder,"for tiles",paste(tiles,collapse=", "),"\n")}
+  if (verbose) {cat("searching",inputdatafolder,"for tiles",paste(tiles,collapse = ", "),"\n")}
   allfiles <- as.character(unlist(sapply(tiles,function(x) list.files(path = file.path(inputdatafolder,x),full.names = T,recursive = T,pattern = "tif$"))))
   allgroundtruth = as.character(unlist(sapply(tiles,function(x) list.files(path = file.path(groundtruthdatafolder,x),full.names = T,recursive = T,pattern = "tif$"))))
   allgroundtruth = allgroundtruth[endsWith(gsub(".tif","",allgroundtruth),groundtruth_pattern)]
@@ -141,9 +142,10 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
 
       if (adddate) {dts <- cbind(dts,rep(sin((2*pi*as.numeric(format(as.Date(i),"%m")))/12),nrow(dts)),
                                  rep(as.numeric(format(as.Date(i),"%m")),nrow(dts)),
-      #add the months since 2019
-      rep(round(as.numeric(lubridate::as.period(as.Date(i) - as.Date("2019-01-01"),"months"),"months")),nrow(dts)))}
+                                 #add the months since 2019
+                                 rep(round(as.numeric(lubridate::as.period(as.Date(i) - as.Date("2019-01-01"),"months"),"months")),nrow(dts)))
       }
+
 
       dts[is.na(dts)] <- 0
       newcolnames <- c(gsub(".tif","",c(sapply(basename(selected_files),function(x) strsplit(x,"_")[[1]][4]))))
@@ -153,6 +155,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
       dts <- dts[,order(colnames(dts))]
       #take a random sample if that was applied
       if (sample_size < 1) {dts <- dts[sample(seq(nrow(dts)),max(round(nrow(dts)*sample_size),1)),]}
+      if (hasvalue(dim(dts))){
       if (first) {
         fdts <- dts
       }else{
@@ -165,7 +168,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
       }
       fdts <- fdts[,order(colnames(fdts))]
-      first <- F}
+      first <- F}}
     if (verbose) {cat(paste("loading finished, features:",paste(newcolnames,collapse = ", "),"\n"))}
   }
   ######filter data based on features#######
