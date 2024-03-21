@@ -67,13 +67,13 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
         totaldeforestation_file=output_file.replace("layer","totallossalerts")
         create_totaldeforestation = not os.path.isfile(totaldeforestation_file)
         groundtruth1m_file=output_file.replace("layer","groundtruth1m").replace("input","groundtruth")
-        create_groundtruth1m = not os.path.isfile(groundtruth1m_file) and grountruth1m_called==1
+        create_groundtruth1m = not os.path.isfile(groundtruth1m_file) and groundtruth1m_called==1
         groundtruth3m_file=output_file.replace("layer","groundtruth3m").replace("input","groundtruth")
-        create_groundtruth3m = not os.path.isfile(groundtruth3m_file) and grountruth3m_called==1
+        create_groundtruth3m = not os.path.isfile(groundtruth3m_file) and groundtruth3m_called==1
         groundtruth6m_file=output_file.replace("layer","groundtruth6m").replace("input","groundtruth")
-        create_groundtruth6m = not os.path.isfile(groundtruth6m_file) and grountruth6m_called==1
+        create_groundtruth6m = not os.path.isfile(groundtruth6m_file) and groundtruth6m_called==1
         groundtruth12m_file=output_file.replace("layer","groundtruth12m").replace("input","groundtruth")
-        create_groundtruth12m = not os.path.isfile(groundtruth12m_file) and grountruth12m_called==1
+        create_groundtruth12m = not os.path.isfile(groundtruth12m_file) and groundtruth12m_called==1
         confidence_file=output_file.replace("layer","confidence")
         create_confidence = not os.path.isfile(confidence_file)
         patchiness_file=output_file.replace("layer","patchdensity")
