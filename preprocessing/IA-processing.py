@@ -225,4 +225,4 @@ if __name__ == "__main__":
     reldate=int(args.relative_date)
     num_windows=int(args.num_windows)
     process_geotiff(input_geotiff,output_geotiff,reldate,num_windows = num_windows,
-        groundtruth1m_called=int(args.groundtruth1m),groundtruth3m_called=int(args.groundtruth1m),groundtruth6m_called=int(args.groundtruth1m),groundtruth12m_called=int(args.groundtruth1m))
+        groundtruth1m_called=int(args.groundtruth1m),groundtruth3m_called=int(args.groundtruth3m),groundtruth6m_called=int(args.groundtruth6m),groundtruth12m_called=int(args.groundtruth12m))
