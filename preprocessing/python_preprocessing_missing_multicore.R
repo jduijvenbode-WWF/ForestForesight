@@ -26,6 +26,7 @@ allfiles=allfiles[-which(grepl("groundtruth3m",basename(allfiles))&(ymd(gtdate3m
 allfiles=allfiles[-which(grepl("groundtruth6m",basename(allfiles))&(ymd(gtdate6m)<ymd(substr(basename(allfiles),10,21))))]
 allfiles=allfiles[-which(grepl("groundtruth12m",basename(allfiles))&(ymd(gtdate12m)<ymd(substr(basename(allfiles),10,22))))]
 tobeprocessed=allfiles[which(!file.exists(allfiles))]
+tobeprocessed=gsub("/groundtruth/","/input/",tobeprocessed)
 utbp=unique(file.path(dirname(tobeprocessed),paste0(substr(basename(tobeprocessed),1,19),"_layer.tif")))
 utbp=utbp[grep("layer",utbp)]
 utbp=unique(utbp)
