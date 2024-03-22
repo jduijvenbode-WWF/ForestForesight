@@ -1,9 +1,9 @@
 datafolder='D:/ff-dev/nighttime/converted2/'
-downloadfolder="D:/ff-dev/nighttime/VNP46A3/2023/335/"
+downloadfolder="D:/ff-dev/nighttime/VNP46A3/2024/"
 setwd(downloadfolder)
 files=list.files(path=downloadfolder,recursive=T,pattern="h5$",full.names=T)
 print(length(files))
-
+Sys.setenv(GDAL_DATA="C:/Program Files/GDAL/gdal-data")
 library(ForestForesight)
 data("gfw_tiles")
 areas=vect(gfw_tiles)
@@ -25,7 +25,7 @@ for(file in files){
                      paste0('-of GTiff HDF5:"',file,'"://HDFEOS/GRIDS/VIIRS_Grid_DNB_2d/Data_Fields/NearNadir_Composite_Snow_Free ',
                             extractname)),intern=T)
         print(res)
-        tempras=list.files(file.path("D:/ff-dev/results/preprocessed/",basename(dirname(extractname))),pattern="elev",full.names = T)[1]
+        tempras=list.files(file.path("D:/ff-dev/results/preprocessed/input/",basename(dirname(extractname))),pattern="elev",full.names = T)[1]
         newname=file.path(dirname(tempras),basename(extractname))
         print(extractname)
         print(tempras)
