@@ -153,12 +153,23 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
       if (adddate) {newcolnames <- c(newcolnames,"sinmonth", "month","monthssince2019")}
       colnames(dts) <- newcolnames
       dts <- dts[,order(colnames(dts))]
+
+      # filter on filter conditions
+      filterresult <- filter_by_feature(fltr_features,fltr_condition,dts,verbose = verbose)
+      dts <- filterresult$filtered_matrix
+      sf_indices <- filterresult$filtered_indices
       #take a random sample if that was applied
-      if (sample_size < 1) {dts <- dts[sample(seq(nrow(dts)),max(round(nrow(dts)*sample_size),1)),]}
-      if (hasvalue(dim(dts))){
+
+      if (sample_size < 1) {
+        sample_indices <- sample(seq(nrow(dts)),max(round(nrow(dts)*sample_size),1))
+        dts <- dts[sample_indices,]
+        sf_indices <- sf_indices[sample_indices]}
+      if (hasvalue(dim(dts))) {
       if (first) {
         fdts <- dts
-      }else{
+        allindices = sf_indices
+      }else {
+        allindices=c(allindices,sf_indices + length(allindices))
         common_cols <- intersect(colnames(dts), colnames(fdts))
         notin1 <- colnames(dts)[which(!(colnames(dts) %in% common_cols))]
         notin2 <- colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]

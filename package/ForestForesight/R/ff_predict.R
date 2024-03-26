@@ -28,7 +28,7 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=
   # Get the features
   if(class(model)=="character"){
     if(file.exists(model)){
-      xgb.load(model)
+      xgboost::xgb.load(model)
       if(file.exists(gsub("\\.model","\\.rda",model))){
         features=load(gsub("\\.model","\\.rda",model))
         attr(model,"feature_names")=features
@@ -50,7 +50,6 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=
   if(!is.na(test_matrix$label[1])){test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)}else{test_matrix = xgb.DMatrix(test_matrix$features)}
   if(verbose){cat("calculating predictions\n")}
   predictions=predict(model,test_matrix)
-  if(certainty){predictions=as.integer(predictions*100)}
   if(!is.na(groundtruth[1])){
     if(class(groundtruth)=="SpatRaster"){groundtruth=as.numeric(as.matrix(groundtruth))}
     if(verbose){cat("calculationg scores\n")}

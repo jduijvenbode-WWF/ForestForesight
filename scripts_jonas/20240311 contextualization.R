@@ -1,12 +1,12 @@
 #########dashboard version 2########
 library(ForestForesight)
-wdpa = vect("C:/Users/jonas/Downloads/wdpa_410.gpkg")
-wdpa = wdpa[which(wdpa$COUNTRY == "Gabon"), ]
-wdpa = wdpa[, c("NAME_0", "NAME_1", "NAME_2", "NAME_3")]
+gadm = vect("C:/Users/jonas/Downloads/gadm_410.gpkg")
+gadm = gadm[which(gadm$COUNTRY == "Indonesia"), ]
+gadm = gadm[, c("NAME_0", "NAME_1", "NAME_2", "NAME_3")]
 ecobiome = vect("C:/data/storage/contextualization/ECOBIOME.gpkg",
-                extent = ext(wdpa))
+                extent = ext(gadm))
 wdpa = vect("C:/data/storage/contextualization/WDPA.gpkg",
-            extent = ext(wdpa))
+            extent = ext(gadm))
 
 wdpa2 = aggregate(wdpa)
 wdpa = terra::intersect(wdpa, wdpa2)
@@ -20,11 +20,11 @@ wdpa = disagg(wdpa)
 all = terra::intersect(wdpa, ecobiome)
 all2 = terra::intersect(all, wdpa)
 
-colras = rast("C:/data/Gabon_noXY.tiff")
+colras = b
 colras[colras<50]=NA
 colrasproj=project(colras,"epsg:3857")
-writeRaster(colrasproj,"C:/data/gabon.tif")
-vals = extract(colras > 50, all2, fun = "sum", na.rm = T)[, 2]
+writeRaster(colrasproj,"C:/data/indonesia.tif")
+vals = extract(colras, all2, fun = "sum", na.rm = T)[, 2]
 vals[is.na(vals)] = 0
 highalertvals = extract(colras > 95, all2, fun = "sum", na.rm = T)[, 2]
 highalertvals[is.na(highalertvals)] = 0
