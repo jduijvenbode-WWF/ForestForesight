@@ -7,6 +7,7 @@
 ff_prep(
   datafolder = NA,
   country = NA,
+  shape = NA,
   tiles = NULL,
   groundtruth_pattern = "groundtruth6m",
   start = "2021-01-01",
@@ -17,7 +18,7 @@ ff_prep(
   fltr_condition = NULL,
   sample_size = 1,
   validation_sample = 0,
-  relativedate = T,
+  adddate = T,
   sampleraster = T,
   verbose = F,
   shrink = "none",
@@ -27,11 +28,13 @@ ff_prep(
 )
 }
 \arguments{
-\item{datafolder}{Path to the data folder. Default is the system variable xgboost_datafolder. should contain the degrees folders}
+\item{datafolder}{Path to the data folder. Default is the system variable ff_datafolder. should contain the degrees folders}
 
-\item{country}{Country or countries for which the data is prepared. Is optional when tiles are given. Should be the ISO3 code.}
+\item{country}{Country or countries for which the data is prepared. Is optional when either shape or tiles is given. Should be the ISO3 code.}
 
-\item{tiles}{Vector of tiles in the syntax of e.g. 10N_080W.}
+\item{shape}{SpatVector for which the data is prepared. Is optional when either country or tiles is given.}
+
+\item{tiles}{Vector of tiles in the syntax of e.g. 10N_080W.optional when either shape or country is given.}
 
 \item{groundtruth_pattern}{Pattern to identify ground truth files. Default is groundtruth6mbin (groundtruth of future six months in binary format).}
 
@@ -51,11 +54,11 @@ ff_prep(
 
 \item{validation_sample}{float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3}
 
-\item{relativedate}{Boolean indicating whether the date is relative. Default is \code{TRUE}.}
-
 \item{shrink}{Option to shrink the input area if a country was selected. Use none to keep all the data within the tile. Use crop to crop the extent, crop-deg to crop to the nearest outer degree and use extract to keep only the values that overlap with the country}
 
 \item{window}{Set the extent on which to process. normally NA to not use this option and derive it from the data}
+
+\item{relativedate}{Boolean indicating whether the date is relative. Default is \code{TRUE}.}
 }
 \value{
 A prepared dataset for machine learning.

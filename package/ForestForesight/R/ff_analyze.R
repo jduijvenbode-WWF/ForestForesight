@@ -20,59 +20,62 @@
 #'
 #' @export
 
-ff_analyze=function(predictions,groundtruth,forestmask=NULL,csvfile=NULL,country=NULL,append=T,analysis_polygons=NULL,return_polygons=T,remove_empty=T,date=NULL,tile=NULL,method=NA,verbose=F){
-  if(!(class(predictions) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
-  if(!(class(groundtruth) %in% c("character","SpatRaster"))){stop("predictions is not a raster or path to a raster")}
-  if(!is.null(csvfile)){if(append==T&!file.exists(csvfile)){append=F;cat("CSV file did not yet exist, creating empty one\n")}}
-  if(is.null(date)){
-    if(class(predictions)=="character"){date=substr(basename(predictions),10,19)}else{
-      if(class(groundtruth)=="character"){date=substr(basename(predictions),10,19)}else{stop("no method to derive date from filename")}
+ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, country = NULL, append = T, analysis_polygons = NULL, return_polygons=T, remove_empty=T, date=NULL, tile=NULL, method=NA, verbose=F){
+  if (!(class(predictions) %in% c("character","SpatRaster"))) {stop("predictions is not a raster or path to a raster")}
+  if (!(class(groundtruth) %in% c("character","SpatRaster"))) {stop("predictions is not a raster or path to a raster")}
+  if (!is.null(csvfile)) {if (append == TRUE & !file.exists(csvfile)) {
+    append <- F
+    cat("CSV file did not yet exist, creating empty one\n")}}
+  if (is.null(date)) {
+    if (class(predictions) == "character") {date <- substr(basename(predictions),10,19)}else{
+      if (class(groundtruth) == "character") {date <- substr(basename(predictions),10,19)}else{stop("no method to derive date from filename")}
     }
   }
-  if(is.null(tile)&(!is.null(analysis_polygons))){
-    if(!class(predictions)=="character"){stop("tile ID not given and cannot be derived from raster itself")}
-    tile=basename(dirname(predictions))
-    if(tile=="."){stop("tile was not given and cannot be derived from directory name")}
+  if (is.null(tile) & (!is.null(analysis_polygons))) {
+    if (!class(predictions) == "character") {stop("tile ID not given and cannot be derived from raster itself")}
+    tile <- basename(dirname(predictions))
+    if (tile == ".") {stop("tile was not given and cannot be derived from directory name")}
   }
-  if(class(predictions)=="character"){predictions=rast(predictions)}
-  if(class(groundtruth)=="character"){groundtruth=rast(groundtruth,win=ext(predictions))}
-  if(verbose){cat("rasters loaded\n")}
-  groundtruth[is.na(groundtruth)]=0
-  if(!is.null(forestmask)){
-    if(verbose){cat("using forest mask\n")}
-    if(class(forestmask)=="character"){forestmask=rast(forestmask)}
-    cross=2*groundtruth+predictions*forestmask
-  }else{cross=2*groundtruth+predictions}
-  if(is.null(analysis_polygons)){
-    data("degree_polygons",envir=environment())
-    pols=vect(degree_polygons)}else{
-      if(class(analysis_polygons=="character")){
-        pols=vect(analysis_polygons)}else{
-          pols=analysis_polygons}}
-  if(!is.null(country)){pols=pols[which(pols$iso3==country)]}
-  if(verbose){cat("summarizing statistics\n")}
-  pols$FP=terra::extract(cross==1,pols,fun="sum",na.rm=T,touches=F)[,2]
-  pols$FN=terra::extract(cross==2,pols,fun="sum",na.rm=T,touches=F)[,2]
-  pols$TP=terra::extract(cross==3,pols,fun="sum",na.rm=T,touches=F)[,2]
-  pols$TN=terra::extract(cross==0,pols,fun="sum",na.rm=T,touches=F)[,2]
-  if(verbose){
+  if (class(predictions) == "character") {predictions <- terra::rast(predictions)}
+  if (class(groundtruth) == "character") {groundtruth <- terra::rast(groundtruth,win = terra::ext(predictions))}
+  if (verbose) {cat("rasters loaded\n")}
+  groundtruth[is.na(groundtruth)] <- 0
+  groundtruth <- groundtruth > 0
+  if (!is.null(forestmask)) {
+    if (verbose) {cat("using forest mask\n")}
+    if (class(forestmask) == "character") {forestmask <- terra::rast(forestmask)}
+    cross <- 2*groundtruth + predictions*forestmask
+  }else{cross <- 2*groundtruth + predictions}
+  if (is.null(analysis_polygons)) {
+    data(degree_polygons,envir = environment())
+    pols <- terra::vect(degree_polygons)}else{
+      if (class(analysis_polygons == "character")) {
+        pols <- terra::vect(analysis_polygons)}else{
+          pols <- analysis_polygons}}
+  if (!is.null(country)) {pols <- pols[which(pols$iso3 == country)]}
+  if (verbose) {cat("summarizing statistics\n")}
+  pols$FP <- terra::extract(cross == 1,pols,fun = "sum",na.rm = T,touches = F)[,2]
+  pols$FN <- terra::extract(cross == 2,pols,fun = "sum",na.rm = T,touches = F)[,2]
+  pols$TP <- terra::extract(cross == 3,pols,fun = "sum",na.rm = T,touches = F)[,2]
+  pols$TN <- terra::extract(cross == 0,pols,fun = "sum",na.rm = T,touches = F)[,2]
+  if (verbose) {
     cat("calculating F0.5 score\n")
-    pr=sum(pols$TP,na.rm=T)/(sum(pols$TP,na.rm=T)+sum(pols$FP,na.rm=T));re=sum(pols$TP,na.rm=T)/(sum(pols$TP,na.rm=T)+sum(pols$FN,na.rm=T))
-    print(pr);print(re)
-    cat(paste("F0.5 score is:",1.25*pr*re/(0.25*pr+re)))}
-  if(verbose){cat("adding metadata\n")}
-  pols$date=date
-  pols$method=method
-  if(remove_empty){pols=pols[-which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm=T)==0),]}
-  if(!is.null(csvfile)){
-    if(append&file.exists(csvfile)){
-      if(verbose){cat("appending to existing dataset")}
-      pastdata=read.csv(csvfile)
-    pastdata$X=NULL
-    write.csv(rbind(pastdata,as.data.frame(pols)),csvfile)}else{
-      if(!file.exists(csvfile)&append&verbose){warning("the given file does not exist, while append was set to TRUE")}
-      write.csv(as.data.frame(pols),csvfile)
-    }
+    pr <- sum(pols$TP,na.rm = T)/(sum(pols$TP,na.rm = T) + sum(pols$FP,na.rm = T))
+    re <- sum(pols$TP,na.rm = T)/(sum(pols$TP,na.rm = T) + sum(pols$FN,na.rm = T))
+    cat(paste("F0.5 score is:",1.25 * pr * re/(0.25*pr + re)))}
+  if (verbose) {cat("adding metadata\n")}
+  pols$date <- date
+  pols$method <- method
+  if (remove_empty) {pols <- pols[-which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm = T) == 0),]}
+  if (!is.null(csvfile)) {
+    if ( append & file.exists(csvfile)) {
+      if (verbose) {cat("appending to existing dataset")}
+      pastdata <- read.csv(csvfile)
+      pastdata$X <- NULL
+      write.csv(rbind(pastdata,as.data.frame(pols)),csvfile)}else{
+        if (!file.exists(csvfile) & append & verbose) {warning("the given file does not exist, while append was set to TRUE")}
+        write.csv(as.data.frame(pols),csvfile)
+      }
   }
-  if(return_polygons){return(pols)}
+  if (return_polygons) {return(pols)}
 }
