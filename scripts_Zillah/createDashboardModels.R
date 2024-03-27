@@ -15,14 +15,14 @@ exp2_name = "max_training"
 exp3_name = "max_training_DTH"
 exp4_name = "1_year_training_DTH"
 
-for (group in groups) {
+for (group in groups[1:23]) {
   tryCatch({
     cat(" starting group ",group, "\n")
     countriessel = countries$iso3[which(countries$group == group)]
     alldata = ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",
                       country = countriessel,start = "2021-01-01",end = end_date,
                       fltr_features = "landpercentage",fltr_condition = ">0",
-                      sample_size = 0.3,verbose = F,shrink = "extract",
+                      sample_size = 0.2,verbose = F,shrink = "extract",
                       label_threshold = 1,addxy = F,
                       groundtruth_pattern = "groundtruth6m")
     sel_data = alldata$data_matrix$features[,"monthssince2019"] <= 35
@@ -55,14 +55,14 @@ for (group in groups) {
                                        groundtruth = train_last_month$label,verbose = T)
       print("calculate best threshold 1")
       th1 = bestThreshold(prediction_last_month1$predictions, train_last_month$label)
-      print(paste("the best threshold for", new_end_date, "and", group, "is", round(th1$bestValue,2), "with an F05 of", round(th1$maxOutput,2)))
+      print(paste("Model 1: the best threshold for", dr2, "and", group, "is", round(th1$bestThreshold,2), "with an F05 of", round(th1$maxFscore,2)))
 
       # best th model 2
       prediction_last_month = ff_predict(model2,test_matrix = train_last_month,
                                              groundtruth = train_last_month$label,verbose = T)
       print("calculate best threshold 2")
       th = bestThreshold(prediction_last_month$predictions, train_last_month$label)
-      print(paste("the best threshold for", new_end_date, "and", group, "is", round(th$bestValue,2), "with an F05 of", round(th$maxOutput,2)))
+      print(paste("Model 2: the best threshold for", dr2, "and", group, "is", round(th$bestThreshold,2), "with an F05 of", round(th$maxFscore,2)))
       rm(sel_data)
       rm(train_last_month)
 
@@ -98,7 +98,7 @@ for (group in groups) {
           ff_analyze(as.numeric(prediction1$predicted_raster > th1),groundtruth = predset$groundtruthraster,
                      csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/", exp4_name,".csv")
                      ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp4_name)
-
+          rm(alldata)
         }
       }
 
