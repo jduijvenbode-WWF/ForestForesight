@@ -178,7 +178,7 @@ def process_geotiff(input_file, output_file,relative_date,num_windows,groundtrut
 
             if create_smoothedtotal:
                 smoothedtotal=weighted_smoothing(totaldeforestation, window_size=31)
-                with rasterio.open(smoothedtotal_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="float32", crs=src.crs, transform=newtransform) as dst:
+                with rasterio.open(smoothedtotal_file, 'w', driver='GTiff',compress='LZW', width=width//40, height=height//40, count=1, dtype="uint16", crs=src.crs, transform=newtransform) as dst:
                     dst.write(smoothedtotal.reshape(1,smoothedtotal.shape[0],smoothedtotal.shape[1]))
 
             if create_smoothedsixmonths:
