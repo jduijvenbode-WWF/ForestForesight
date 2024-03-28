@@ -2,7 +2,7 @@
 train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   ff_folder,
                                   train_start="2021-01-01",
-                                  train_end="2023-05-01",
+                                  train_end="2021-05-01",
                                   model_folder=NULL,
                                   prediction_folder=NULL,
                                   train=TRUE,
@@ -74,8 +74,10 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
     #            return_polygons = FALSE, append = TRUE, country = country_group,
     #            verbose = verbose)
   }
-  fullras=do.call(terra::merge,unname(raslist))
-  fullras=terra::mask(fullras,shape)
+  if (length(raslist) == 1) {fullras <- raslist[[1]]}else{
+    fullras <- do.call(terra::merge,unname(raslist))
+  }
+  fullras <- terra::mask(fullras,shape)
   fullras <- terra::crop(fullras,shape)
   return(fullras)
 }
