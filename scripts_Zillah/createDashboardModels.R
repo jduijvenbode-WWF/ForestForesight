@@ -91,11 +91,11 @@ for (group in groups[1:23]) {
                      csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/", exp2_name,".csv")
                      ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp2_name)
 
-          ff_analyze(as.numeric(prediction2$predicted_raster > th),groundtruth = predset$groundtruthraster,
+          ff_analyze(as.numeric(prediction2$predicted_raster > th$bestThreshold),groundtruth = predset$groundtruthraster,
                      csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/", exp3_name,".csv")
                      ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp3_name)
 
-          ff_analyze(as.numeric(prediction1$predicted_raster > th1),groundtruth = predset$groundtruthraster,
+          ff_analyze(as.numeric(prediction1$predicted_raster > th1$bestThreshold),groundtruth = predset$groundtruthraster,
                      csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/", exp4_name,".csv")
                      ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp4_name)
           rm(alldata)
