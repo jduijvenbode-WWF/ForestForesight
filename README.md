@@ -99,6 +99,7 @@ At the moment we have the following features:
 |landpercentage|percentage of land cover (as opposed to sea)|static|[GADM](https://gadm.org)|this is the percentage landcover in values from 0 (no land) to 255 (100% landcover of the pixel)|255|
 |catexcap|cation exchange capacity at 0-5cm|static|[ISRIC](https://data.isric.org/geonetwork/srv/eng/catalog.search#/metadata/867431df-9c35-4aaa-8cd7-93ee0226eb3d)|the data was aggregated to 400x400 meter by using the mode of the underlying pixels (most occurring). The cation exchange capacity in mmol(c)/kg is a useful indicator for soil fertility, a proxy for deforestation for agriculture|1000|
 |wdpa|WDPA status|yearly|[Protected Planet](https://www.protectedplanet.net/en/thematic-areas/wdpa)|the data was intersected with land area and the tiles that we have, then simplified to 400 meters and then rasterized. A value of 1 means that the entire area is protected area, 0 means no protected area within the pixel|1|
+[^1]overview of the datasets of Forest Foresight
 
 
     
