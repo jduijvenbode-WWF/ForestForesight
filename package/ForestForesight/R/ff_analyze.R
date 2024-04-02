@@ -44,7 +44,7 @@ ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, 
   if (!is.null(forestmask)) {
     if (verbose) {cat("using forest mask\n")}
     if (class(forestmask) == "character") {forestmask <- terra::rast(forestmask)}
-    cross <- 2*groundtruth + predictions*forestmask
+    cross <- (2*groundtruth + predictions)*(forestmask > 0)
   }else{cross <- 2*groundtruth + predictions}
   if (is.null(analysis_polygons)) {
     data(degree_polygons,envir = environment())
