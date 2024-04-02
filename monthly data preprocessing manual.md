@@ -21,23 +21,26 @@ for(id in seq(nrow(IA))){
 ```
 
 ### process
-after this all the datasets that rely on the integrated alerts can be processed (check readme for an overview). You need a conda environment with at least the following packages for that
+after this all the datasets that rely on the integrated alerts can be processed (check readme for an overview). You need a conda environment with at least the following python packages for that
 - rasterio
 - scipy
 - numpy
 - argparse
 
-you also need to have R installed and be recognized by your conda environment (test by typing in Rscript in the command line).
+you also need to have R installed and be recognized by your conda environment (test by typing in Rscript in the command line). R requires the following installed packages:
+- parallel
+- ForestForesight
+- argparse
+
 
 run the following line in the conda environment
 ~~~
-Rscript C:\Users\EagleView\Documents\GitHub\ForestForesight\preprocessing\python_preprocessing_missing_multicore.R 2024-02-01
+Rscript C:\Users\EagleView\Documents\GitHub\ForestForesight\preprocessing\python_preprocessing_missing_multicore.R -d 2024-02-01
 ~~~
 this will create all the datasets that do not yet exist in the folder D:/ff-dev/results/preprocessed that are based on the integrated alerts. 
-- To either change the number of cores that it requires or to change the input folder you have to adapt the script for your own purposes for now. 
-- Change the date to the first of the month to which you want to process (normally the last start of the current month, so if it is the 15th of february 2024 right now it should be 2024-02-01). 
+- If you want to process this on your own computer make sure to set all the correct flags (prep_folder, input_folder, script_location and cores) 
+- Change the date to the first of the month to which you want to process (normally the last start of the current month, so if it is the 15th of february 2024 right now it should be 2024-02-01). or ignore the -d flag to just change to the first of the current month.
 - Change the path to the Rscript if it is somewhere else
-- this script uses IA_processing.py, which is hardcoded in the script for now so you have to change that in the script.
 
 
 ## nighttime activity
@@ -54,4 +57,11 @@ In Rstudio run the script called converting_nightlights_h5_geotiff.R in the fold
 
 ## forest fires
 ### download
+the fire alerts need to be downloaded manually. First go to . Then press new request at the bottom and enter the following fields:
+- world should be set to custom region and then the coordinate -180,-30,180,30 (for the pantropical belt)
+- choose MODIS and the three LAADS options
+- Set the date range according to what you want to process (for us the first of last month until the first of the month that you currently want to process)
+- enter the email adress to which the downloadable data will be sent as a link. 
+
+You will get an email when your data is ready.
 ### process

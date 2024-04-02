@@ -153,12 +153,23 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
       if (adddate) {newcolnames <- c(newcolnames,"sinmonth", "month","monthssince2019")}
       colnames(dts) <- newcolnames
       dts <- dts[,order(colnames(dts))]
+
+      # filter on filter conditions
+      filterresult <- filter_by_feature(fltr_features,fltr_condition,dts,verbose = verbose)
+      dts <- filterresult$filtered_matrix
+      sf_indices <- filterresult$filtered_indices
       #take a random sample if that was applied
-      if (sample_size < 1) {dts <- dts[sample(seq(nrow(dts)),max(round(nrow(dts)*sample_size),1)),]}
-      if (hasvalue(dim(dts))){
+
+      if (sample_size < 1) {
+        sample_indices <- sample(seq(nrow(dts)),max(round(nrow(dts)*sample_size),1))
+        dts <- dts[sample_indices,]
+        sf_indices <- sf_indices[sample_indices]}
+      if (hasvalue(dim(dts))) {
       if (first) {
         fdts <- dts
-      }else{
+        allindices = sf_indices
+      }else {
+        allindices=c(allindices,sf_indices + length(allindices))
         common_cols <- intersect(colnames(dts), colnames(fdts))
         notin1 <- colnames(dts)[which(!(colnames(dts) %in% common_cols))]
         notin2 <- colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
@@ -173,28 +184,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   }
   ######filter data based on features#######
   #filter training data on features that have been declared
-  sfa_indices <- c()
-  if (length(fltr_features) > 0) {
-    if (verbose) {cat(paste("filtering features\n"))}
-    for (i in seq(length(fltr_features))) {
-      operator <- gsub("[[:alnum:]]", "", fltr_condition[i])
-      value <- gsub("[^0-9]", "", fltr_condition[i])
-      filtercolumn <- which(colnames(fdts) == fltr_features[i])
-      if (operator == ">") {sf_indices <- which(fdts[,filtercolumn] > value)}
-      if (operator == "<") {sf_indices <- which(fdts[,filtercolumn] < value)}
-      if (operator == "==") {sf_indices <- which(fdts[,filtercolumn] == value)}
-      if (operator == "!=") {sf_indices <- which(fdts[,filtercolumn] != value)}
-      if (operator == ">=") {sf_indices <- which(fdts[,filtercolumn] >= value)}
-      if (operator == "<=") {sf_indices <- which(fdts[,filtercolumn] <= value)}
 
-      if (verbose) {cat(paste("filtering feature",fltr_features[i],"on",fltr_condition[i],"\n"))}
-      if (length(sfa_indices) == 0) {sfa_indices <- c(sfa_indices,sf_indices)}else{sfa_indices <- intersect(sfa_indices,sf_indices)}
-    }
-    sf_indices <- unique(sfa_indices)
-  }else{sf_indices <- NULL}
-  if (length(sf_indices) > 0) {
-    fdts <- fdts[sf_indices,]
-  }
   #######create groundtruth data#######
   #split data into feature data and label data
   groundtruth_index <- which(colnames(fdts) == groundtruth_pattern)
