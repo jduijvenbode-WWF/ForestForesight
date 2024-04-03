@@ -15,7 +15,7 @@ exp2_name = "max_training"
 exp3_name = "max_training_DTH"
 exp4_name = "1_year_training_DTH"
 
-for (group in groups[1:23]) {
+for (group in groups) {
   tryCatch({
     cat(" starting group ",group, "\n")
     countriessel = countries$iso3[which(countries$group == group)]
@@ -84,19 +84,19 @@ for (group in groups[1:23]) {
           #if(!dir.exists(file.path("D:/ff-dev/results/predictions/",country))){dir.create(file.path("D:/ff-dev/results/predictions/",country))}
           print("analyze")
           ff_analyze(as.numeric(prediction1$predicted_raster > 0.5),groundtruth = predset$groundtruthraster,
-                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/", exp1_name,".csv")
+                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/DBModels/", exp1_name,".csv")
                      ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp1_name)
 
           ff_analyze(as.numeric(prediction2$predicted_raster > 0.5),groundtruth = predset$groundtruthraster,
-                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/", exp2_name,".csv")
+                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/DBModels/", exp2_name,".csv")
                      ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp2_name)
 
           ff_analyze(as.numeric(prediction2$predicted_raster > th$bestThreshold),groundtruth = predset$groundtruthraster,
-                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/", exp3_name,".csv")
+                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/DBModels/", exp3_name,".csv")
                      ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp3_name)
 
           ff_analyze(as.numeric(prediction1$predicted_raster > th1$bestThreshold),groundtruth = predset$groundtruthraster,
-                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/", exp4_name,".csv")
+                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/DBModels/", exp4_name,".csv")
                      ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp4_name)
           rm(alldata)
         }
