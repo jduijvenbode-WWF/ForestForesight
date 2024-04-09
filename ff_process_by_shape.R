@@ -43,8 +43,8 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   # Prepare data
   if(verbose){cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
   traindata <- ff_prep(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
-                       fltr_condition = ">0",fltr_features = "landpercentage",
-                       sample_size = 0.03, verbose = verbose, shrink = "extract",
+                       fltr_condition = ">0",fltr_features = "initialforestcover",
+                       sample_size = 0.3, verbose = verbose, shrink = "extract",
                        groundtruth_pattern = "groundtruth6m",label_threshold = 1)
 
   # Train model if not provided
@@ -60,7 +60,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
     #run the predict function if a model was not built but was provided by the function
 
     predset <- ff_prep(datafolder = prep_folder, tiles = tile, start = prediction_date,
-                       verbose = verbose, fltr_features = "landpercentage",
+                       verbose = verbose, fltr_features = "initialforestcover",
                        fltr_condition = ">0")
 
     prediction <- ff_predict(model, test_matrix = predset$data_matrix,
