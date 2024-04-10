@@ -8,7 +8,7 @@ othergroups=unique(gfw_tiles[countries[countries$iso3=="COL",]]$group)
 groups=c(groups,unique(gfw_tiles$group)[-which(unique(gfw_tiles$group) %in% groups)])
 for(group in groups[26:length(groups)]){
   tiles=gfw_tiles[which(gfw_tiles$group==group),]$tile_id
-  traindata=ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",tiles=tiles,start = "2021-06-01",end="2022-01-01",sample_size = 0.3,verbose=T)
+  traindata=ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",tiles=tiles,start = "2021-01-01",end="2022-01-01",sample_size = 0.3,verbose=T)
   model=ff_train(traindata$data_matrix,eta = 0.2,gamma = 0.2,min_child_weight = 3,max_depth = 6,nrounds = 120,subsample = 0.3,verbose=T)
   if(!dir.exists(file.path("D:/ff-dev/results/models/",group))){dir.create(file.path("D:/ff-dev/results/models/",group))}
   saveRDS(model,file.path("D:/ff-dev/results/models/",group,paste0(group,"_model.rds")))
