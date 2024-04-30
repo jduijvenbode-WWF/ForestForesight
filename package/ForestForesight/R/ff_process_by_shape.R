@@ -1,8 +1,37 @@
+#' Train and Predict Raster
+#'
+#' This function trains a model using training data and then predicts raster values using the trained model.
+#'
+#' @param shape Spatial object representing the shapefile. Either `shape` or `country` should be given.
+#' @param country ISO3 country code. Either `shape` or `country` should be given.
+#' @param prediction_date Date for prediction in "YYYY-MM-DD" format.
+#' @param ff_folder Folder directory containing the input data.
+#' @param train_start Starting date for training data in "YYYY-MM-DD" format. Default is "2022-07-01".
+#' @param train_end Ending date for training data in "YYYY-MM-DD" format. Default is "2023-07-01".
+#' @param model_folder Folder directory to save models. If NULL, models will be saved in `ff_folder/models`.
+#' @param prediction_folder Folder directory to save predictions. If NULL, predictions will be saved in `ff_folder/predictions`.
+#' @param train Logical value indicating whether to train the model. Default is TRUE.
+#' @param model Pre-trained model. If NULL, the function will train a model. Default is NULL.
+#' @param ff_prep_params Parameters for data preprocessing.
+#' @param ff_train_params Parameters for model training.
+#' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
+#' @param overwrite Logical value indicating whether to overwrite existing files. Default is FALSE.
+#' @param verbose Logical value indicating whether to display progress messages. Default is TRUE.
+#'
+#' @return A raster object containing the predicted values.
+#'
+#' @examples
+#' # Example usage:
+#' train_predict_raster(prediction_date = "2023-01-01", ff_folder = "path/to/folder")
+#'
+#' @importFrom lubridate ymd months
+#' @importFrom terra project mask crop
+#' @export
 
 train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   ff_folder,
-                                  train_start="2021-01-01",
-                                  train_end="2021-05-01",
+                                  train_start="2022-07-01",
+                                  train_end="2023-07-01",
                                   model_folder=NULL,
                                   prediction_folder=NULL,
                                   train=TRUE,
