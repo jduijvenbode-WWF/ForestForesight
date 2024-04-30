@@ -1,10 +1,20 @@
 ## set environment ##
 
 library(ForestForesight)
+
+get_raster=function(datafolder,date,feature,tile){
+  allfiles=list.files(datafolder,recursive=T,pattern=tile,full.names = T)
+  allfiles=allfiles[grep("tif$",allfiles)]
+  allfiles=allfiles[grep(feature,allfiles)]
+  return(ForestForesight::select_files_date(date,allfiles))
+}
+
+
 data("gfw_tiles")
 gfw_tiles = vect(gfw_tiles)
 data("countries")
 countries = vect(countries)
+#countries = countries[countries$iso3=="GAB",]
 Sys.setenv("xgboost_datafolder" = "D:/ff-dev/results/preprocessed")
 groups = unique(countries$group)
 dates = daterange("2022-06-01","2023-07-01")
@@ -15,18 +25,19 @@ exp2_name = "max_training"
 exp3_name = "max_training_DTH"
 exp4_name = "1_year_training_DTH"
 
-for (group in groups) {
+for (group in groups[2:46]) {
   tryCatch({
     cat(" starting group ",group, "\n")
     countriessel = countries$iso3[which(countries$group == group)]
     alldata = ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",
                       country = countriessel,start = "2021-01-01",end = end_date,
-                      fltr_features = "landpercentage",fltr_condition = ">0",
+                      fltr_features = "initialforestcover",fltr_condition = ">0",
                       sample_size = 0.2,verbose = F,shrink = "extract",
                       label_threshold = 1,addxy = F,
                       groundtruth_pattern = "groundtruth6m")
     sel_data = alldata$data_matrix$features[,"monthssince2019"] <= 35
     train_12 =  list(features = alldata$data_matrix$features[sel_data,], label = alldata$data_matrix$label[sel_data])
+    dir.create(file.path("D:/ff-dev/predictionsZillah/models/",group))
     model1 = ff_train(train_12,eta = 0.2,gamma = 0.2,min_child_weight = 3,max_depth = 6,nrounds = 100,subsample = 0.3,verbose = T,
                         modelfilename = file.path("D:/ff-dev/predictionsZillah/models/",group,paste0(group,"_",exp1_name,".model")),
                         features = alldata$features)
@@ -72,7 +83,7 @@ for (group in groups) {
         for (tile in tiles) {
           cat(" starting tile ",tile,"\n")
           predset = ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",tiles = tile,
-                          start = dr2,verbose = F,fltr_features = "landpercentage",
+                          start = dr2,verbose = F,fltr_features = "initialforestcover",
                           fltr_condition = ">0",addxy = F,label_threshold = 1)
           #          print("predict with best threshold")
           prediction1 = ff_predict(model1,test_matrix = predset$data_matrix,indices = predset$testindices,threshold = 0.5,
@@ -83,22 +94,22 @@ for (group in groups) {
 
           #if(!dir.exists(file.path("D:/ff-dev/results/predictions/",country))){dir.create(file.path("D:/ff-dev/results/predictions/",country))}
           print("analyze")
+          forestras=get_raster(tile=tile,date=dr2,datafolder="D:/ff-dev/results/preprocessed/input/",feature="initialforestcover")
           ff_analyze(as.numeric(prediction1$predicted_raster > 0.5),groundtruth = predset$groundtruthraster,
                      csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/DBModels/", exp1_name,".csv")
-                     ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp1_name)
+                     ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp1_name,forestmask = forestras)
 
           ff_analyze(as.numeric(prediction2$predicted_raster > 0.5),groundtruth = predset$groundtruthraster,
-                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/DBModels/", exp2_name,".csv")
-                     ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp2_name)
+                     csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/DBModels/", exp2_name,"2.csv")
+                     ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp2_name,forestmask = forestras)
 
           ff_analyze(as.numeric(prediction2$predicted_raster > th$bestThreshold),groundtruth = predset$groundtruthraster,
                      csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/DBModels/", exp3_name,".csv")
-                     ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp3_name)
+                     ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp3_name,forestmask = forestras)
 
           ff_analyze(as.numeric(prediction1$predicted_raster > th1$bestThreshold),groundtruth = predset$groundtruthraster,
                      csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/DBModels/", exp4_name,".csv")
-                     ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp4_name)
-          rm(alldata)
+                     ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T, method = exp4_name,forestmask = forestras)
         }
       }
 
