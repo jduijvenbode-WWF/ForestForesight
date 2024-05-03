@@ -20,7 +20,7 @@
 #'
 #' @export
 
-analyze_amounts <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, country = NULL, append = T, analysis_polygons = NULL, return_polygons=T, remove_empty=T, date=NULL, tile=NULL, method=NA, verbose=F){
+ff_analyze_amounts <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, country = NULL, append = T, analysis_polygons = NULL, return_polygons=T, remove_empty=T, date=NULL, tile=NULL, method=NA, verbose=F){
   if (!(class(predictions) %in% c("character","SpatRaster"))) {stop("predictions is not a raster or path to a raster")}
   if (!(class(groundtruth) %in% c("character","SpatRaster"))) {stop("predictions is not a raster or path to a raster")}
   if (!is.null(csvfile)) {if (append == TRUE & !file.exists(csvfile)) {
@@ -45,7 +45,7 @@ analyze_amounts <- function(predictions,groundtruth,forestmask=NULL, csvfile = N
     if (verbose) {cat("using forest mask\n")}
     if (class(forestmask) == "character") {forestmask <- terra::rast(forestmask)}
     forestmask = crop(forestmask, groundtruth)
-    rmse = (((groundtruth - predictions)^2)^0.5)*forestmask
+    rmse = ((groundtruth - predictions)^2)*as.numeric(forestmask>0)
   }else{rmse = ((groundtruth - predictions)^2)^0.5}
   if (is.null(analysis_polygons)) {
     data(degree_polygons,envir = environment())
@@ -55,7 +55,7 @@ analyze_amounts <- function(predictions,groundtruth,forestmask=NULL, csvfile = N
           pols <- analysis_polygons}}
   if (!is.null(country)) {pols <- pols[which(pols$iso3 == country)]}
   if (verbose) {cat("summarizing statistics\n")}
-  pols$rmse <- terra::extract(rmse,pols,fun = "mean",na.rm = T,touches = F)[,2]
+  pols$rmse <- (terra::extract(rmse,pols,fun = "mean",na.rm = T,touches = F)[,2])^0.5
   if (verbose) {
     cat(paste("rmse = ", pols$rmse))}
   pols$date <- date
