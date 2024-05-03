@@ -1,4 +1,5 @@
-setwd("C:/data/storage/preprocessed/")
+setwd("D:/ff-dev/results/preprocessed")
+outputfile="../accuracy_analysis/baseline_20240501.csv"
 library(ForestForesight)
 files=list.files(recursive=T,pattern="groundtruth6m")
 
@@ -37,18 +38,7 @@ for(x in 1:length(files)){
 }
 ap=as.data.frame(allpols)
 
-write.csv(ap,"C:/data/results20231118.csv")
+write.csv(ap,outputfile)
 # calculate precision, recall, F1 and F0.5. These are not used in powerbi because the score also depends on the size of the polygon
 # so the scores below should be calculated on the highest order of scale you are presenting in the data
 # example: a polygon of 10x10 meters should not have the same impact on total F05 as a polygon of 10000x10000 meters with many more FN, FP, TP and TN
-
-
-setwd("C:/data/colombia_tiles/input/")
-setwd("D:/ff-dev/results")
-files=list.files(recursive=T,pattern="01.tif")
-files=files[grep("groundtruth",files)]
-for(file in files){
-  if(nchar(strsplit(file,"_")[[1]][3])==13){
-    newname=paste0(substr(file,1,nchar(file)-8),"0",substr(file,nchar(file)-7,nchar(file)))
-    file.rename(file,newname)}
-}
