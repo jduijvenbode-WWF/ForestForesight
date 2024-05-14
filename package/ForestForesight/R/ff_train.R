@@ -17,6 +17,7 @@
 #' @param xgb_model Previous build model to continue the training from. Could be an object of class "xgb.Booster", its raw data, or a file name. Default = NULL
 #' @param modelfilename character where to save the model. should end with the extension model
 #' @param features Vector with the feature names of the training dataset. Should be given when modelfilename is given so that the next time the model is loaded the model knows which features were used
+#' @param objective Specify the learning task and the corresponding learning objective. Default is "binary:logistic".
 #'
 #' @return Trained XGBoost model.
 #'
@@ -39,7 +40,8 @@
 
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
                      subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,
-                     gamma=NULL, maximize=NULL, min_child_weight=1, verbose = F, xgb_model = NULL, modelfilename = NULL, features = NULL) {
+                     gamma=NULL, maximize=NULL, min_child_weight=1, verbose = F, xgb_model = NULL,
+                     modelfilename = NULL, features = NULL, objective="binary:logistic") {
 
   if (!is.null(modelfilename)) {save(features,file = gsub("\\.model","\\.rda",modelfilename))}
   # Convert the matrix to a DMatrix object
@@ -48,7 +50,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
 
   # Set default parameters
   params <- list(
-    objective = "binary:logistic",
+    objective = objective,
     eval_metric = eval_metric,
     eta = eta,
     max_depth = max_depth,
