@@ -38,7 +38,7 @@ For detailed usage instructions and function documentation, please refer to the 
 
 Install in R (at least 4.3.1) with 
 
-    devtools::install_github("jduijvenbode-WWF/ForestForesight")
+    devtools::install_github("jduijvenbode-WWF/ForestForesight/package/ForestForesight")
 
 Load the package with
     
