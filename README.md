@@ -17,7 +17,7 @@ This R package provides tools for generating 6-month deforestation predictions, 
 | `ff_train` | Use XGBoost to train a model based on training data and labels|
 | `ff_predict` | Predict deforestation with the trained model and new data input |
 | `ff_analyse` | Analyses the predictions for accuracy (optional: output to powerbi)|
-| `visualize` | outputs the predictions to a vector file|
+| `train_predict_raster` | Combines ff_prep, ff_train and ff_predict to make predictions for individual areas |
 
 ## Package data
 The data below can be loaded using 
