@@ -22,14 +22,14 @@ This R package provides tools for generating 6-month deforestation predictions, 
 ## Package data
 The data below can be loaded using 
     
-    data({name of dataset})
+    data({feature})
     {feature}=vect({feature}) #to turn the feature into the nominally used terra format (from saved sf format)
 
-| function | usage     |
+| feature | usage     |
 | :-------- | :------- |
 | `gfw_tiles` | a spatial polygon dataset of all GFW tiles (103) of 10x10 degrees covering the pantropical belt|
-| `countries` | a spatial polygon dataset of all countries with ISO3 codes|
-| `degree_polygons` | Used mostly for data analysis, these are 1x1 degree polygons intersected by country|
+| `countries` | a spatial polygon dataset of all countries with ISO3 codes. This also contains the grouping of countries how we currently process them|
+| `degree_polygons` | Used mostly for data analysis, these are 1x1 degree polygons intersected by country, used in the powerBI analysis dashboard|
 
 
 
