@@ -116,8 +116,8 @@ No, as long as you also use the data as created by ForestForesight of WWF-NL on 
 
 ### Where can I download the preprocessed data?
 
-We put all the data per 10x10 degree tile on an S3 server, which you can find
- [here](https://s3.console.aws.amazon.com/s3/buckets/wwf-ff-global?region=eu-west-1)
+We put all the data per 10x10 degree tile on an S3 server. You can access the data by using the AWS CLI or a client like Cyberduck. We recommend the latter. For this you first need to download cyberduck and when installed press "Open connection" in the top left. Then the following settings are required:
+![cyberduck instructions](https://github.com/jduijvenbode-WWF/ForestForesight/blob/main/cyberduck_instructions.png)
 
  ### Can I add my own features?
  
