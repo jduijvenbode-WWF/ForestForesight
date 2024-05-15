@@ -22,7 +22,7 @@ parser$add_argument("-s", "--script-location",
                     default= "C:/Users/EagleView/Documents/GitHub/ForestForesight/preprocessing/IA-processing.py",
                     help = "Location of the processing script (must be a Python script)")
 parser$add_argument("-i", "--input_folder",
-                    dest = "script_location",
+                    dest = "input_folder",
                     required = FALSE,
                     default= "D:/ff-dev/alerts/",
                     help = "Location of the input folder that contains the GFW integrated alert tif files")
@@ -43,6 +43,7 @@ if (!grepl("\\.py$", args$script_location)) {
 if(!file.exists(args$script_location)){stop("the given python script does not exist")}
 # Print parsed arguments
 cat("Maximum date:", args$max_date, "\n")
+max_date=args$max_date
 cat("Number of cores:", args$cores, "\n")
 cat("Script location:", args$script_location, "\n")
 cores=as.numeric(args$cores)
@@ -51,16 +52,16 @@ if(is.na(cores)){stop("core count was not a number")}
 library(ForestForesight)
 library(parallel)
 
-#maxdate="2024-02-01"
-gtdate1m <- as.character(ymd(maxdate) %m-% months(1))
-gtdate3m <- as.character(ymd(maxdate) %m-% months(3))
-gtdate6m <- as.character(ymd(maxdate) %m-% months(6))
-gtdate12m <- as.character(ymd(maxdate) %m-% months(12))
+#max_date="2024-02-01"
+gtdate1m <- as.character(ymd(max_date) %m-% months(1))
+gtdate3m <- as.character(ymd(max_date) %m-% months(3))
+gtdate6m <- as.character(ymd(max_date) %m-% months(6))
+gtdate12m <- as.character(ymd(max_date) %m-% months(12))
 
 
 
 ffdates=paste(sort(rep(seq(2021,2030),12)),sprintf("%02d",seq(12)),"01",sep="-")[]
-ffdates=ffdates[which(ymd(ffdates)<=ymd(maxdate))]
+ffdates=ffdates[which(ymd(ffdates)<=ymd(max_date))]
 layers=c("timesinceloss","patchdensity","lastsixmonths","totallossalerts","previoussameseason","confidence","smoothedtotal","smoothedsixmonths","lastmonth","groundtruth1m","groundtruth3m","groundtruth6m","groundtruth12m")
 comb1=apply(expand.grid(ffdates, layers), 1, paste, collapse="_")
 
@@ -95,6 +96,7 @@ commandtxts=paste("python",
 
 cl <- makeCluster(getOption("cl.cores", cores))
 clusterExport(cl, "commandtxts")
+cat(paste("processing",length(commandtxts),"files\n"))
 results <- clusterApply(cl, commandtxts, system)
 
 # Stop the cluster
