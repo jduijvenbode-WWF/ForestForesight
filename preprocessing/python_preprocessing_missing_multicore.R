@@ -52,7 +52,7 @@ if(is.na(cores)){stop("core count was not a number")}
 library(ForestForesight)
 library(parallel)
 
-#max_date="2024-02-01"
+#max_date="2024-05-01"
 gtdate1m <- as.character(ymd(max_date) %m-% months(1))
 gtdate3m <- as.character(ymd(max_date) %m-% months(3))
 gtdate6m <- as.character(ymd(max_date) %m-% months(6))
