@@ -7,20 +7,24 @@ data("degree_polygons")
 pols=vect(degree_polygons)
 calculate_scores=function(predfile,groundtruthfile,pols,adddate=T,fmaskfile=NULL){
   pred=rast(predfile)
+  pred[is.na(pred)]=0
+  pred=pred>0
   groundtruth=rast(groundtruthfile,win=ext(pred))
   groundtruth[is.na(groundtruth)]=0
-  date=substr(groundtruthfile,nchar(groundtruthfile)-13,nchar(groundtruthfile)-4)
+  groundtruth=groundtruth>0
+  date=substr(basename(groundtruthfile),10,19)
   tile=basename(dirname(predfile))
   if(!is.null(fmaskfile)){
     cat("using forest mask")
-    fmask=rast(fmaskfile)>0
+    fmask=rast(fmaskfile)
+    fmask[is.na(fmask)]=0
+    fmask=fmask>0
     cross=(2*groundtruth+pred)*fmask
   }else{cross=2*groundtruth+pred}
-
   pols$FP=extract(cross==1,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$FN=extract(cross==2,pols,fun="sum",na.rm=T,touches=F)[,2]
   pols$TP=extract(cross==3,pols,fun="sum",na.rm=T,touches=F)[,2]
-  pols$TN=extract(cross==0,pols,fun="sum",na.rm=T,touches=F)[,2]
+  pols$TN=0
   pols$date=date
   pols$tile=tile
   pols=pols[-which(rowSums(as.data.frame(pols)[,c("FP","FN","TP")],na.rm=T)==0),]
@@ -35,6 +39,7 @@ for(x in 1:length(files)){
   groundtruthfile=gsub("predictions","groundtruth",file)
   calcpols=calculate_scores(predfile = blfile,groundtruthfile = groundtruthfile,pols = pols,fmaskfile = fmaskfile)
   if(x==1){allpols=calcpols}else{allpols=rbind(allpols,calcpols)}
+
 }
 ap=as.data.frame(allpols)
 
