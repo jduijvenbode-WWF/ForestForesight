@@ -17,19 +17,19 @@ This R package provides tools for generating 6-month deforestation predictions, 
 | `ff_train` | Use XGBoost to train a model based on training data and labels|
 | `ff_predict` | Predict deforestation with the trained model and new data input |
 | `ff_analyse` | Analyses the predictions for accuracy (optional: output to powerbi)|
-| `visualize` | outputs the predictions to a vector file|
+| `train_predict_raster` | Combines ff_prep, ff_train and ff_predict to make predictions for individual areas |
 
 ## Package data
 The data below can be loaded using 
     
-    data({name of dataset})
+    data({feature})
     {feature}=vect({feature}) #to turn the feature into the nominally used terra format (from saved sf format)
 
-| function | usage     |
+| feature | usage     |
 | :-------- | :------- |
 | `gfw_tiles` | a spatial polygon dataset of all GFW tiles (103) of 10x10 degrees covering the pantropical belt|
-| `countries` | a spatial polygon dataset of all countries with ISO3 codes|
-| `degree_polygons` | Used mostly for data analysis, these are 1x1 degree polygons intersected by country|
+| `countries` | a spatial polygon dataset of all countries with ISO3 codes. This also contains the grouping of countries how we currently process them|
+| `degree_polygons` | Used mostly for data analysis, these are 1x1 degree polygons intersected by country, used in the powerBI analysis dashboard|
 
 
 
@@ -116,8 +116,8 @@ No, as long as you also use the data as created by ForestForesight of WWF-NL on 
 
 ### Where can I download the preprocessed data?
 
-We put all the data per 10x10 degree tile on an S3 server, which you can find
- [here](https://s3.console.aws.amazon.com/s3/buckets/wwf-ff-global?region=eu-west-1)
+We put all the data per 10x10 degree tile on an S3 server. You can access the data by using the AWS CLI or a client like Cyberduck. We recommend the latter. For this you first need to download cyberduck and when installed press "Open connection" in the top left. Then the following settings are required:
+![cyberduck instructions](https://github.com/jduijvenbode-WWF/ForestForesight/blob/main/cyberduck_instructions.png)
 
  ### Can I add my own features?
  
@@ -132,17 +132,13 @@ We put all the data per 10x10 degree tile on an S3 server, which you can find
 ## Feature Wishlist & Roadmap
 
 - Addition of more model features that are a proxy for deforestation drivers.
-- Improved model awareness of seasonality. We have thus far used expected precipitation and the current month and sine of the month to mitigate for seasonal trends but feel that this could still be better
-- Model awareness of trends. The model relies on the same number of deforestation events occurring in the future. If this would increase or decrease then either the model should take this into account or the classification threshold should be changed accordingly. We have nothing for this yet.
-- Using categorical data. This is currently not working in R on XGboost and we would like to implement the one-hot encoding for this
+- Using categorical data. This is currently not working in R on XGboost and we would like to implement the one-hot encoding for this at some point.
 - Develop the processing chain in python.
-- Either a separate model or a different classification for new deforestation, meaning in hotzones where no previous deforestation has occurred.
 - Testing of algorithms other than XGBoost
-- Usefulness of ForestForesight with different timespans in the future. For now we predict six months in the future but how useful would 2 months or 12 months be?
-- An accuracy and accuracy metric for Forest Foresight as a continuous deforestation risk. For the moment we have thought of implementing the RMSE as a metric and comparing it to the baseline. Groundtruth should be changed to an amount for this.
+- Usefulness of ForestForesight with different timespans in the future. For now we predict six months in the future but how useful would 1 months, 3 months or 12 months be? we have already preprocessed the groundtruth for this but have not done extensive testing on it.
+- Predicting the actual amount of expected deforestation in a hotzone. Currently we are hitting a correlation coefficient of 0.38 compared to only 0.11 as a correlation between binary certainty (precision/recall).
 - Smart grouping of predictions so that it is easier for users to go to areas. There is however a very large non-technical discussion required to make this step
 - Automatic updating of our prediction dashboards through ArcGIS Online API
-- Quality control scripts that check whether the Integrated Alerts have been sufficiently updated. We do not know at the moment what the last moment of update from the three underlying systems of the Integrated Alerts are.
 
 
 
