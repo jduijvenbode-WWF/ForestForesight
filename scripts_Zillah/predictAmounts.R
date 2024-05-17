@@ -8,12 +8,13 @@ countries = vect(countries)
 Sys.setenv("xgboost_datafolder" = "D:/ff-dev/results/preprocessed")
 groups = unique(countries$group)
 dates = daterange("2022-06-01","2023-07-01")
-dates = dates[1]
 end_date = dates[length(dates)]
-
 exp_name = "pred_amounts"
 
-for (group in groups[5]) {
+# Select the model to use for binary classification
+bin_model_name = "lastYear_training"
+
+for (group in groups[2]) {
   tryCatch({
     cat(" starting group ",group, "\n")
     countriessel = countries$iso3[which(countries$group == group)]
@@ -23,7 +24,7 @@ for (group in groups[5]) {
                       sample_size = 1,verbose = F,shrink = "extract",
                       label_threshold = NA,addxy = F,
                       groundtruth_pattern = "groundtruth6m", validation_sample = 0.2)
-    for (dr2 in dates) {
+    for (dr2 in dates[1]) {
       new_date = round(as.numeric(lubridate::as.period(as.Date(dr2) - as.Date("2019-01-01"),"months"),"months"))
       new_end_date = new_date - 6
       new_start_date = new_end_date - 12
@@ -59,11 +60,21 @@ for (group in groups[5]) {
           prediction_amounts_test = ff_predict(model_amounts,test_matrix = predset$data_matrix,indices = predset$testindices,threshold = NA,
                                            templateraster = predset$groundtruthraster,groundtruth = predset$groundtruth,verbose = F, certainty = T)
           predicted_raster <- prediction_amounts_test$predicted_raster
-
           # Set negative values to 0
-          predicted_raster[predicted_raster < 0] <- 0
-          forestras=get_raster(tile=tile,date=dr2,datafolder="D:/ff-dev/results/preprocessed/input/",feature="initialforestcover")
-          analyze_amounts(predicted_raster,groundtruth = predset$groundtruthraster,
+
+          predicted_raster[predicted_raster < 0] <- 1
+
+
+          ## ADJUST USING REMAINING FOREST ! ##
+          max_def = 1600 - predset$data_matrix$features[,"totallossalerts"]
+          templateraster = predset$groundtruthraster
+          templateraster[] = 0
+          templateraster[predset$testindices] = max_def
+          predicted_raster = min(predicted_raster, templateraster)
+          print(paste("Correlation :", cor(predicted_raster[],predset$groundtruthraster[])))
+
+          forestras=get_raster(tile = tile,date = dr2,datafolder = "D:/ff-dev/results/preprocessed/input/",feature="initialforestcover")
+          ff_analyze_amounts(predicted_raster,groundtruth = predset$groundtruthraster,
                      csvfile = paste0("D:/ff-dev/predictionsZillah/accuracy_analysis/predictAmounts/", exp_name,".csv")
                      ,tile = tile,date = dr2,return_polygons = F,append = T,country = country,verbose = T,
                      method = exp_name,forestmask = forestras)
