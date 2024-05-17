@@ -2,14 +2,6 @@
 
 library(ForestForesight)
 
-get_raster=function(datafolder,date,feature,tile){
-  allfiles=list.files(datafolder,recursive=T,pattern=tile,full.names = T)
-  allfiles=allfiles[grep("tif$",allfiles)]
-  allfiles=allfiles[grep(feature,allfiles)]
-  return(ForestForesight::select_files_date(date,allfiles))
-}
-
-
 data("gfw_tiles")
 gfw_tiles = vect(gfw_tiles)
 data("countries")
