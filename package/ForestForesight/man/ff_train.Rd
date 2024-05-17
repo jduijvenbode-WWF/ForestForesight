@@ -19,7 +19,8 @@ ff_train(
   verbose = F,
   xgb_model = NULL,
   modelfilename = NULL,
-  features = NULL
+  features = NULL,
+  objective = "binary:logistic"
 )
 }
 \arguments{
@@ -52,6 +53,8 @@ ff_train(
 \item{modelfilename}{character where to save the model. should end with the extension model}
 
 \item{features}{Vector with the feature names of the training dataset. Should be given when modelfilename is given so that the next time the model is loaded the model knows which features were used}
+
+\item{objective}{Specify the learning task and the corresponding learning objective. Default is "binary:logistic".}
 }
 \value{
 Trained XGBoost model.
