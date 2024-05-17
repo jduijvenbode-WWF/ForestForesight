@@ -33,15 +33,31 @@ for(file in files){
   writeBin(b$content,filename)
 }
 
+library(httr)
+
+files=read.csv("D:/ff-dev/landuse/2020.txt",header=F)$V1
+
+setwd("D:/ff-dev/landuse/")
+for(file in files){
+  a=gregexpr("GLCLU2000",file)[[1]]
+  filename=substr(file,a[1]+5,nchar(file))
+  filename=gsub("\\.tif","_landuse\\.tif",basename(filename))
+  b=httr::GET(file)
+  writeBin(b$content,filename)
+}
+
 library(ForestForesight)
 data("gfw_tiles")
 IA=vect(gfw_tiles)
-setwd("../alerts/")
+setwd("D:/ff-dev/alerts/")
+apikey="8892b7c2-7350-46ef-9b0e-5f3aacf92c0e"
 for(id in seq(nrow(IA))){
   file=IA$download[id]
+  file=paste0(substr(file,1,gregexpr("key=",file)[[1]][1]+3),apikey)
   name=IA$tile_id[id]
   b=httr::GET(file)
   writeBin(b$content,paste0(name,".tif"))
+  cat(paste(Sys.time(),name,"\n"))
 }
 
 for(i in gfw_tiles$tile_id){

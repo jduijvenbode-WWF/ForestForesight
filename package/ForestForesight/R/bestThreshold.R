@@ -1,6 +1,6 @@
 #' Find Best Threshold
 #'
-#' This function finds the best threshold for a given prediction function by maximizing the F-score.
+#' This function finds the best threshold for a given prediction function by maximizing the evaluation function.
 #'
 #' @param prediction A vector of predictions (numeric).
 #' @param groundtruth A vector of ground truth values (binary).

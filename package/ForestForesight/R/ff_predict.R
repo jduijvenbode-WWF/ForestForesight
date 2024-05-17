@@ -24,19 +24,20 @@
 #' @name ff_predict
 
 
-ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=NA,templateraster=NA,verbose=F,certainty=F){
+ff_predict <- function(model, test_matrix, threshold=0.5, groundtruth=NA, indices=NA, templateraster=NA, verbose=F, certainty=F){
   # Get the features
-  if(class(model)=="character"){
-    if(file.exists(model)){
-      xgboost::xgb.load(model)
-      if(file.exists(gsub("\\.model","\\.rda",model))){
-        features=load(gsub("\\.model","\\.rda",model))
-        attr(model,"feature_names")=features
+  if (class(model) == "character") {
+    modelfilename=model
+    if (file.exists(model)) {
+      model=xgboost::xgb.load(model)
+      if (file.exists(gsub("\\.model","\\.rda",modelfilename))) {
+        model_features <- get(load(gsub("\\.model","\\.rda",modelfilename)))
+        attr(model,"feature_names") <- model_features
       }
     }
-  }
-  model_features <- model$feature_names
-  if(!is.null(model_features)){
+  }else{
+  model_features <- model$feature_names}
+  if (!is.null(model_features)) {
     test_features <- colnames(test_matrix$features)
     # Check for features in the test matrix not present in the model
     extra_features <- setdiff(test_features, model_features)
@@ -46,37 +47,40 @@ ff_predict <- function(model, test_matrix, threshold=0.5,groundtruth=NA,indices=
       test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
     }
   }
-  # Convert the matrix to a DMatrix object
-  if(!is.na(test_matrix$label[1])){test_matrix = xgb.DMatrix(test_matrix$features, label=test_matrix$label)}else{test_matrix = xgb.DMatrix(test_matrix$features)}
-  if(verbose){cat("calculating predictions\n")}
-  predictions=predict(model,test_matrix)
-  if(!is.na(groundtruth[1])){
-    if(class(groundtruth)=="SpatRaster"){groundtruth=as.numeric(as.matrix(groundtruth))}
-    if(verbose){cat("calculationg scores\n")}
-    precision=c()
-    recall=c()
-    F05=c()
-    for(thresh in threshold){
-      res=table(2*(predictions>thresh)+groundtruth)
-      prec=as.numeric(res[4]/(res[4]+res[3]))
-      rec=as.numeric(res[4]/(res[4]+res[2]))
-      precision=c(precision,prec)
-      recall=c(recall,rec)
-      F05=c(F05,1.25*prec*rec/(0.25*prec+rec))
+  # Convert the matrix to a "DMatrix object
+  if (!is.na(test_matrix$label[1])) {test_matrix = xgboost::xgb.DMatrix(test_matrix$features, label = test_matrix$label)}else
+  {test_matrix = xgboost::xgb.DMatrix(test_matrix$features)}
+  if (verbose) {cat("calculating predictions\n")}
+  predictions <- predict(model, test_matrix)
+  if (!is.na(groundtruth[1])) {
+    if (class(groundtruth) == "SpatRaster") {groundtruth <- as.numeric(as.matrix(groundtruth))}
+    if (verbose) {cat("calculationg scores\n")}
+    precision <- c()
+    recall <- c()
+    F05 <- c()
+    for (thresh in threshold) {
+      res <- table(2*(predictions > thresh) + groundtruth)
+      prec <- as.numeric(res[4] / (res[4] + res[3]))
+      rec <- as.numeric(res[4] / (res[4] + res[2]))
+      precision <- c(precision,prec)
+      recall <- c(recall,rec)
+      F05 <- c(F05,1.25*prec*rec/(0.25*prec + rec))
     }
-  }else{precision=NA;recall=NA;F05=NA}
-  if(class(templateraster)=="SpatRaster"){
-    templateraster[]=0
-    if(length(indices)>1){
-      if(verbose){cat("filling raster\n")}
-      if(!certainty){templateraster[indices]=predictions>threshold}else{templateraster[indices]=predictions}
+  }else{
+    precision <- recall <- F05 <-  NA
+  }
+  if (class(templateraster) == "SpatRaster") {
+    templateraster[] <- 0
+    if (length(indices) > 1) {
+      if (verbose) {cat("filling raster\n")}
+      if (!certainty) {templateraster[indices] <- predictions > threshold}else{templateraster[indices] <- predictions}
     }else{
-      if(ncell(templateraster)==length(predictions)){
-        if(verbose){cat("filling raster\n")}
-        if(!certainty){templateraster[]=predictions>threshold}else{templateraster[]=predictions}
-      }else{templateraster<-NA}
+      if (terra::ncell(templateraster) == length(predictions)) {
+        if (verbose) {cat("filling raster\n")}
+        if (!certainty) {templateraster[] <- predictions > threshold}else{templateraster[] <- predictions}
+      }else{templateraster <- NA}
     }
-  }else{templateraster<-NA}
-  if(verbose){cat(paste("F0.5:",F05,"\n"))}
-  return(list(threshold=threshold,"precision"=precision,"recall"=recall,"F0.5"=F05,"predicted_raster"=templateraster,"predictions"=predictions))
+  }else{templateraster <- NA}
+  if (verbose & !is.na(F05)) {cat(paste("F0.5:",F05,"\n"))}
+  return(list(threshold = threshold,"precision" = precision,"recall" = recall,"F0.5" = F05,"predicted_raster" = templateraster,"predictions" = predictions))
 }

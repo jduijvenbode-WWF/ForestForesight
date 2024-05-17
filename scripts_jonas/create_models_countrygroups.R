@@ -13,7 +13,7 @@ for(group in groups){
     dr2=dater[datenum+6]
     cat("starting group ",group)
     countriessel=countries$iso3[which(countries$group==group)]
-    traindata=ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",country=countriessel,start = dr,fltr_features = "landpercentage",fltr_condition = ">0",sample_size = 1,verbose=T,shrink="extract",label_threshold = 10,addxy=F,groundtruth_pattern = "groundtruth6m")
+    traindata=ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",country=countriessel,start = dr,fltr_features = "landpercentage",fltr_condition = ">0",sample_size = 1,verbose=T,shrink="extract",addxy=T,groundtruth_pattern = "groundtruth6mbin")
     if(!dir.exists(file.path("D:/ff-dev/results/models/",group))){dir.create(file.path("D:/ff-dev/results/models/",group))}
     model=ff_train(traindata$data_matrix,eta = 0.2,gamma = 0.2,min_child_weight = 3,max_depth = 6,nrounds = 100,subsample = 0.3,verbose=T,modelfilename = file.path("D:/ff-dev/results/models/",group,paste0(group,"_",dr,"_model.model")),features=traindata$features)
     for(country in countriessel){
@@ -25,7 +25,7 @@ for(group in groups){
 
           cat("starting tile ",tile)
 
-          predset=ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",tiles=tile,start = dr2,verbose=T,fltr_features = "landpercentage",fltr_condition = ">0",addxy=F,label_threshold = 10)
+          predset=ff_prep(datafolder = "D:/ff-dev/results/preprocessed/",tiles=tile,start = dr2,verbose=T,fltr_features = "landpercentage",fltr_condition = ">0",addxy=T,groundtruth_pattern = "groundtruth6mbin")
             cat(paste("predict\n"))
             #res=ff_predict(model = model,test_matrix = predset$data_matrix,templateraster = predset$groundtruthraster,certainty=T)
             cat(paste("visualize\n"))
@@ -41,7 +41,7 @@ for(group in groups){
                                   templateraster = predset$groundtruthraster,groundtruth = predset$groundtruth,verbose = T)
             #if(!dir.exists(file.path("D:/ff-dev/results/predictions/",country))){dir.create(file.path("D:/ff-dev/results/predictions/",country))}
             print("analyze")
-            ff_analyze(prediction$predicted_raster,groundtruth = predset$groundtruthraster,csvfile = "D:/ff-dev/results/accuracy_analysis/2024-03-07_current_accuracy.csv",tile = tile,date = dr,return_polygons = F,append = T,country=country,verbose=T)
+            ff_analyze(prediction$predicted_raster,groundtruth = predset$groundtruthraster,csvfile = "D:/ff-dev/results/accuracy_analysis/2024-03-07d_current_accuracy.csv",tile = tile,date = dr,return_polygons = F,append = T,country=country,verbose=T)
           }
         }
     }
