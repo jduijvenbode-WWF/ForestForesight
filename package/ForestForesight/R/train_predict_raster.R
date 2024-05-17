@@ -70,14 +70,15 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   if (!hasvalue(prediction_folder)) {prediction_folder <- file.path(ff_folder,"models")}
   if (!dir.exists(prediction_folder)) {stop(paste(prediction_folder,"does not exist"))}
   # Prepare data
-  if(verbose){cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
-  traindata <- ff_prep(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
-                       fltr_condition = ">0",fltr_features = "initialforestcover",
-                       sample_size = 0.3, verbose = verbose, shrink = "extract",
-                       groundtruth_pattern = "groundtruth6m",label_threshold = 1)
+
 
   # Train model if not provided
   if (is.null(model)) {
+    if(verbose){cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
+    traindata <- ff_prep(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
+                         fltr_condition = ">0",fltr_features = "initialforestcover",
+                         sample_size = 0.3, verbose = verbose, shrink = "extract",
+                         groundtruth_pattern = "groundtruth6m",label_threshold = 1)
     model <- ff_train(traindata$data_matrix, verbose = verbose,
                       modelfilename = file.path(model_folder, "test_model.model"),
                       features = traindata$features)
@@ -92,7 +93,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                        verbose = verbose, fltr_features = "initialforestcover",
                        fltr_condition = ">0")
 
-    prediction <- ff_predict(model, test_matrix = predset$data_matrix,
+    prediction <- ff_predict(model = model, test_matrix = predset$data_matrix,
                              indices = predset$testindices,
                              templateraster = predset$groundtruthraster,
                              verbose = verbose,certainty = T)
