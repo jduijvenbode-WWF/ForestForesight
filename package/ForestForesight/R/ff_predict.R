@@ -26,7 +26,6 @@
 
 ff_predict <- function(model, test_matrix, threshold=0.5, groundtruth=NA, indices=NA, templateraster=NA, verbose=F, certainty=F){
   # Get the features
-  print(model)
   if (class(model) == "character") {
     modelfilename=model
     if (file.exists(model)) {
@@ -53,7 +52,6 @@ ff_predict <- function(model, test_matrix, threshold=0.5, groundtruth=NA, indice
   {test_matrix = xgboost::xgb.DMatrix(test_matrix$features)}
   if (verbose) {cat("calculating predictions\n")}
   predictions <- predict(model, test_matrix)
-  print(quantile(predictions,probs=seq(0,1,0.1)))
   if (!is.na(groundtruth[1])) {
     if (class(groundtruth) == "SpatRaster") {groundtruth <- as.numeric(as.matrix(groundtruth))}
     if (verbose) {cat("calculationg scores\n")}
