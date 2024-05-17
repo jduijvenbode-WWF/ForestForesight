@@ -36,7 +36,7 @@ bestThreshold(
 A list containing the best threshold and the corresponding F-score.
 }
 \description{
-This function finds the best threshold for a given prediction function by maximizing the F-score.
+This function finds the best threshold for a given prediction function by maximizing the evaluation function.
 }
 \examples{
 bestThreshold(c(0.2, 0.6, 0.7), c(0, 1, 1))
