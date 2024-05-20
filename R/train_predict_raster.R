@@ -9,7 +9,6 @@
 #' @param train_start Starting date for training data in "YYYY-MM-DD" format. Default is "2022-07-01".
 #' @param train_end Ending date for training data in "YYYY-MM-DD" format. Default is "2023-07-01".
 #' @param model_folder Folder directory to save models. If NULL, models will be saved in `ff_folder/models`.
-#' @param prediction_folder Folder directory to save predictions. If NULL, predictions will be saved in `ff_folder/predictions`.
 #' @param train Logical value indicating whether to train the model. Default is TRUE.
 #' @param model Pre-trained model. If NULL, the function will train a model. Default is NULL.
 #' @param groundtruth_pattern character. the name of the feature used for groundtruth, normally groundtruth6m
@@ -34,7 +33,6 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   train_start=NULL,
                                   train_end=NULL,
                                   model_folder=NULL,
-                                  prediction_folder=NULL,
                                   train=TRUE,
                                   model = NULL,
                                   groundtruth_pattern = "groundtruth6m",
@@ -69,10 +67,6 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
 
   if (!hasvalue(model_folder)) {model_folder <- file.path(ff_folder,"models")}
   if (!dir.exists(model_folder)) {stop(paste(model_folder,"does not exist"))}
-
-  if (!hasvalue(prediction_folder)) {prediction_folder <- file.path(ff_folder,"models")}
-  if (!dir.exists(prediction_folder)) {stop(paste(prediction_folder,"does not exist"))}
-  # Prepare data
 
 
   # Train model if not provided
