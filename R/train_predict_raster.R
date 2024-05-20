@@ -56,7 +56,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
 }
 
 
-  shape <- terra::project(shape, "epsg:4326")
+  #shape <- terra::project(shape, "epsg:4326")
   data(gfw_tiles,envir = environment())
   tiles <- terra::vect(gfw_tiles)[shape,]$tile_id
 
@@ -96,7 +96,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                              verbose = verbose,certainty = T)
     raslist[[tile]] <- prediction$predicted_raster
     # Analyze prediction
-     ff_analyze(prediction$predicted_raster, groundtruth = predset$groundtruthraster,
+    ff_analyze(prediction$predicted_raster, groundtruth = predset$groundtruthraster,
                 csvfile = accuracy_csv, tile = tile, date = train_start,
                 return_polygons = FALSE, append = TRUE, country = country,
                 verbose = verbose)
