@@ -29,6 +29,7 @@ ff_predict <- function(model, test_matrix, threshold=0.5, groundtruth=NA, indice
   if (class(model) == "character") {
     modelfilename=model
     if (file.exists(model)) {
+      if(!test_feature_model_match(model)){stop("number of features in model and corresponding feature names RDA file do not match")}
       model=xgboost::xgb.load(model)
       if (file.exists(gsub("\\.model","\\.rda",modelfilename))) {
         model_features <- get(load(gsub("\\.model","\\.rda",modelfilename)))
