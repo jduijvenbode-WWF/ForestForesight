@@ -102,10 +102,10 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                              verbose = verbose,certainty = T)
     raslist[[tile]] <- prediction$predicted_raster
     # Analyze prediction
-    # ff_analyze(prediction$predicted_raster, groundtruth = predset$groundtruthraster,
-    #            csvfile = accuracy_csv, tile = tile, date = train_start,
-    #            return_polygons = FALSE, append = TRUE, country = country_group,
-    #            verbose = verbose)
+     ff_analyze(prediction$predicted_raster, groundtruth = predset$groundtruthraster,
+                csvfile = accuracy_csv, tile = tile, date = train_start,
+                return_polygons = FALSE, append = TRUE, country = country,
+                verbose = verbose)
   }
   if (length(raslist) == 1) {fullras <- raslist[[1]]}else{
     fullras <- do.call(terra::merge,unname(raslist))
