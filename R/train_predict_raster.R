@@ -56,7 +56,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
 }
 
 
-  #shape <- terra::project(shape, "epsg:4326")
+  if(!terra::is.lonlat(shape)){shape <- terra::project(shape, "epsg:4326")}
   data(gfw_tiles,envir = environment())
   tiles <- terra::vect(gfw_tiles)[shape,]$tile_id
 
