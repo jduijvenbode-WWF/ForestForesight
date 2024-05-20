@@ -37,7 +37,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   prediction_folder=NULL,
                                   train=TRUE,
                                   model = NULL,
-                                 groundtruth_pattern = "groundtruth6m"
+                                  groundtruth_pattern = "groundtruth6m",
                                   ff_prep_params = NULL, ff_train_params = NULL,
                                   accuracy_csv = NA, overwrite=F, verbose=T) {
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
