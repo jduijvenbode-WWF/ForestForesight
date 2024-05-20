@@ -62,7 +62,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
     if (is.null(tiles)) {tiles <- tilesvect}
   }else{
     if (hasvalue(shape)) {
-      shape <- terra::project(shape,"epsg:4326")
+      if( !terra::is.lonlat(shape)){shape <- terra::project(shape,"epsg:4326")}
       if (verbose) {cat("selecting based on shape\n")}
       tiles <- tilesvect[shape]$tile_id
       if (verbose) {cat("processing tiles:",paste(tiles,collapse = ", "),"\n")}
