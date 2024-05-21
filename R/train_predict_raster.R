@@ -8,7 +8,7 @@
 #' @param ff_folder Folder directory containing the input data.
 #' @param train_start Starting date for training data in "YYYY-MM-DD" format. Default is "2022-07-01".
 #' @param train_end Ending date for training data in "YYYY-MM-DD" format. Default is "2023-07-01".
-#' @param model_folder Folder directory to save models. If NULL, models will be saved in `ff_folder/models`.
+#' @param model_path The path for saving the model.
 #' @param train Logical value indicating whether to train the model. Default is TRUE.
 #' @param model Pre-trained model. If NULL, the function will train a model. Default is NULL.
 #' @param groundtruth_pattern character. the name of the feature used for groundtruth, normally groundtruth6m
@@ -32,7 +32,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   ff_folder,
                                   train_start=NULL,
                                   train_end=NULL,
-                                  model_folder=NULL,
+                                  model_path=NULL,
                                   train=TRUE,
                                   model = NULL,
                                   groundtruth_pattern = "groundtruth6m",
@@ -64,6 +64,8 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   prep_folder <- file.path(ff_folder,"preprocessed")
   if (!dir.exists(prep_folder)) {stop(paste(prep_folder,"does not exist"))}
 
+  model_folder = dirname(model_path)
+
 
   if (!hasvalue(model_folder)) {model_folder <- file.path(ff_folder,"models")}
   if (!dir.exists(model_folder)) {stop(paste(model_folder,"does not exist"))}
@@ -77,7 +79,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                          sample_size = 0.3, verbose = verbose, shrink = "extract",
                          groundtruth_pattern = groundtruth_pattern,label_threshold = 1)
     model <- ff_train(traindata$data_matrix, verbose = verbose,
-                      modelfilename = file.path(model_folder, "test_model.model"),
+                      modelfilename = model_path,
                       features = traindata$features)
   }
 
