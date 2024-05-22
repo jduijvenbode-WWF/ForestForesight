@@ -41,11 +41,14 @@ ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, 
   if (verbose) {cat("rasters loaded\n")}
   groundtruth[is.na(groundtruth)] <- 0
   groundtruth <- groundtruth > 0
+  print(summary(groundtruth))
+  print(summary(predictions))
   if (!is.null(forestmask)) {
     if (verbose) {cat("using forest mask\n")}
     if (class(forestmask) == "character") {forestmask <- terra::rast(forestmask)}
-    forestmask = crop(forestmask, groundtruth)
+    forestmask = terra::crop(forestmask, groundtruth)
     cross <- (2*groundtruth + predictions)*(forestmask > 0)
+
   }else{cross <- 2*groundtruth + predictions}
   if (is.null(analysis_polygons)) {
     data(degree_polygons,envir = environment())
@@ -59,18 +62,19 @@ ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, 
   pols$FN <- terra::extract(cross == 2,pols,fun = "sum",na.rm = T,touches = F)[,2]
   pols$TP <- terra::extract(cross == 3,pols,fun = "sum",na.rm = T,touches = F)[,2]
   pols$TN <- terra::extract(cross == 0,pols,fun = "sum",na.rm = T,touches = F)[,2]
+
   if (verbose) {
     cat("calculating F0.5 score\n")
     pr <- sum(pols$TP,na.rm = T)/(sum(pols$TP,na.rm = T) + sum(pols$FP,na.rm = T))
     re <- sum(pols$TP,na.rm = T)/(sum(pols$TP,na.rm = T) + sum(pols$FN,na.rm = T))
-    cat(paste("F0.5 score is:",1.25 * pr * re/(0.25*pr + re)))}
+    cat(paste("F0.5 score is:",1.25 * pr * re/(0.25*pr + re),"\n"))}
   if (verbose) {cat("adding metadata\n")}
   pols$date <- date
   pols$method <- method
   if (remove_empty) {pols <- pols[-which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm = T) == 0),]}
   if (!is.null(csvfile)) {
     if ( append & file.exists(csvfile)) {
-      if (verbose) {cat("appending to existing dataset")}
+      if (verbose) {cat("appending to existing dataset\n")}
       pastdata <- read.csv(csvfile)
       pastdata$X <- NULL
       write.csv(rbind(pastdata,as.data.frame(pols)),csvfile)}else{
