@@ -41,8 +41,6 @@ ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, 
   if (verbose) {cat("rasters loaded\n")}
   groundtruth[is.na(groundtruth)] <- 0
   groundtruth <- groundtruth > 0
-  print(summary(groundtruth))
-  print(summary(predictions))
   if (!is.null(forestmask)) {
     if (verbose) {cat("using forest mask\n")}
     if (class(forestmask) == "character") {forestmask <- terra::rast(forestmask)}
