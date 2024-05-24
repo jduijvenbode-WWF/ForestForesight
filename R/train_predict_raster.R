@@ -79,7 +79,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                          sample_size = 0.3, verbose = verbose, shrink = "extract",
                          groundtruth_pattern = groundtruth_pattern,label_threshold = 1)
     model <- ff_train(traindata$data_matrix, verbose = verbose,
-                      modelfilename =model_path,
+                      modelfilename = model_path,
                       features = traindata$features)
   }
 
@@ -98,10 +98,9 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                              verbose = verbose,certainty = T)
     raslist[[tile]] <- prediction$predicted_raster
     # Analyze prediction
-    return(predset)
     forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/preprocessed/input/"),feature = "initialforestcover")
     ff_analyze(prediction$predicted_raster > 0.5, groundtruth = predset$groundtruthraster,
-                csvfile = accuracy_csv, tile = tile, date = train_start,
+                csvfile = accuracy_csv, tile = tile, date = prediction_date,
                 return_polygons = FALSE, append = TRUE, country = country,
                 verbose = verbose, forestmask = forestras)
   }
