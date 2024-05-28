@@ -98,7 +98,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                              verbose = verbose,certainty = T)
     raslist[[tile]] <- prediction$predicted_raster
     # Analyze prediction
-    forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/preprocessed/input/"),feature = "initialforestcover")
+    forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = "initialforestcover")
     ff_analyze(prediction$predicted_raster > 0.5, groundtruth = predset$groundtruthraster,
                 csvfile = accuracy_csv, tile = tile, date = prediction_date,
                 return_polygons = FALSE, append = TRUE, country = country,
