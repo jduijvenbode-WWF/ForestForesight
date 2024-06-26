@@ -55,7 +55,7 @@ ff_analyze_amounts <- function(predictions,groundtruth,forestmask=NULL, csvfile 
           pols <- analysis_polygons}}
   if (!is.null(country)) {pols <- pols[which(pols$iso3 == country)]}
   if (verbose) {cat("summarizing statistics\n")}
-
+  pols$rmse <- (terra::extract(se,pols,fun = "mean",na.rm = T,touches = F)[,2])^0.5
   if (verbose) {
     cat(paste("rmse = ", pols$rmse))}
   pols$date <- date
