@@ -46,7 +46,7 @@ ff_analyze_amounts <- function(predictions,groundtruth,forestmask=NULL, csvfile 
     if (class(forestmask) == "character") {forestmask <- terra::rast(forestmask)}
     forestmask = crop(forestmask, groundtruth)
     se = (((groundtruth - predictions)^2))*as.numeric(forestmask>0)
-  }else{se = ((groundtruth - predictions)^2)
+  }else{se = ((groundtruth - predictions)^2)}
   if (is.null(analysis_polygons)) {
     data(degree_polygons,envir = environment())
     pols <- terra::vect(degree_polygons)}else{
