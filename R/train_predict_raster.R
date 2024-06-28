@@ -35,6 +35,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   model_path=NULL,
                                   train=TRUE,
                                   model = NULL,
+                                  label_threshold=NA,
                                   groundtruth_pattern = "groundtruth6m",
                                   ff_prep_params = NULL, ff_train_params = NULL,
                                   accuracy_csv = NA, overwrite=F, verbose=T) {
@@ -77,7 +78,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
     traindata <- ff_prep(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
                          fltr_condition = ">0",fltr_features = "initialforestcover",
                          sample_size = 0.3, verbose = verbose, shrink = "extract",
-                         groundtruth_pattern = groundtruth_pattern,label_threshold = 1)
+                         groundtruth_pattern = groundtruth_pattern,label_threshold = label_threshold)
     model <- ff_train(traindata$data_matrix, verbose = verbose,
                       modelfilename = model_path,
                       features = traindata$features)
@@ -90,7 +91,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
 
     predset <- ff_prep(datafolder = prep_folder, tiles = tile, start = prediction_date,
                        verbose = verbose, fltr_features = "initialforestcover",
-                       fltr_condition = ">0", groundtruth_pattern = groundtruth_pattern)
+                       fltr_condition = ">0", groundtruth_pattern = groundtruth_pattern, label_threshold = label_threshold)
 
     prediction <- ff_predict(model = model, test_matrix = predset$data_matrix,
                              indices = predset$testindices,
