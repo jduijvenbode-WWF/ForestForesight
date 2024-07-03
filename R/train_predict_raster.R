@@ -100,10 +100,13 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
     raslist[[tile]] <- prediction$predicted_raster
     # Analyze prediction
     forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = "initialforestcover")
-    ff_analyze(prediction$predicted_raster > 0.5, groundtruth = predset$groundtruthraster,
-                csvfile = accuracy_csv, tile = tile, date = prediction_date,
-                return_polygons = FALSE, append = TRUE, country = country,
-                verbose = verbose, forestmask = forestras)
+    if(!is.na(accuracy_csv)){
+      ff_analyze(prediction$predicted_raster > 0.5, groundtruth = predset$groundtruthraster,
+                 csvfile = accuracy_csv, tile = tile, date = prediction_date,
+                 return_polygons = FALSE, append = TRUE, country = country,
+                 verbose = verbose, forestmask = forestras)
+    }
+
   }
   if (length(raslist) == 1) {fullras <- raslist[[1]]}else{
     fullras <- do.call(terra::merge,unname(raslist))
