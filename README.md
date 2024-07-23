@@ -59,55 +59,7 @@ The S3 bucket contains multiple folders which are structured like this
 
 
 At the moment we have the following features:
-|feature|name|periodicity|source|processing|max DN|
-| :-------- | :------- | :-------- | :------- | :-------- | :-------- | 
-|groundtruth6mbin|binary groundtruth of oncoming six months|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|every 400x400m pixel where at least 1 deforestation event happens is classified as an actual (value 1)|1|
-|groundtruth1m|groundtruth of oncoming month in amount of pixels|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|every 400x400m pixel with the total number of deforestation events in the oncoming 1 months as a value (betwen 0 and 1600)|1600|
-|groundtruth3m|groundtruth of oncoming 3 months in amount of pixels|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|every 400x400m pixel with the total number of deforestation events in the oncoming 3 months as a value (betwen 0 and 1600)|1600|
-|groundtruth6m|groundtruth of oncoming 6 months in amount of pixels|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|every 400x400m pixel with the total number of deforestation events in the oncoming 6 months as a value (betwen 0 and 1600)|1600|
-|groundtruth12m|groundtruth of oncoming 12 months in amount of pixels|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|every 400x400m pixel with the total number of deforestation events in the oncoming 12 months as a value (betwen 0 and 1600)|1600|
-|closenesstoroads|closeness to roads|yearly|[OSM](https://wiki.openstreetmap.org/wiki/Downloading_data)|This is downloaded using the ohsome package with the filter type:way and highway=* and geometry:line and then further filtered on only lines. The lines are simplified on 10 meters. then the distance in 400x400m pixels is calculated in python. the distance is then converted by the formula 255-20*log(distance+1)|255|
-|closenesstowaterways|closeness to waterways|static|[OSM](https://wiki.openstreetmap.org/wiki/Downloading_data)|This is downloaded using the ohsome package with the filter type:way and highway=* and geometry:line and then further filtered on only lines. The lines are simplified on 10 meters. then the distance in 400x400m pixels is calculated in python. the distance is then converted by the formula 255-20*log(distance+1)|255|
-|confidence|average confidence of alerts|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|The average confidence of the alerts, which are between 2 (low confidence, detected by one EWS once) and 4 (highest confidence, detected by mutiple EWS multiple times) meaning low to highest confidence with NA (not a number) removed|4|
-|elevation|elevation|static|[SRTM](https://csidotinfo.wordpress.com/data/srtm-90m-digital-elevation-database-v4-1/)|the average elevation of the SRTM rasters when aggregated to the 400x400m pixel level in meters above sea level|8849|
-|firealerts|forest fire alerts from VIIRS and other satellites|monthly|[VIIRS LAADS-DAAP](https://firms.modaps.eosdis.nasa.gov/download/)|the data is downloaded for all sensors for historic data and from now on monthly for near real time data. The point shapefiles are rasterized with the sum of all points within the pixel. Thus the number represents number of forest fires within the pixel in the last six months|1000|
-|forestheight|height of forest 2020|yearly|[GLAD](https://glad.umd.edu/users/Potapov/GLCLUC2020/Forest_height_2020/)|this dataset is available till 2020 and represents the average forest height in meters within the pixel, where 0 means no forest|50|
-|historicloss|GLAD deforestation 2001-2018|static|[GLAD FSC alerts](https://glad-forest-alert.appspot.com/)|The total number of pixels between 2001 and 2018 being deforested according to the yearly report|256|
-|initialforestcover|forest mask of 2019|static|[GLAD FSC alerts](https://glad-forest-alert.appspot.com/)|The sum of the underlying pixels in the 400x400m pixel where every underlying pixel is a fraction of canopy cover and every pixel that has been deforested between 2001 and 2018 is set to 0|10000|
-|lastsixmonths|deforestation last six months|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|takes the sum of the underlying 1600 10x10m pixels that have been deforested in the last 6 months|1600|
-|lastthreemonths|deforestation last three months|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|takes the sum of the underlying 1600 10x10m pixels that have been deforested in the last 3 months|1600|
-|lastmonth|deforestation in the previous month|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|takes the sum of the underlying 1600 10x10m pixels that have been deforested in the previous month|1600|
-|losslastyear|GLAD deforestation last year|yearly|[GLAD FSC alerts](https://glad-forest-alert.appspot.com/)|The total number of underlying pixels as a sum from the previous year|256|
-|month|the number of the month|static|autogenerated|this is autogenerated in the preprocessing|12|
-|nightlights|nighttime activity as measured by the VIIRS satellite|monthly|[VIIRS LAADS-DAAP](https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5000/VNP46A3/2023)|monthly cloud-corrected nighttime activity (visible light/SWIR radiation at night) where the values represent the amount of radiation|65535|
-|patchdensity|patchiness of last six months of deforestation|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|the deforestation of the last six months is taken as input and processed by giving every group of deforestation pixels a unique value. The total amount of unique values within the 400x400m pixel is the result, representing the amount of deforestation patches in the last 6 months|800|
-|totaldeforestation|the total number of deforested pixels according to the integrated alerts|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|takes the sum of the underlying 1600 10x10m pixels that have been deforested since the beginning of the EWS (normally 1st of january 2020)|1600|
-|peatland|areas with a peat soil|static|[CIFOR](https://data.cifor.org/dataset.xhtml?persistentId=doi:10.17528/CIFOR/DATA.00058)|the data is aggregated to 400x400 and represents the average depth of the peat soil in meters with a maximum of 15 meters|15|
-|populationcurrent|current population|static|[EUPOP](https://ghsl.jrc.ec.europa.eu/download.php)|This is the POP2025 (GHS-POP) dataset that is first reprojected to the 400x400m pixel resolution with the max function and then a gradual filter of 25 pixels is applied to smooth it over a larger area|20000000|
-|populationincrease|population increase|static|[EUPOP](https://ghsl.jrc.ec.europa.eu/download.php)|This is the difference between POP2030 (the expected population in 2030, see source GHS-POP) and POP2020 (the known population according to census in 2020, see source GHS-POP) dataset that is first reprojected to the 400x400m pixel resolution with the max function and then a gradual filter of 25 pixels is applied to smooth it over a larger area|20000000|
-|precipitation|predicted precipitation |monthly|[CMIP6](https://cds.climate.copernicus.eu/cdsapp#!/dataset/projections-cmip6-decadal-prototype?tab=form)|Averaged (median) over all 16 scenarios and with a cubic resampling resampled to 400x400m pixels. The actual values represent the average (mean) amount of expected precipitation in the 6 months following the date of the dataset in mm/month multiplied by 1e6|240|
-|temperature|predicted temperature|monthly|[CMIP6](https://cds.climate.copernicus.eu/cdsapp#!/dataset/projections-cmip6-decadal-prototype?tab=form)|Averaged (median) over all 16 scenarios and with a cubic resampling resampled to 400x400m pixels. The actual values represent the average temperature in the 6 months following the date of the dataset in kelvin multiplied by 10 |3000|
-|previoussameseason|deforestation 6-12 months ago|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|takes the sum of the underlying 1600 pixels that have been deforested 6-12 months to account for seasonality|1600|
-|sinmonth|the sine of the date|static|autogenerated|this is autogenerated in the preprocessing and represents the sine value of the day of the year, between -1 and 1|1|
-|slope|slope|static|[SRTM](https://csidotinfo.wordpress.com/data/srtm-90m-digital-elevation-database-v4-1/)|Slope is calculated using the terrain function in terra using standard settings and then taken the average of to aggregate|4000|
-|smoothedsixmonths|deforestation last six months smoothed|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|A smoothed version of layer lastsixmonths. This means that the further away from the aggregated 400x400m pixel the pixel in question is, the lower the value gets.|1600|
-|smoothedtotal|total deforestation smoothed|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|A smoothed version of layer totaldeforestation (the total number of deforested pixels according to the integrated alerts). This means that the further away from the aggregated 400x400m pixel the pixel in question is, the lower the value gets.|1600|
-|timesinceloss|latest moment of deforestation|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|This is classified as highest value (representing latest moment of deforestation) since 1-1-2015 divided by the current date multiplied by 10.000 to make it 16-bit |10000|
-|totallossalerts|total deforestation|monthly|[GFW alerts](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/)|The total amount of the underlying 1600 pixels deforested according to the GFW alerts since the alerts started|1600|
-|wetlands|areas with wetlands|static|[FAO/WWF](https://www.worldwildlife.org/publications/global-lakes-and-wetlands-database-lakes-and-wetlands-grid-level-3)|the data is aggregated to 400x400 and reclassified from categorical values to 1/0 for wetland/no wetland by taking any value above 0|1|
-|x|latitude |static|autogenerated|this is autogenerated in the preprocessing and represents the latitude per pixel between -90 and 90|90|
-|y|longitude|static|autogenerated|this is autogenerated in the preprocessing  and represents the longitude per pixel between -180 and 180|180|
-|monthssince2019|number of months since januari 2019|static|autogenerated|this is autogenerated in the preprocessing  and represents the amount of months since the first of january 2019|50|
-|landpercentage|percentage of land cover (as opposed to sea)|static|[GADM](https://gadm.org)|this is the percentage landcover in values from 0 (no land) to 255 (100% landcover of the pixel)|255|
-|catexcap|cation exchange capacity at 0-5cm|static|[ISRIC](https://data.isric.org/geonetwork/srv/eng/catalog.search#/metadata/867431df-9c35-4aaa-8cd7-93ee0226eb3d)|the data was aggregated to 400x400 meter by using the mode of the underlying pixels (most occurring). The cation exchange capacity in mmol(c)/kg is a useful indicator for soil fertility, a proxy for deforestation for agriculture|1000|
-|wdpa|WDPA status|yearly|[Protected Planet](https://www.protectedplanet.net/en/thematic-areas/wdpa)|the data was intersected with land area and the tiles that we have, then simplified to 400 meters and then rasterized. A value of 1 means that the entire area is protected area, 0 means no protected area within the pixel|1|
-|croplandcapacity100p|Agricultural conversion capacity (cropland only)|static|[RIBES](https://zenodo.org/records/7665902)|the data was reprojected to 400x400m by using a nearest neighbor resampling.|255|
-|croplandcapacitybelow50p|Agricultural conversion capacity (less than 50 percent cropland cover)|static|[RIBES](https://zenodo.org/records/7665902)|the data was reprojected to 400x400m by using a nearest neighbor resampling.|255|
-|croplandcapacityover50p|Agricultural conversion capacity (more than 50 percent cropland cover)|static|[RIBES](https://zenodo.org/records/7665902)|the data was reprojected to 400x400m by using a nearest neighbor resampling.|255|
-[^1]overview of the datasets of Forest Foresight
 
-
-    
 ## FAQ
 
 ### Do I need to build the models myself?
@@ -131,17 +83,13 @@ We put all the data per 10x10 degree tile on an S3 server. You can access the da
 
 ## Feature Wishlist & Roadmap
 
-- Addition of more model features that are a proxy for deforestation drivers.
 - Using categorical data. This is currently not working in R on XGboost and we would like to implement the one-hot encoding for this at some point.
 - Develop the processing chain in python.
-- Testing of algorithms other than XGBoost
-- Usefulness of ForestForesight with different timespans in the future. For now we predict six months in the future but how useful would 1 months, 3 months or 12 months be? we have already preprocessed the groundtruth for this but have not done extensive testing on it.
+- Implementing our somewhat better performing deep learning algorithm
 - Predicting the actual amount of expected deforestation in a hotzone. Currently we are hitting a correlation coefficient of 0.38 compared to only 0.11 as a correlation between binary certainty (precision/recall).
-- Smart grouping of predictions so that it is easier for users to go to areas. There is however a very large non-technical discussion required to make this step
+- Smart grouping of predictions so that it is easier for users to go to areas. There is however a very large non-technical discussion required to make this step. Feel free if this has your interest to get in touch.
 - Automatic updating of our prediction dashboards through ArcGIS Online API
-
-
-
+  
 ## Contributing
 
 Contributions are always welcome and encouraged! Help us predict and prevent deforestation and help the people using our predictions by making them better!

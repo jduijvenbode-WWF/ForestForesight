@@ -45,8 +45,8 @@ ff_analyze_amounts <- function(predictions,groundtruth,forestmask=NULL, csvfile 
     if (verbose) {cat("using forest mask\n")}
     if (class(forestmask) == "character") {forestmask <- terra::rast(forestmask)}
     forestmask = crop(forestmask, groundtruth)
-    rmse = ((groundtruth - predictions)^2)*as.numeric(forestmask>0)
-  }else{rmse = ((groundtruth - predictions)^2)^0.5}
+    se = (((groundtruth - predictions)^2))*as.numeric(forestmask>0)
+  }else{se = ((groundtruth - predictions)^2)}
   if (is.null(analysis_polygons)) {
     data(degree_polygons,envir = environment())
     pols <- terra::vect(degree_polygons)}else{
@@ -55,7 +55,7 @@ ff_analyze_amounts <- function(predictions,groundtruth,forestmask=NULL, csvfile 
           pols <- analysis_polygons}}
   if (!is.null(country)) {pols <- pols[which(pols$iso3 == country)]}
   if (verbose) {cat("summarizing statistics\n")}
-  pols$rmse <- (terra::extract(rmse,pols,fun = "mean",na.rm = T,touches = F)[,2])^0.5
+  pols$rmse <- (terra::extract(se,pols,fun = "mean",na.rm = T,touches = F)[,2])^0.5
   if (verbose) {
     cat(paste("rmse = ", pols$rmse))}
   pols$date <- date
