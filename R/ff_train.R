@@ -39,7 +39,7 @@
 
 
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
-                     subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,
+                     subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,num_class=NULL,
                      gamma=NULL, maximize=NULL, min_child_weight=1, verbose = F, xgb_model = NULL,
                      modelfilename = NULL, features = NULL, objective="binary:logistic") {
 
@@ -91,7 +91,8 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     , early_stopping_rounds = early_stopping_rounds
     , maximize = maximize
     , xgb_model = xgb_model
-    , verbose = verbose)
+    , verbose = verbose
+    ,num_class = num_class)
 }
   # Return the trained model
   return(model)
