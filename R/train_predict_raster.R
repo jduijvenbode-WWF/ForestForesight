@@ -36,6 +36,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   model = NULL,
                                   ff_prep_params = NULL,
                                   ff_train_params = NULL,
+                                  threshold = 0.5,
                                   accuracy_csv = NA, overwrite=F, verbose=T) {
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
   if (!hasvalue(shape)) {
@@ -82,8 +83,8 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
     ff_train_params_original = list(traindata$data_matrix, verbose = verbose,
                                     modelfilename = model_path,
                                     features = traindata$features)
-    ff_train_params_combined = merge_lists(ff_train_params_original, ff_train_params)
-    model <- do.call(ff_train, ff_train_params_combined)
+    ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
+    model <- do.call(ff_train, ff_train_params_original)
   }
 
   # Predict
@@ -104,7 +105,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
     # Analyze prediction
     forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = "initialforestcover")
     if(!is.na(accuracy_csv)){
-      ff_analyze(prediction$predicted_raster > 0.5, groundtruth = predset$groundtruthraster,
+      ff_analyze(prediction$predicted_raster > threshold, groundtruth = predset$groundtruthraster,
                  csvfile = accuracy_csv, tile = tile, date = prediction_date,
                  return_polygons = FALSE, append = TRUE, country = country,
                  verbose = verbose, forestmask = forestras)
