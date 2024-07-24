@@ -9,7 +9,6 @@
 #' @param train_start Starting date for training data in "YYYY-MM-DD" format. Default is "2022-07-01".
 #' @param train_end Ending date for training data in "YYYY-MM-DD" format. Default is "2023-07-01".
 #' @param model_path The path for saving the model.
-#' @param train Logical value indicating whether to train the model. Default is TRUE.
 #' @param model Pre-trained model. If NULL, the function will train a model. Default is NULL.
 #' @param ff_prep_params list of parameters for data preprocessing.
 #' @param ff_train_params list of parameters for model training.
@@ -32,7 +31,6 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   train_start=NULL,
                                   train_end=NULL,
                                   model_path=NULL,
-                                  train=TRUE,
                                   model = NULL,
                                   ff_prep_params = NULL,
                                   ff_train_params = NULL,
