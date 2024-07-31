@@ -39,7 +39,7 @@
 
 
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
-                     subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,num_class=NULL,
+                     subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10, num_class=NULL,
                      gamma=NULL, maximize=NULL, min_child_weight=1, verbose = F, xgb_model = NULL,
                      modelfilename = NULL, features = NULL, objective="binary:logistic") {
 
@@ -68,6 +68,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
   # Train the XGBoost model
   if (!is.null(modelfilename)) {
     cat("saving model\n")
+    suppressWarnings(
     model <- xgboost::xgb.train(
     params = params,
     nrounds = nrounds,
@@ -80,9 +81,9 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     , save_name = modelfilename
     , save_period = 0
     )
-
+)
     }else{
-
+    suppressWarnings(
     model <- xgboost::xgb.train(
     params = params
     , nrounds = nrounds
@@ -92,7 +93,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     , maximize = maximize
     , xgb_model = xgb_model
     , verbose = verbose
-    ,num_class = num_class)
+    , num_class = num_class))
 }
   # Return the trained model
   return(model)

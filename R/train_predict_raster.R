@@ -9,11 +9,9 @@
 #' @param train_start Starting date for training data in "YYYY-MM-DD" format. Default is "2022-07-01".
 #' @param train_end Ending date for training data in "YYYY-MM-DD" format. Default is "2023-07-01".
 #' @param model_path The path for saving the model.
-#' @param train Logical value indicating whether to train the model. Default is TRUE.
 #' @param model Pre-trained model. If NULL, the function will train a model. Default is NULL.
-#' @param groundtruth_pattern character. the name of the feature used for groundtruth, normally groundtruth6m
-#' @param ff_prep_params Parameters for data preprocessing.
-#' @param ff_train_params Parameters for model training.
+#' @param ff_prep_params list of parameters for data preprocessing.
+#' @param ff_train_params list of parameters for model training.
 #' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
 #' @param overwrite Logical value indicating whether to overwrite existing files. Default is FALSE.
 #' @param verbose Logical value indicating whether to display progress messages. Default is TRUE.
@@ -33,10 +31,10 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   train_start=NULL,
                                   train_end=NULL,
                                   model_path=NULL,
-                                  train=TRUE,
                                   model = NULL,
-                                  groundtruth_pattern = "groundtruth6m",
-                                  ff_prep_params = NULL, ff_train_params = NULL,
+                                  ff_prep_params = NULL,
+                                  ff_train_params = NULL,
+                                  threshold = 0.5,
                                   accuracy_csv = NA, overwrite=F, verbose=T) {
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
   if (!hasvalue(shape)) {
@@ -74,23 +72,28 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   # Train model if not provided
   if (is.null(model)) {
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
-    traindata <- ff_prep(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
-                         fltr_condition = ">0",fltr_features = "initialforestcover",
-                         sample_size = 0.3, verbose = verbose, shrink = "extract",
-                         groundtruth_pattern = groundtruth_pattern,label_threshold = 1)
-    model <- ff_train(traindata$data_matrix, verbose = verbose,
-                      modelfilename = model_path,
-                      features = traindata$features)
+    ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
+                                   fltr_condition = ">0",fltr_features = "initialforestcover",
+                                   sample_size = 0.3, verbose = verbose, shrink = "extract",
+                                   groundtruth_pattern = "groundtruth6m",label_threshold = 1)
+    ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
+    traindata <- do.call(ff_prep, ff_prep_params_combined)
+    ff_train_params_original = list(traindata$data_matrix, verbose = verbose,
+                                    modelfilename = model_path,
+                                    features = traindata$features)
+    ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
+    model <- do.call(ff_train, ff_train_params_original)
   }
 
   # Predict
   raslist <- list()
   for (tile in tiles) {
     #run the predict function if a model was not built but was provided by the function
-
-    predset <- ff_prep(datafolder = prep_folder, tiles = tile, start = prediction_date,
-                       verbose = verbose, fltr_features = "initialforestcover",
-                       fltr_condition = ">0", groundtruth_pattern = groundtruth_pattern)
+    ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
+                                  verbose = verbose, fltr_features = "initialforestcover",
+                                  fltr_condition = ">0", groundtruth_pattern = "groundtruth6m", label_threshold = 1)
+    ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
+    predset <- do.call(ff_prep, ff_prep_params_combined)
 
     prediction <- ff_predict(model = model, test_matrix = predset$data_matrix,
                              indices = predset$testindices,
@@ -99,10 +102,13 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
     raslist[[tile]] <- prediction$predicted_raster
     # Analyze prediction
     forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = "initialforestcover")
-    ff_analyze(prediction$predicted_raster > 0.5, groundtruth = predset$groundtruthraster,
-                csvfile = accuracy_csv, tile = tile, date = prediction_date,
-                return_polygons = FALSE, append = TRUE, country = country,
-                verbose = verbose, forestmask = forestras)
+    if(!is.na(accuracy_csv)){
+      ff_analyze(prediction$predicted_raster > threshold, groundtruth = predset$groundtruthraster,
+                 csvfile = accuracy_csv, tile = tile, date = prediction_date,
+                 return_polygons = FALSE, append = TRUE, country = country,
+                 verbose = verbose, forestmask = forestras)
+    }
+
   }
   if (length(raslist) == 1) {fullras <- raslist[[1]]}else{
     fullras <- do.call(terra::merge,unname(raslist))
