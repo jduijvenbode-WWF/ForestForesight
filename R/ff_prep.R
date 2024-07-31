@@ -83,7 +83,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
     exc_indices <- unique(unlist(sapply(exc_features,function(x) which(endsWith(gsub(".tif","",basename(allfiles)),x)))))
     if (length(exc_indices) > 0) {allfiles <- allfiles[-exc_indices]}}
   if (!is.na(inc_features[1])) {
-    inc_indices <- unique(unlist(sapply(inc_features,function(x) which(endsWith(gsub(".tif","",basename(allfiles)),x)))))
+    inc_indices <- unique(unlist(sapply(c(inc_features,groundtruth_pattern),function(x) which(endsWith(gsub(".tif","",basename(allfiles)),x)))))
     if (length(inc_indices > 0)) {allfiles <- allfiles[inc_indices]}}
   if (length(allfiles) == 0) {stop("after including and excluding the requested variables there are no files left")}
   #create the range between start and end date
