@@ -8,8 +8,8 @@
 #' @param ff_folder Folder directory containing the input data.
 #' @param train_start Starting date for training data in "YYYY-MM-DD" format. Default is "2022-07-01".
 #' @param train_end Ending date for training data in "YYYY-MM-DD" format. Default is "2023-07-01".
-#' @param model_path The path for saving the model.
-#' @param model Pre-trained model. If NULL, the function will train a model. Default is NULL.
+#' @param save_path The path for saving the model.
+#' @param trained_model Pre-trained model. If NULL, the function will train a model. Default is NULL.
 #' @param ff_prep_params list of parameters for data preprocessing.
 #' @param ff_train_params list of parameters for model training.
 #' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
@@ -30,8 +30,8 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   ff_folder,
                                   train_start=NULL,
                                   train_end=NULL,
-                                  model_path=NULL,
-                                  model = NULL,
+                                  save_path=NULL,
+                                  trained_model = NULL,
                                   ff_prep_params = NULL,
                                   ff_train_params = NULL,
                                   threshold = 0.5,
@@ -47,7 +47,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   if (!dir.exists(ff_folder)) {stop(paste(ff_folder,"does not exist"))}
   if (!hasvalue(prediction_date)) {stop("prediction_date is not given")}
   #check that end is before start
-  if (is.null(model)) {
+  if (is.null(trained_model)) {
   if (!hasvalue(train_end)) {train_end <- as.character(lubridate::ymd(prediction_date) %m-% months(6,abbreviate = F))}
   if (lubridate::ymd(train_end) < lubridate::ymd(train_start)) {stop("train_end is before train_start")}
   if (lubridate::ymd(train_end) > lubridate::ymd(prediction_date)) {stop("train_end is after prediction_date")}
@@ -61,16 +61,19 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
 
   prep_folder <- file.path(ff_folder,"preprocessed")
   if (!dir.exists(prep_folder)) {stop(paste(prep_folder,"does not exist"))}
+  if(is.null(trained_model)){
+    if(!is.null(save)){model_folder = dirname(save_path)
 
-  model_folder = dirname(model_path)
 
+    if (!hasvalue(model_folder)) {model_folder <- file.path(ff_folder,"models")}
+    if (!dir.exists(model_folder)) {stop(paste(model_folder,"does not exist"))}
+    }
+  }
 
-  if (!hasvalue(model_folder)) {model_folder <- file.path(ff_folder,"models")}
-  if (!dir.exists(model_folder)) {stop(paste(model_folder,"does not exist"))}
 
 
   # Train model if not provided
-  if (is.null(model)) {
+  if (is.null(trained_model)) {
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
     ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
                                    fltr_condition = ">0",fltr_features = "initialforestcover",
@@ -79,10 +82,10 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     ff_train_params_original = list(traindata$data_matrix, verbose = verbose,
-                                    modelfilename = model_path,
+                                    modelfilename = save_path,
                                     features = traindata$features)
     ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
-    model <- do.call(ff_train, ff_train_params_original)
+    trained_model <- do.call(ff_train, ff_train_params_original)
   }
 
   # Predict
@@ -95,7 +98,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
     predset <- do.call(ff_prep, ff_prep_params_combined)
 
-    prediction <- ff_predict(model = model, test_matrix = predset$data_matrix,
+    prediction <- ff_predict(model = trained_model, test_matrix = predset$data_matrix,
                              indices = predset$testindices,
                              templateraster = predset$groundtruthraster,
                              verbose = verbose,certainty = T)
