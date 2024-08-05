@@ -80,6 +80,12 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                    sample_size = 0.3, verbose = verbose, shrink = "extract",
                                    groundtruth_pattern = "groundtruth6m",label_threshold = 1)
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
+    if (!is.null(trained_model)) {
+      if (file.exists(gsub("\\.model","\\.rda",trained_model))) {
+        model_features <- list("inc_features",get(load(gsub("\\.model","\\.rda",trained_model))))
+        ff_prep_params_combined <- merge_lists(default = model_features,user = ff_prep_params_combined)
+      }
+    }
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     ff_train_params_original = list(traindata$data_matrix, verbose = verbose,
                                     modelfilename = save_path,
