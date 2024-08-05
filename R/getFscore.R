@@ -9,7 +9,8 @@
 #' @return F-score value.
 #' @export
 getFscore <- function(gt, pred, threshold = 0.5, beta = 0.5) {
-
+  gt[is.na(gt)] = 0
+  pred[is.na(pred)] = 0
   # Convert predictions to binary
   pred <- as.numeric(pred >= threshold) + gt*2
 
