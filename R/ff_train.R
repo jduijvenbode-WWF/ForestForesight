@@ -43,7 +43,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
                      gamma=NULL, maximize=NULL, min_child_weight=1, verbose = F, xgb_model = NULL,
                      modelfilename = NULL, features = NULL, objective="binary:logistic") {
 
-  if (!is.null(modelfilename)) {save(features,file = gsub("\\.model","\\.rda",modelfilename))}
+
   # Convert the matrix to a DMatrix object
   if (class(train_matrix) == "xgb.DMatrix") {dtrain <- train_matrix
   }else{dtrain <- xgboost::xgb.DMatrix(train_matrix$features, label = train_matrix$label)}
@@ -67,8 +67,8 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
 
   # Train the XGBoost model
   if (!is.null(modelfilename)) {
-    cat("saving model\n")
-    suppressWarnings(
+    cat("saving model to",modelfilename,"\n")
+
     model <- xgboost::xgb.train(
     params = params,
     nrounds = nrounds,
@@ -80,8 +80,9 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     , verbose = verbose
     , save_name = modelfilename
     , save_period = 0
-    )
 )
+    result=xgboost::xgb.save(model,modelfilename)
+    if(result){save(features,file = gsub("\\.model","\\.rda",modelfilename))}else{warning("model is not saved")}
     }else{
     suppressWarnings(
     model <- xgboost::xgb.train(
@@ -94,7 +95,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     , xgb_model = xgb_model
     , verbose = verbose
     , num_class = num_class))
-}
+    }
   # Return the trained model
   return(model)
 }
