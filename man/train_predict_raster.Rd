@@ -9,14 +9,13 @@ train_predict_raster(
   country = NULL,
   prediction_date,
   ff_folder,
-  train_start = "2022-07-01",
-  train_end = "2023-07-01",
-  model_folder = NULL,
-  prediction_folder = NULL,
-  train = TRUE,
-  model = NULL,
+  train_start = NULL,
+  train_end = NULL,
+  save_path = NULL,
+  trained_model = NULL,
   ff_prep_params = NULL,
   ff_train_params = NULL,
+  threshold = 0.5,
   accuracy_csv = NA,
   overwrite = F,
   verbose = T
@@ -35,17 +34,13 @@ train_predict_raster(
 
 \item{train_end}{Ending date for training data in "YYYY-MM-DD" format. Default is "2023-07-01".}
 
-\item{model_folder}{Folder directory to save models. If NULL, models will be saved in `ff_folder/models`.}
+\item{save_path}{The path for saving the model.}
 
-\item{prediction_folder}{Folder directory to save predictions. If NULL, predictions will be saved in `ff_folder/predictions`.}
+\item{trained_model}{Pre-trained model. If NULL, the function will train a model. Default is NULL.}
 
-\item{train}{Logical value indicating whether to train the model. Default is TRUE.}
+\item{ff_prep_params}{list of parameters for data preprocessing.}
 
-\item{model}{Pre-trained model. If NULL, the function will train a model. Default is NULL.}
-
-\item{ff_prep_params}{Parameters for data preprocessing.}
-
-\item{ff_train_params}{Parameters for model training.}
+\item{ff_train_params}{list of parameters for model training.}
 
 \item{accuracy_csv}{Path to save accuracy metrics in CSV format. Default is NA (no CSV output).}
 
