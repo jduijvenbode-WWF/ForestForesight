@@ -13,6 +13,7 @@ ff_train(
   subsample = 0.75,
   eval_metric = "aucpr",
   early_stopping_rounds = 10,
+  num_class = NULL,
   gamma = NULL,
   maximize = NULL,
   min_child_weight = 1,
