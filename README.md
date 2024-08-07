@@ -58,7 +58,7 @@ The S3 bucket contains multiple folders which are structured like this
 ![Folder overview](https://github.com/jduijvenbode-WWF/ForestForesight/blob/main/data%20structure.jpg)
 
 
-At the moment we have the following features:
+[At the moment we have the following features](https://github.com/jduijvenbode-WWF/ForestForesight/blob/main/Feature%20metadata.xlsx)
 
 ## FAQ
 
