@@ -2,7 +2,7 @@
 % Please edit documentation in R/ff_train.R
 \name{ff_train}
 \alias{ff_train}
-\title{Train an XGBoost Model}
+\title{Train an XGBoost Model for ForestForesight}
 \usage{
 ff_train(
   train_matrix,
@@ -25,9 +25,9 @@ ff_train(
 )
 }
 \arguments{
-\item{train_matrix}{The training matrix for XGBoost. should be of type xgb.Dmatrix}
+\item{train_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for training.}
 
-\item{validation_matrix}{The matrix to run for the model for XGBoost. should be of type xgb.Dmatrix}
+\item{validation_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for validation. Default is NA.}
 
 \item{nrounds}{Number of boosting rounds. Default is 200.}
 
@@ -37,42 +37,58 @@ ff_train(
 
 \item{subsample}{Subsample ratio of the training instances. Default is 0.75.}
 
-\item{eval_metric}{Evaluation metric. Default is "aucpr". This can also be a custom evaluation metric.}
+\item{eval_metric}{Evaluation metric. Default is "aucpr". Can be a custom evaluation metric.}
 
-\item{early_stopping_rounds}{Early stopping rounds. Default is 10.}
+\item{early_stopping_rounds}{Number of rounds for early stopping. Default is 10.}
 
-\item{gamma}{The gamma value, should be between 0 and 0.3. Determines level of pruning}
+\item{num_class}{Number of classes for multi-class classification. Default is NULL.}
 
-\item{maximize}{Default is NULL. Should be True or False in case a custom evaluation metric is used.}
+\item{gamma}{Minimum loss reduction required to make a further partition. Default is NULL.}
 
-\item{min_child_weight}{The minimum weight of the child, determines how quickly the tree grows}
+\item{maximize}{Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.}
 
-\item{verbose}{should the model run verbose. Default is FALSE.}
+\item{min_child_weight}{Minimum sum of instance weight needed in a child. Default is 1.}
 
-\item{xgb_model}{Previous build model to continue the training from. Could be an object of class "xgb.Booster", its raw data, or a file name. Default = NULL}
+\item{verbose}{Boolean indicating whether to display training progress. Default is FALSE.}
 
-\item{modelfilename}{character where to save the model. should end with the extension model}
+\item{xgb_model}{Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.}
 
-\item{features}{Vector with the feature names of the training dataset. Should be given when modelfilename is given so that the next time the model is loaded the model knows which features were used}
+\item{modelfilename}{String specifying where to save the model. Should end with ".model" extension.}
 
-\item{objective}{Specify the learning task and the corresponding learning objective. Default is "binary:logistic".}
+\item{features}{Vector of feature names used in the training dataset. Required when modelfilename is provided.}
+
+\item{objective}{Learning objective. Default is "binary:logistic".}
 }
 \value{
-Trained XGBoost model.
+A trained XGBoost model (xgb.Booster object).
 }
 \description{
-This function trains an XGBoost model with default parameters. The optimal parameters have been derived by running the algorithm worldwide on many tiles for over a year of training data.
+This function trains an XGBoost model with optimized default parameters derived from worldwide data analysis.
 }
 \examples{
-# Example usage:
-train_matrix <- matrix(c(1, 2, 3, 4), ncol = 2)
-model <- train_xgboost(train_matrix)
+\dontrun{
+# Prepare your data
+train_data <- list(features = matrix(runif(1000), ncol = 10),
+                   label = sample(0:1, 100, replace = TRUE))
+
+# Train the model
+model <- ff_train(train_matrix = train_data,
+                  nrounds = 100,
+                  eta = 0.05,
+                  max_depth = 6,
+                  modelfilename = "forest_model.model",
+                  features = colnames(train_data$features))
+}
 
 }
 \references{
 Jonas van Duijvenbode (2023)
 Zillah Calle (2023)
 }
-\keyword{XGBoost}
-\keyword{data}
-\keyword{preparation}
+\seealso{
+\code{\link{ff_prep}} for preparing data for this function
+\code{\link{ff_predict}} for making predictions using the trained model
+}
+\keyword{forestry}
+\keyword{machine-learning}
+\keyword{xgboost}

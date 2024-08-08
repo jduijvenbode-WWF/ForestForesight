@@ -1,40 +1,62 @@
-#' Prepare data for XGboost training, validating and predicting.
+#' Prepare data for XGBoost training, validating and predicting
 #'
 #' This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
 #'
-#' @param datafolder Path to the data folder. Default is the system variable ff_datafolder. should contain the degrees folders
-#' @param country Country or countries for which the data is prepared. Is optional when either shape or tiles is given. Should be the ISO3 code.
-#' @param shape SpatVector for which the data is prepared. Is optional when either country or tiles is given.
-#' @param tiles Vector of tiles in the syntax of e.g. 10N_080W.optional when either shape or country is given.
-#' @param groundtruth_pattern Pattern to identify ground truth files. Default is groundtruth6mbin (groundtruth of future six months in binary format).
+#' @param datafolder Path to the data folder. Should contain the degrees folders. Default is the system variable ff_datafolder.
+#' @param country ISO3 code of the country or countries for which the data is prepared. Optional if either shape or tiles is given.
+#' @param shape SpatVector for which the data is prepared. Optional if either country or tiles is given.
+#' @param tiles Vector of tiles in the syntax of e.g., "10N_080W". Optional if either shape or country is given.
+#' @param groundtruth_pattern Pattern to identify ground truth files. Default is "groundtruth6m" (groundtruth of future six months in binary format).
 #' @param start Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".
 #' @param end End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.
-#' @param inc_features Vector of included features. States which features to include in the data preparation.
-#' @param exc_features Vector of excluded features. States which features to exclude in the data preparation.
-#' @param fltr_features vector of features for filtering data. Default is empty. EXAMPLE: 'initialforestcover'. needs to be combined with fltr_condition of the same length
-#' @param fltr_condition Vector of filtering conditions. Default is empty. EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector
-#' @param validation_sample float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3
-#' @param sample_size Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1
-#' @param relativedate Boolean indicating whether the date is relative. Default is \code{TRUE}.
-#' @param shrink Option to shrink the input area if a country was selected. Use none to keep all the data within the tile. Use crop to crop the extent, crop-deg to crop to the nearest outer degree and use extract to keep only the values that overlap with the country
-#' @param window Set the extent on which to process. normally NA to not use this option and derive it from the data
+#' @param inc_features Vector of features to include in the data preparation.
+#' @param exc_features Vector of features to exclude from the data preparation.
+#' @param fltr_features Vector of features for filtering data. Default is NULL. Example: 'initialforestcover'.
+#' @param fltr_condition Vector of filtering conditions. Default is NULL. Example: '>0'. Should consist of operator and value.
+#' @param validation_sample Float between 0 and 1 indicating how much of the training dataset should be used for validation. Default is 0. Advised not to set above 0.3.
+#' @param sample_size Fraction size of the random sample. Should be > 0 and <= 1. Default is 0.3.
+#' @param adddate Boolean indicating whether to add date-related features. Default is TRUE.
+#' @param sampleraster Boolean indicating if sampling raster should be used. Default is TRUE.
+#' @param verbose Boolean indicating whether to display progress messages. Default is TRUE.
+#' @param shrink Option to shrink the input area if a country was selected. Options: "none", "crop", "crop-deg", "extract". Default is "none".
+#' @param window Set the extent on which to process. Default is NA to derive it from the data.
+#' @param label_threshold Threshold for labeling. Default is NA.
+#' @param addxy Boolean indicating whether to add x and y coordinates as features. Default is FALSE.
 #'
-#' @return A prepared dataset for machine learning.
+#' @return A list containing:
+#'   \item{data_matrix}{A list with features and labels for training}
+#'   \item{validation_matrix}{A list with features and labels for validation (if validation_sample > 0)}
+#'   \item{testindices}{Indices of the filtered samples}
+#'   \item{groundtruthraster}{A SpatRaster of the ground truth}
+#'   \item{features}{A vector of feature names}
+#'
 #' @export
-#'
 #'
 #' @references
 #' Jonas van Duijvenbode (2023)
 #' Zillah Calle (2023)
 #'
-#' @keywords XGBoost data preparation
-#' @rdname ff_prep
-#' @name ff_prep
+#' @examples
+#' \dontrun{
+#' prepared_data <- ff_prep(
+#'   datafolder = "path/to/data",
+#'   country = "BRA",
+#'   start = "2022-01-01",
+#'   end = "2022-12-31",
+#'   fltr_features = "initialforestcover",
+#'   fltr_condition = ">0"
+#' )
+#' }
+#'
+#' @seealso
+#' \code{\link{ff_train}} for training a model with the prepared data
+#' \code{\link{ff_predict}} for making predictions using a trained model
+#'
+#' @keywords machine-learning data-preparation forestry
 
-
-ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", start="2021-01-01", end=NA,
-                    inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=1, validation_sample=0,
-                    adddate=T, sampleraster=T, verbose=F, shrink="none", window=NA, label_threshold=NA, addxy=F){
+ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", start="2023-01-01", end=NA,
+                    inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=0.3, validation_sample=0,
+                    adddate=T, sampleraster=T, verbose=T, shrink="none", window=NA, label_threshold=NA, addxy=F){
   ########quality check########
   if (as.Date(start) < as.Date("2021-01-01")) {stop("the earliest date available is 2021-01-01")}
   if (!hasvalue(country) & !hasvalue(shape)) {shrink <- "none"}
