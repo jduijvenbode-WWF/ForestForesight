@@ -1,27 +1,54 @@
-#' Predict with a trained XGBoost model
+#' Train an XGBoost Model for ForestForesight
 #'
-#' This function predicts on a trained xgboost model and a test dataset. it returns the precision, recall and F0.5
+#' This function trains an XGBoost model with optimized default parameters derived from worldwide data analysis.
 #'
-#' @param model The trained XGboost model
-#' @param test_matrix The xgbd test matrix
-#' @param threshold Vector with chosen threshold(s). Default 0.5, which has shown to be the best in almost all scenarios
-#' @param groundtruth A vector of the same length as the test matrix to verify against
-#' @param indices. a vector of the indices of the template raster that need to be filled in.
-#' @param templateraster. a spatraster that can serve as the template to fill in the predictions
-#' @param verbose. whether the output should be verbose
-#' @param certainty. if True the certainty in percentage of the prediction will be returned, otherwise just true or false
+#' @param train_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for training.
+#' @param validation_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for validation. Default is NA.
+#' @param nrounds Number of boosting rounds. Default is 200.
+#' @param eta Learning rate. Default is 0.1.
+#' @param max_depth Maximum tree depth. Default is 5.
+#' @param subsample Subsample ratio of the training instances. Default is 0.75.
+#' @param eval_metric Evaluation metric. Default is "aucpr". Can be a custom evaluation metric.
+#' @param early_stopping_rounds Number of rounds for early stopping. Default is 10.
+#' @param num_class Number of classes for multi-class classification. Default is NULL.
+#' @param gamma Minimum loss reduction required to make a further partition. Default is NULL.
+#' @param maximize Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.
+#' @param min_child_weight Minimum sum of instance weight needed in a child. Default is 1.
+#' @param verbose Boolean indicating whether to display training progress. Default is FALSE.
+#' @param xgb_model Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.
+#' @param modelfilename String specifying where to save the model. Should end with ".model" extension.
+#' @param features Vector of feature names used in the training dataset. Required when modelfilename is provided.
+#' @param objective Learning objective. Default is "binary:logistic".
 #'
-#' @return list with precision, recall and F0.5
+#' @return A trained XGBoost model (xgb.Booster object).
+#'
+#' @examples
+#' \dontrun{
+#' # Prepare your data
+#' train_data <- list(features = matrix(runif(1000), ncol = 10),
+#'                    label = sample(0:1, 100, replace = TRUE))
+#'
+#' # Train the model
+#' model <- ff_train(train_matrix = train_data,
+#'                   nrounds = 100,
+#'                   eta = 0.05,
+#'                   max_depth = 6,
+#'                   modelfilename = "forest_model.model",
+#'                   features = colnames(train_data$features))
+#' }
 #'
 #' @import xgboost
 #' @export
 #'
 #' @references
 #' Jonas van Duijvenbode (2023)
+#' Zillah Calle (2023)
 #'
-#' @keywords XGBoost data preparation
-#' @rdname ff_predict
-#' @name ff_predict
+#' @seealso
+#' \code{\link{ff_prep}} for preparing data for this function
+#' \code{\link{ff_predict}} for making predictions using the trained model
+#'
+#' @keywords machine-learning xgboost forestry
 
 
 ff_predict <- function(model, test_matrix, threshold=0.5, groundtruth=NA, indices=NA, templateraster=NA, verbose=F, certainty=F){

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ff_predict.R
 \name{ff_predict}
 \alias{ff_predict}
-\title{Predict with a trained XGBoost model}
+\title{Train an XGBoost Model for ForestForesight}
 \usage{
 ff_predict(
   model,
@@ -16,31 +16,70 @@ ff_predict(
 )
 }
 \arguments{
-\item{model}{The trained XGboost model}
+\item{verbose}{Boolean indicating whether to display training progress. Default is FALSE.}
 
-\item{test_matrix}{The xgbd test matrix}
+\item{train_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for training.}
 
-\item{threshold}{Vector with chosen threshold(s). Default 0.5, which has shown to be the best in almost all scenarios}
+\item{validation_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for validation. Default is NA.}
 
-\item{groundtruth}{A vector of the same length as the test matrix to verify against}
+\item{nrounds}{Number of boosting rounds. Default is 200.}
 
-\item{indices.}{a vector of the indices of the template raster that need to be filled in.}
+\item{eta}{Learning rate. Default is 0.1.}
 
-\item{templateraster.}{a spatraster that can serve as the template to fill in the predictions}
+\item{max_depth}{Maximum tree depth. Default is 5.}
 
-\item{verbose.}{whether the output should be verbose}
+\item{subsample}{Subsample ratio of the training instances. Default is 0.75.}
 
-\item{certainty.}{if True the certainty in percentage of the prediction will be returned, otherwise just true or false}
+\item{eval_metric}{Evaluation metric. Default is "aucpr". Can be a custom evaluation metric.}
+
+\item{early_stopping_rounds}{Number of rounds for early stopping. Default is 10.}
+
+\item{num_class}{Number of classes for multi-class classification. Default is NULL.}
+
+\item{gamma}{Minimum loss reduction required to make a further partition. Default is NULL.}
+
+\item{maximize}{Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.}
+
+\item{min_child_weight}{Minimum sum of instance weight needed in a child. Default is 1.}
+
+\item{xgb_model}{Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.}
+
+\item{modelfilename}{String specifying where to save the model. Should end with ".model" extension.}
+
+\item{features}{Vector of feature names used in the training dataset. Required when modelfilename is provided.}
+
+\item{objective}{Learning objective. Default is "binary:logistic".}
 }
 \value{
-list with precision, recall and F0.5
+A trained XGBoost model (xgb.Booster object).
 }
 \description{
-This function predicts on a trained xgboost model and a test dataset. it returns the precision, recall and F0.5
+This function trains an XGBoost model with optimized default parameters derived from worldwide data analysis.
+}
+\examples{
+\dontrun{
+# Prepare your data
+train_data <- list(features = matrix(runif(1000), ncol = 10),
+                   label = sample(0:1, 100, replace = TRUE))
+
+# Train the model
+model <- ff_train(train_matrix = train_data,
+                  nrounds = 100,
+                  eta = 0.05,
+                  max_depth = 6,
+                  modelfilename = "forest_model.model",
+                  features = colnames(train_data$features))
+}
+
 }
 \references{
 Jonas van Duijvenbode (2023)
+Zillah Calle (2023)
 }
-\keyword{XGBoost}
-\keyword{data}
-\keyword{preparation}
+\seealso{
+\code{\link{ff_prep}} for preparing data for this function
+\code{\link{ff_predict}} for making predictions using the trained model
+}
+\keyword{forestry}
+\keyword{machine-learning}
+\keyword{xgboost}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ff_prep.R
 \name{ff_prep}
 \alias{ff_prep}
-\title{Prepare data for XGboost training, validating and predicting.}
+\title{Prepare data for XGBoost training, validating and predicting}
 \usage{
 ff_prep(
   datafolder = NA,
@@ -10,17 +10,17 @@ ff_prep(
   shape = NA,
   tiles = NULL,
   groundtruth_pattern = "groundtruth6m",
-  start = "2021-01-01",
+  start = "2023-01-01",
   end = NA,
   inc_features = NA,
   exc_features = NA,
   fltr_features = NULL,
   fltr_condition = NULL,
-  sample_size = 1,
+  sample_size = 0.3,
   validation_sample = 0,
   adddate = T,
   sampleraster = T,
-  verbose = F,
+  verbose = T,
   shrink = "none",
   window = NA,
   label_threshold = NA,
@@ -28,48 +28,78 @@ ff_prep(
 )
 }
 \arguments{
-\item{datafolder}{Path to the data folder. Default is the system variable ff_datafolder. should contain the degrees folders}
+\item{datafolder}{Path to the data folder. Should contain the degrees folders. Default is the system variable ff_datafolder.}
 
-\item{country}{Country or countries for which the data is prepared. Is optional when either shape or tiles is given. Should be the ISO3 code.}
+\item{country}{ISO3 code of the country or countries for which the data is prepared. Optional if either shape or tiles is given.}
 
-\item{shape}{SpatVector for which the data is prepared. Is optional when either country or tiles is given.}
+\item{shape}{SpatVector for which the data is prepared. Optional if either country or tiles is given.}
 
-\item{tiles}{Vector of tiles in the syntax of e.g. 10N_080W.optional when either shape or country is given.}
+\item{tiles}{Vector of tiles in the syntax of e.g., "10N_080W". Optional if either shape or country is given.}
 
-\item{groundtruth_pattern}{Pattern to identify ground truth files. Default is groundtruth6mbin (groundtruth of future six months in binary format).}
+\item{groundtruth_pattern}{Pattern to identify ground truth files. Default is "groundtruth6m" (groundtruth of future six months in binary format).}
 
 \item{start}{Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".}
 
 \item{end}{End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.}
 
-\item{inc_features}{Vector of included features. States which features to include in the data preparation.}
+\item{inc_features}{Vector of features to include in the data preparation.}
 
-\item{exc_features}{Vector of excluded features. States which features to exclude in the data preparation.}
+\item{exc_features}{Vector of features to exclude from the data preparation.}
 
-\item{fltr_features}{vector of features for filtering data. Default is empty. EXAMPLE: 'initialforestcover'. needs to be combined with fltr_condition of the same length}
+\item{fltr_features}{Vector of features for filtering data. Default is NULL. Example: 'initialforestcover'.}
 
-\item{fltr_condition}{Vector of filtering conditions. Default is empty. EXAMPLE:'>0'. Should consist of operator and value and needs to be combined with fltr_features of same length vector}
+\item{fltr_condition}{Vector of filtering conditions. Default is NULL. Example: '>0'. Should consist of operator and value.}
 
-\item{sample_size}{Fraction size of the random sample. Should be bigger than 0 and smaller or equal to 1. Default is 1}
+\item{sample_size}{Fraction size of the random sample. Should be > 0 and <= 1. Default is 0.3.}
 
-\item{validation_sample}{float between 0 and 1 that indicates how much of the training dataset should be used for validation. Default is 0. Advised is to not set it above 0.3}
+\item{validation_sample}{Float between 0 and 1 indicating how much of the training dataset should be used for validation. Default is 0. Advised not to set above 0.3.}
 
-\item{shrink}{Option to shrink the input area if a country was selected. Use none to keep all the data within the tile. Use crop to crop the extent, crop-deg to crop to the nearest outer degree and use extract to keep only the values that overlap with the country}
+\item{adddate}{Boolean indicating whether to add date-related features. Default is TRUE.}
 
-\item{window}{Set the extent on which to process. normally NA to not use this option and derive it from the data}
+\item{sampleraster}{Boolean indicating if sampling raster should be used. Default is TRUE.}
 
-\item{relativedate}{Boolean indicating whether the date is relative. Default is \code{TRUE}.}
+\item{verbose}{Boolean indicating whether to display progress messages. Default is TRUE.}
+
+\item{shrink}{Option to shrink the input area if a country was selected. Options: "none", "crop", "crop-deg", "extract". Default is "none".}
+
+\item{window}{Set the extent on which to process. Default is NA to derive it from the data.}
+
+\item{label_threshold}{Threshold for labeling. Default is NA.}
+
+\item{addxy}{Boolean indicating whether to add x and y coordinates as features. Default is FALSE.}
 }
 \value{
-A prepared dataset for machine learning.
+A list containing:
+  \item{data_matrix}{A list with features and labels for training}
+  \item{validation_matrix}{A list with features and labels for validation (if validation_sample > 0)}
+  \item{testindices}{Indices of the filtered samples}
+  \item{groundtruthraster}{A SpatRaster of the ground truth}
+  \item{features}{A vector of feature names}
 }
 \description{
 This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
+}
+\examples{
+\dontrun{
+prepared_data <- ff_prep(
+  datafolder = "path/to/data",
+  country = "BRA",
+  start = "2022-01-01",
+  end = "2022-12-31",
+  fltr_features = "initialforestcover",
+  fltr_condition = ">0"
+)
+}
+
 }
 \references{
 Jonas van Duijvenbode (2023)
 Zillah Calle (2023)
 }
-\keyword{XGBoost}
-\keyword{data}
-\keyword{preparation}
+\seealso{
+\code{\link{ff_train}} for training a model with the prepared data
+\code{\link{ff_predict}} for making predictions using a trained model
+}
+\keyword{data-preparation}
+\keyword{forestry}
+\keyword{machine-learning}

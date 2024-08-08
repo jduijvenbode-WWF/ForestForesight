@@ -1,30 +1,54 @@
-#' Train and Predict Raster
+#' Train an XGBoost Model for ForestForesight
 #'
-#' This function trains a model using training data and then predicts raster values using the trained model.
+#' This function trains an XGBoost model with optimized default parameters derived from worldwide data analysis.
 #'
-#' @param shape Spatial object representing the shapefile. Either `shape` or `country` should be given.
-#' @param country ISO3 country code. Either `shape` or `country` should be given.
-#' @param prediction_date Date for prediction in "YYYY-MM-DD" format.
-#' @param ff_folder Folder directory containing the input data.
-#' @param train_start Starting date for training data in "YYYY-MM-DD" format. Default is "2022-07-01".
-#' @param train_end Ending date for training data in "YYYY-MM-DD" format. Default is "2023-07-01".
-#' @param save_path The path for saving the model.
-#' @param trained_model Pre-trained model. If NULL, the function will train a model. Default is NULL.
-#' @param ff_prep_params list of parameters for data preprocessing.
-#' @param ff_train_params list of parameters for model training.
-#' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
-#' @param overwrite Logical value indicating whether to overwrite existing files. Default is FALSE.
-#' @param verbose Logical value indicating whether to display progress messages. Default is TRUE.
+#' @param train_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for training.
+#' @param validation_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for validation. Default is NA.
+#' @param nrounds Number of boosting rounds. Default is 200.
+#' @param eta Learning rate. Default is 0.1.
+#' @param max_depth Maximum tree depth. Default is 5.
+#' @param subsample Subsample ratio of the training instances. Default is 0.75.
+#' @param eval_metric Evaluation metric. Default is "aucpr". Can be a custom evaluation metric.
+#' @param early_stopping_rounds Number of rounds for early stopping. Default is 10.
+#' @param num_class Number of classes for multi-class classification. Default is NULL.
+#' @param gamma Minimum loss reduction required to make a further partition. Default is NULL.
+#' @param maximize Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.
+#' @param min_child_weight Minimum sum of instance weight needed in a child. Default is 1.
+#' @param verbose Boolean indicating whether to display training progress. Default is FALSE.
+#' @param xgb_model Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.
+#' @param modelfilename String specifying where to save the model. Should end with ".model" extension.
+#' @param features Vector of feature names used in the training dataset. Required when modelfilename is provided.
+#' @param objective Learning objective. Default is "binary:logistic".
 #'
-#' @return A raster object containing the predicted values.
+#' @return A trained XGBoost model (xgb.Booster object).
 #'
 #' @examples
-#' # Example usage:
-#' train_predict_raster(prediction_date = "2023-01-01", ff_folder = "path/to/folder")
+#' \dontrun{
+#' # Prepare your data
+#' train_data <- list(features = matrix(runif(1000), ncol = 10),
+#'                    label = sample(0:1, 100, replace = TRUE))
 #'
-#' @importFrom lubridate ymd months
-#' @importFrom terra project mask crop
+#' # Train the model
+#' model <- ff_train(train_matrix = train_data,
+#'                   nrounds = 100,
+#'                   eta = 0.05,
+#'                   max_depth = 6,
+#'                   modelfilename = "forest_model.model",
+#'                   features = colnames(train_data$features))
+#' }
+#'
+#' @import xgboost
 #' @export
+#'
+#' @references
+#' Jonas van Duijvenbode (2023)
+#' Zillah Calle (2023)
+#'
+#' @seealso
+#' \code{\link{ff_prep}} for preparing data for this function
+#' \code{\link{ff_predict}} for making predictions using the trained model
+#'
+#' @keywords machine-learning xgboost forestry
 
 train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   ff_folder,
