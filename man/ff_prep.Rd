@@ -23,7 +23,7 @@ ff_prep(
   verbose = T,
   shrink = "none",
   window = NA,
-  label_threshold = NA,
+  label_threshold = 1,
   addxy = F
 )
 }
@@ -64,7 +64,7 @@ ff_prep(
 
 \item{window}{Set the extent on which to process. Default is NA to derive it from the data.}
 
-\item{label_threshold}{Threshold for labeling. Default is NA.}
+\item{label_threshold}{Threshold for labeling. Default is 1.}
 
 \item{addxy}{Boolean indicating whether to add x and y coordinates as features. Default is FALSE.}
 }

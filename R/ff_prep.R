@@ -20,7 +20,7 @@
 #' @param verbose Boolean indicating whether to display progress messages. Default is TRUE.
 #' @param shrink Option to shrink the input area if a country was selected. Options: "none", "crop", "crop-deg", "extract". Default is "none".
 #' @param window Set the extent on which to process. Default is NA to derive it from the data.
-#' @param label_threshold Threshold for labeling. Default is NA.
+#' @param label_threshold Threshold for labeling. Default is 1.
 #' @param addxy Boolean indicating whether to add x and y coordinates as features. Default is FALSE.
 #'
 #' @return A list containing:
@@ -56,7 +56,7 @@
 
 ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", start="2023-01-01", end=NA,
                     inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=0.3, validation_sample=0,
-                    adddate=T, sampleraster=T, verbose=T, shrink="none", window=NA, label_threshold=NA, addxy=F){
+                    adddate=T, sampleraster=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
   ########quality check########
   if (as.Date(start) < as.Date("2021-01-01")) {stop("the earliest date available is 2021-01-01")}
   if (!hasvalue(country) & !hasvalue(shape)) {shrink <- "none"}
@@ -111,7 +111,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   #create the range between start and end date
   daterange <- daterange(start,end)
   first <- T
-  if (length(tiles) > 1) {warning("No template raster will be returned because multiple tiles are processed together")
+  if (length(tiles) > 1) {cat("No template raster will be returned because multiple tiles are processed together")
     sampleraster <- F}
   #######load raster data as matrix#########
   for (tile in tiles) {
@@ -141,12 +141,13 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
       if (!is.na(window[1])) {extent <- terra::intersect(extent,window)}
       if (verbose) {cat(paste("with extent",extent[1],extent[2],extent[3],extent[4],"\n"))}
       rasstack <- terra::rast(sapply(selected_files,function(x) terra::rast(x,win = extent)))
-
       if (first) {
         if (sampleraster) {
           if (length(grep(groundtruth_pattern,selected_files)) > 0) {
-            groundtruth_raster <- terra::rast(selected_files[grep(groundtruth_pattern,selected_files)],win = extent)
+            gtfile=selected_files[grep(groundtruth_pattern,selected_files)]
+            groundtruth_raster <- terra::rast(gtfile,win = extent)
           }else{
+            if(verbose){cat("no groundtruth raster was found, first regular raster selected for groundtruth")}
             groundtruth_raster <- terra::rast(selected_files[1],win = extent)
             groundtruth_raster[] <- 0}}else{
               groundtruth_raster <- terra::rast(selected_files[1],win = extent)
@@ -200,6 +201,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
         # Merge matrices by column names
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
       }
+        print(length(sf_indices))
       fdts <- fdts[,order(colnames(fdts))]
       first <- F}}
     if (verbose) {cat(paste("loading finished, features:",paste(newcolnames,collapse = ", "),"\n"))}

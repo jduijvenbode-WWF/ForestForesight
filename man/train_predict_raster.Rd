@@ -2,7 +2,7 @@
 % Please edit documentation in R/train_predict_raster.R
 \name{train_predict_raster}
 \alias{train_predict_raster}
-\title{Train an XGBoost Model for ForestForesight}
+\title{Train a Model and Predict Deforestation on Raster Data}
 \usage{
 train_predict_raster(
   shape = NULL,
@@ -16,65 +16,65 @@ train_predict_raster(
   ff_prep_params = NULL,
   ff_train_params = NULL,
   threshold = 0.5,
+  mask_feature = "initialforestcover",
   accuracy_csv = NA,
   overwrite = F,
   verbose = T
 )
 }
 \arguments{
-\item{verbose}{Boolean indicating whether to display training progress. Default is FALSE.}
+\item{shape}{SpatVector object representing the area of interest. Either `shape` or `country` must be provided.}
 
-\item{train_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for training.}
+\item{country}{ISO3 country code. Either `shape` or `country` must be provided.}
 
-\item{validation_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for validation. Default is NA.}
+\item{prediction_date}{Date for prediction in "YYYY-MM-DD" format.}
 
-\item{nrounds}{Number of boosting rounds. Default is 200.}
+\item{ff_folder}{Directory containing the input data.}
 
-\item{eta}{Learning rate. Default is 0.1.}
+\item{train_start}{Start date for training data in "YYYY-MM-DD" format. Default is NULL.}
 
-\item{max_depth}{Maximum tree depth. Default is 5.}
+\item{train_end}{End date for training data in "YYYY-MM-DD" format. Default is NULL.}
 
-\item{subsample}{Subsample ratio of the training instances. Default is 0.75.}
+\item{save_path}{Path to save the trained model. Default is NULL.}
 
-\item{eval_metric}{Evaluation metric. Default is "aucpr". Can be a custom evaluation metric.}
+\item{trained_model}{Pre-trained model object or path to saved model. If NULL, a new model will be trained. Default is NULL.}
 
-\item{early_stopping_rounds}{Number of rounds for early stopping. Default is 10.}
+\item{ff_prep_params}{List of parameters for data preprocessing. See `ff_prep` function for details.}
 
-\item{num_class}{Number of classes for multi-class classification. Default is NULL.}
+\item{ff_train_params}{List of parameters for model training. See `ff_train` function for details.}
 
-\item{gamma}{Minimum loss reduction required to make a further partition. Default is NULL.}
+\item{threshold}{Probability threshold for binary classification. Default is 0.5.}
 
-\item{maximize}{Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.}
+\item{mask_feature}{Probability threshold for binary classification. Default is initialforestcover.}
 
-\item{min_child_weight}{Minimum sum of instance weight needed in a child. Default is 1.}
+\item{accuracy_csv}{Path to save accuracy metrics in CSV format. Default is NA (no CSV output).}
 
-\item{xgb_model}{Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.}
+\item{overwrite}{Logical; whether to overwrite existing files. Default is FALSE.}
 
-\item{modelfilename}{String specifying where to save the model. Should end with ".model" extension.}
-
-\item{features}{Vector of feature names used in the training dataset. Required when modelfilename is provided.}
-
-\item{objective}{Learning objective. Default is "binary:logistic".}
+\item{verbose}{Logical; whether to display progress messages. Default is TRUE.}
 }
 \value{
-A trained XGBoost model (xgb.Booster object).
+A SpatRaster object containing the predicted deforestation probabilities.
 }
 \description{
-This function trains an XGBoost model with optimized default parameters derived from worldwide data analysis.
+This function trains an XGBoost model using historical data and then predicts deforestation
+on raster data for a specified date and area.
 }
 \examples{
 \dontrun{
-# Prepare your data
-train_data <- list(features = matrix(runif(1000), ncol = 10),
-                   label = sample(0:1, 100, replace = TRUE))
+# Predict deforestation for a country
+prediction <- train_predict_raster(
+  country = "BRA",
+  prediction_date = "2024-01-01",
+  ff_folder = "path/to/forestforesight/data",
+  train_start = "2022-01-01",
+  train_end = "2023-12-31",
+  save_path = "path/to/save/model.model",
+  accuracy_csv = "path/to/save/accuracy.csv"
+)
 
-# Train the model
-model <- ff_train(train_matrix = train_data,
-                  nrounds = 100,
-                  eta = 0.05,
-                  max_depth = 6,
-                  modelfilename = "forest_model.model",
-                  features = colnames(train_data$features))
+# Plot the prediction
+plot(prediction)
 }
 
 }
@@ -83,9 +83,12 @@ Jonas van Duijvenbode (2023)
 Zillah Calle (2023)
 }
 \seealso{
-\code{\link{ff_prep}} for preparing data for this function
-\code{\link{ff_predict}} for making predictions using the trained model
+\code{\link{ff_prep}} for data preparation
+\code{\link{ff_train}} for model training
+\code{\link{ff_predict}} for making predictions
+\code{\link{ff_analyze}} for analyzing prediction results
 }
 \keyword{forestry}
 \keyword{machine-learning}
-\keyword{xgboost}
+\keyword{prediction}
+\keyword{raster}
