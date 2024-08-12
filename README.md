@@ -57,7 +57,7 @@ We strongly suggest starting with our preprocessed data which can be downloaded 
 The S3 bucket contains multiple folders which are structured like this
 ![Folder overview](https://github.com/jduijvenbode-WWF/ForestForesight/blob/main/data%20structure.jpg)
 
-
+## Features
 [At the moment we have the following features](https://github.com/jduijvenbode-WWF/ForestForesight/blob/main/Feature%20metadata.xlsx)
 
 ## FAQ
