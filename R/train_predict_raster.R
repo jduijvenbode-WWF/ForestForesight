@@ -107,7 +107,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   if (is.null(trained_model)) {
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
     ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
-                                   fltr_condition = ">0",fltr_features = "initialforestcover",
+                                   fltr_condition = ">0",fltr_features = mask_feature,
                                    sample_size = 0.3, verbose = verbose, shrink = "extract",
                                    groundtruth_pattern = "groundtruth6m",label_threshold = 1)
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
@@ -130,11 +130,11 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   for (tile in tiles) {
     #run the predict function if a model was not built but was provided by the function
     ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
-                                  verbose = verbose, fltr_features = "initialforestcover",
+                                  verbose = verbose, fltr_features = mask_feature,
                                   fltr_condition = ">0", groundtruth_pattern = "groundtruth6m", label_threshold = 1)
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
     predset <- do.call(ff_prep, ff_prep_params_combined)
-
+    return(predset$testindices)
     prediction <- ff_predict(model = trained_model, test_matrix = predset$data_matrix,
                              indices = predset$testindices,
                              templateraster = predset$groundtruthraster,
