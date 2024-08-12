@@ -2,25 +2,34 @@
 #'
 #' This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
 #'
-#' @param datafolder Path to the data folder. Should contain the degrees folders. Default is the system variable ff_datafolder.
+#' @param datafolder Path to the main data directory, which should contain the "input" and "groundtruth" subdirectories.
+#' These subdirectories must include the respective degree folders.Default is the system variable ff_datafolder.
 #' @param country ISO3 code of the country or countries for which the data is prepared. Optional if either shape or tiles is given.
 #' @param shape SpatVector for which the data is prepared. Optional if either country or tiles is given.
-#' @param tiles Vector of tiles in the syntax of e.g., "10N_080W". Optional if either shape or country is given.
+#' @param tiles Vector of tiles in the syntax of e.g., "10N_080W" for which the data is prepared. Optional if either shape or country is given.
 #' @param groundtruth_pattern Pattern to identify ground truth files. Default is "groundtruth6m" (groundtruth of future six months in binary format).
 #' @param start Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".
 #' @param end End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.
-#' @param inc_features Vector of features to include in the data preparation.
+#' @param inc_features Vector of features to exclusively include in the data preparation.
 #' @param exc_features Vector of features to exclude from the data preparation.
 #' @param fltr_features Vector of features for filtering data. Default is NULL. Example: 'initialforestcover'.
-#' @param fltr_condition Vector of filtering conditions. Default is NULL. Example: '>0'. Should consist of operator and value.
+#' @param fltr_condition Vector of conditions corresponding to `fltr_features`. Each entry should consist of an operator and a value.
+#' Should be of the same length as `fltr_features`. Default is NULL. Example: '>0'.
 #' @param validation_sample Float between 0 and 1 indicating how much of the training dataset should be used for validation. Default is 0. Advised not to set above 0.3.
 #' @param sample_size Fraction size of the random sample. Should be > 0 and <= 1. Default is 0.3.
-#' @param adddate Boolean indicating whether to add date-related features. Default is TRUE.
-#' @param sampleraster Boolean indicating if sampling raster should be used. Default is TRUE.
+#' @param adddate Boolean indicating whether to add date-related features ("sinmonth", "month","monthssince2019"). Default is TRUE.
 #' @param verbose Boolean indicating whether to display progress messages. Default is TRUE.
-#' @param shrink Option to shrink the input area if a country was selected. Options: "none", "crop", "crop-deg", "extract". Default is "none".
+#' @param shrink Option to modify the input area when a country is selected. This parameter determines how the spatial extent of the data is adjusted based on the selected country.
+#' Options are:
+#' \describe{
+#'   \item{"none"}{No modification to the input area. The entire extent is used as-is. (Default)}
+#'   \item{"crop"}{Crops the input area to the boundaries of the selected country using the exact extent of the country's shape.}
+#'   \item{"crop-deg"}{Similar to "crop", but the resulting extent is adjusted to the nearest whole degree (latitude/longitude). This ensures the extent aligns with whole degree boundaries.}
+#'   \item{"extract"}{Extracts data only within the boundaries of the selected country. The data is limited to the exact extent of the country's shape, and the function `terra::extract` is used to retrieve the data within this area.}
+#' }
 #' @param window Set the extent on which to process. Default is NA to derive it from the data.
-#' @param label_threshold Threshold for labeling. Default is 1.
+#' @param label_threshold Threshold for labeling the ground truth. Default is 1, meaning a pixel is labeled as deforested if at least one deforestation event has occurred.
+#' If `label_threshold = NA`, the ground truth will represent the total number of deforestation events rather than a binary label.
 #' @param addxy Boolean indicating whether to add x and y coordinates as features. Default is FALSE.
 #'
 #' @return A list containing:
@@ -56,7 +65,7 @@
 
 ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", start="2023-01-01", end=NA,
                     inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=0.3, validation_sample=0,
-                    adddate=T, sampleraster=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
+                    adddate=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
   ########quality check########
   if (as.Date(start) < as.Date("2021-01-01")) {stop("the earliest date available is 2021-01-01")}
   if (!hasvalue(country) & !hasvalue(shape)) {shrink <- "none"}
@@ -68,9 +77,6 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   if (datafolder == "") {stop("No environment variable for ff_datafolder and no datafolder parameter set")}
   inputdatafolder <- file.path(datafolder,"input")
   groundtruthdatafolder <- file.path(datafolder,"groundtruth")
-  if (sampleraster & ((validation_sample > 0) | sample_size < 1)) {
-    sampleraster <- F
-    if (verbose) {cat("Warning: No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}}
   ########preprocess for by-country processing########
   data(gfw_tiles,envir = environment())
   tilesvect <- terra::vect(gfw_tiles)
@@ -84,7 +90,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
     if (is.null(tiles)) {tiles <- tilesvect}
   }else{
     if (hasvalue(shape)) {
-      if( !terra::is.lonlat(shape)){shape <- terra::project(shape,"epsg:4326")}
+      if ( !terra::is.lonlat(shape)) {shape <- terra::project(shape,"epsg:4326")}
       if (verbose) {cat("selecting based on shape\n")}
       tiles <- tilesvect[shape]$tile_id
       if (verbose) {cat("processing tiles:",paste(tiles,collapse = ", "),"\n")}
@@ -110,9 +116,8 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   if (length(allfiles) == 0) {stop("after including and excluding the requested variables there are no files left")}
   #create the range between start and end date
   daterange <- daterange(start,end)
+  if (length(tiles) > 1) {cat("No grountruth raster will be returned because multiple tiles are processed together")}
   first <- T
-  if (length(tiles) > 1) {cat("No template raster will be returned because multiple tiles are processed together")
-    sampleraster <- F}
   #######load raster data as matrix#########
   for (tile in tiles) {
     if (exists("extent",inherits = F)) {rm(extent)}
@@ -141,18 +146,19 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
       if (!is.na(window[1])) {extent <- terra::intersect(extent,window)}
       if (verbose) {cat(paste("with extent",extent[1],extent[2],extent[3],extent[4],"\n"))}
       rasstack <- terra::rast(sapply(selected_files,function(x) terra::rast(x,win = extent)))
-      if (first) {
-        if (sampleraster) {
+      if (length(tiles) > 1) {
+        groundtruth_raster = NA
+        }else{
+          if (first) {
           if (length(grep(groundtruth_pattern,selected_files)) > 0) {
-            gtfile=selected_files[grep(groundtruth_pattern,selected_files)]
+            gtfile = selected_files[grep(groundtruth_pattern,selected_files)]
             groundtruth_raster <- terra::rast(gtfile,win = extent)
           }else{
-            if(verbose){cat("no groundtruth raster was found, first regular raster selected for groundtruth")}
+            if (verbose) {cat("no groundtruth raster was found, first regular raster selected for groundtruth")}
             groundtruth_raster <- terra::rast(selected_files[1],win = extent)
-            groundtruth_raster[] <- 0}}else{
-              groundtruth_raster <- terra::rast(selected_files[1],win = extent)
-              groundtruth_raster[] <- 0}
-      }
+            groundtruth_raster[] <- 0}
+
+        }}
       if (shrink == "extract") {
         dts <- terra::extract(rasstack,shape,raw = T,ID = F, xy = addxy)
       }else{
@@ -215,7 +221,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
     data_label <- fdts[,groundtruth_index]
     if (hasvalue(label_threshold)) {
       data_label <- as.numeric(data_label > label_threshold)
-      groundtruth_raster <- as.numeric(groundtruth_raster > label_threshold)}
+      if (inherits(groundtruth_raster, "SpatRaster")) {groundtruth_raster <- as.numeric(groundtruth_raster > label_threshold)}}
 
     fdts <- fdts[,-groundtruth_index]
   }else{
