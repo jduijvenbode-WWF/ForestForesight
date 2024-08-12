@@ -70,7 +70,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   groundtruthdatafolder <- file.path(datafolder,"groundtruth")
   if (sampleraster & ((validation_sample > 0) | sample_size < 1)) {
     sampleraster <- F
-    if (verbose) {warning("No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}}
+    if (verbose) {cat("Warning: No template raster will be returned because the resulting matrix is sampled by either subsampling or validation sampling")}}
   ########preprocess for by-country processing########
   data(gfw_tiles,envir = environment())
   tilesvect <- terra::vect(gfw_tiles)
@@ -201,7 +201,6 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
         # Merge matrices by column names
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
       }
-        print(length(sf_indices))
       fdts <- fdts[,order(colnames(fdts))]
       first <- F}}
     if (verbose) {cat(paste("loading finished, features:",paste(newcolnames,collapse = ", "),"\n"))}

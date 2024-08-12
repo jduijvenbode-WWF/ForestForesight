@@ -94,10 +94,10 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     , save_name = modelfilename
     , save_period = 0
 )
-    result=xgboost::xgb.save(model,modelfilename)
+    suppressWarnings({result<-xgboost::xgb.save(model,modelfilename)})
     if(result){save(features,file = gsub("\\.model","\\.rda",modelfilename))}else{warning("model is not saved")}
     }else{
-    suppressWarnings(
+    suppressWarnings({
     model <- xgboost::xgb.train(
     params = params
     , nrounds = nrounds
@@ -107,7 +107,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     , maximize = maximize
     , xgb_model = xgb_model
     , verbose = verbose
-    , num_class = num_class))
+    , num_class = num_class)})
     }
   # Return the trained model
   return(model)
