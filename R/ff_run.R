@@ -9,7 +9,8 @@
 #' @param ff_folder Directory containing the input data.
 #' @param train_start Start date for training data in "YYYY-MM-DD" format. Default is NULL.
 #' @param train_end End date for training data in "YYYY-MM-DD" format. Default is NULL.
-#' @param save_path Path to save the trained model. Default is NULL.
+#' @param save_path Path to save the trained model (with extension ".model"). Default is NULL.
+#' @param save_path_predictions Path to save the predictions (with extension ".tif"). Default is NULL.
 #' @param trained_model Pre-trained model object or path to saved model. If NULL, a new model will be trained. Default is NULL.
 #' @param ff_prep_params List of parameters for data preprocessing. See `ff_prep` function for details.
 #' @param ff_train_params List of parameters for model training. See `ff_train` function for details.
@@ -56,19 +57,20 @@
 #' @keywords machine-learning prediction forestry raster
 
 ff_run <- function(shape = NULL, country = NULL, prediction_dates,
-                                  ff_folder,
-                                  train_start=NULL,
-                                  train_end=NULL,
-                                  save_path=NULL,
-                                  trained_model = NULL,
-                                  ff_prep_params = NULL,
-                                  ff_train_params = NULL,
-                                  threshold = 0.5,
-                                 mask_feature = "initialforestcover",
-                                  fltr_condition = ">0",
-                                 accuracy_csv = NA,
-                                 overwrite=F,
-                                 verbose=T) {
+                   ff_folder,
+                   train_start=NULL,
+                   train_end=NULL,
+                   save_path=NULL,
+                   save_path_predictions=NULL,
+                   trained_model = NULL,
+                   ff_prep_params = NULL,
+                   ff_train_params = NULL,
+                   threshold = 0.5,
+                   mask_feature = "initialforestcover",
+                   fltr_condition = ">0",
+                   accuracy_csv = NA,
+                   overwrite=F,
+                   verbose=T) {
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
   if (!hasvalue(shape)) {
     data(countries,envir = environment())
@@ -78,15 +80,15 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates,
   #check if all the function parameters have values in the right format
   if (!hasvalue(ff_folder)) {stop("ff_folder is not given")}
   if (!dir.exists(ff_folder)) {stop(paste(ff_folder,"does not exist"))}
-  if (!hasvalue(prediction_dates)&!is.null(trained_model)) {stop("prediction_date is not given and model is given so there is no need to run.")}
-  if(!hasvalue(prediction_dates)){prediction_dates <- "3000-01-01"}
+  if (!hasvalue(prediction_dates) & !is.null(trained_model)) {stop("prediction_date is not given and model is given so there is no need to run.")}
+  if (!hasvalue(prediction_dates)) {prediction_dates <- "3000-01-01"}
   prediction_dates <- sort(prediction_dates)
   #check that end is before start
   if (is.null(trained_model)) {
-  if (!hasvalue(train_end)) {train_end <- as.character(lubridate::ymd(prediction_dates[1]) %m-% months(6,abbreviate = F))}
-  if (lubridate::ymd(train_end) < lubridate::ymd(train_start)) {stop("train_end is before train_start")}
-  if (lubridate::ymd(train_end) > lubridate::ymd(prediction_dates[1])) {stop("train_end is after prediction_date")}
-}
+    if (!hasvalue(train_end)) {train_end <- as.character(lubridate::ymd(prediction_dates[1]) %m-% months(6,abbreviate = F))}
+    if (lubridate::ymd(train_end) < lubridate::ymd(train_start)) {stop("train_end is before train_start")}
+    if (lubridate::ymd(train_end) > lubridate::ymd(prediction_dates[1])) {stop("train_end is after prediction_date")}
+  }
 
 
   if (!terra::is.lonlat(shape)) {shape <- terra::project(shape, "epsg:4326")}
@@ -96,8 +98,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates,
 
   prep_folder <- file.path(ff_folder,"preprocessed")
   if (!dir.exists(prep_folder)) {stop(paste(prep_folder,"does not exist"))}
-  if(is.null(trained_model)){
-    if(!is.null(save)){model_folder = dirname(save_path)
+  if (is.null(trained_model)) {
+    if (!is.null(save)) {model_folder = dirname(save_path)
 
 
     if (!hasvalue(model_folder)) {model_folder <- file.path(ff_folder,"models")}
@@ -130,42 +132,55 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates,
   }
 
   # Predict
-  if(prediction_dates[1]=="3000-01-01"){return(NA)}
-  firstdate=T
-  for(prediction_date in prediction_dates){
+  if (prediction_dates[1] == "3000-01-01") {return(NA)}
+  firstdate <- T
+  for (prediction_date in prediction_dates) {
     raslist <- list()
-  for (tile in tiles) {
-    #run the predict function if a model was not built but was provided by the function
-    ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
-                                  verbose = verbose, fltr_features = mask_feature,
-                                  fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m", label_threshold = 1)
-    ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
-    predset <- do.call(ff_prep, ff_prep_params_combined)
+    for (tile in tiles) {
+      #run the predict function if a model was not built but was provided by the function
+      ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
+                                     verbose = verbose, fltr_features = mask_feature,
+                                     fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m", label_threshold = 1)
+      ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
+      predset <- do.call(ff_prep, ff_prep_params_combined)
 
-    prediction <- ff_predict(model = trained_model, test_matrix = predset$data_matrix,
-                             indices = predset$testindices,
-                             templateraster = predset$groundtruthraster,
-                             verbose = verbose,certainty = T)
-    raslist[[tile]] <- prediction$predicted_raster
-    # Analyze prediction
+      prediction <- ff_predict(model = trained_model, test_matrix = predset$data_matrix,
+                               indices = predset$testindices,
+                               templateraster = predset$groundtruthraster,
+                               verbose = verbose,certainty = T)
+      raslist[[tile]] <- prediction$predicted_raster
+      # Analyze prediction
 
-    forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = mask_feature)
-    if(!hasvalue(forestras)){forestras=NULL}
-    if(!is.na(accuracy_csv)){
-      ff_analyze(prediction$predicted_raster > threshold, groundtruth = predset$groundtruthraster,
-                 csvfile = accuracy_csv, tile = tile, date = prediction_date,
-                 return_polygons = FALSE, append = TRUE, country = country,
-                 verbose = verbose, forestmask = forestras)
+      forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = mask_feature)
+      if (!hasvalue(forestras)) {forestras <- NULL}
+      if (!is.na(accuracy_csv)) {
+        pols <- ff_analyze(prediction$predicted_raster > threshold, groundtruth = predset$groundtruthraster,
+                        csvfile = accuracy_csv, tile = tile, date = prediction_date,
+                        return_polygons = verbose, append = TRUE, country = country,
+                        verbose = verbose, forestmask = forestras)
+        if (verbose) {if (tile == tiles[1]) {allpols <- pols}else{allpols <- rbind(allpols,pols)}}
+      }
+      if (verbose) {
+        precision <- sum(allpols$TP,na.rm = T)/(sum(allpols$TP,na.rm = T) + sum(allpols$FP,na.rm = T))
+        recall <- sum(allpols$TP,na.rm = T)/(sum(allpols$TP,na.rm = T) + sum(allpols$FN, na.rm = T))
+        cat("date:", prediction_date, "precision:", precision,",recall:",recall,",F0.5",(1.25*precision * recall)/(0.25*precision + recall),"\n")
+      }
+
     }
 
-  }
-  if (length(raslist) == 1) {fullras <- raslist[[1]]}else{
-    fullras <- do.call(terra::merge,unname(raslist))
-  }
-  fullras <- terra::mask(fullras,shape)
-  fullras <- terra::crop(fullras,shape)
-  names(fullras)=prediction_date
-  if(firstdate){firstdate=F;allras=fullras}else{allras=c(allras,fullras)}
+    if (length(raslist) == 1) {fullras <- raslist[[1]]}else{
+      fullras <- do.call(terra::merge,unname(raslist))
+    }
+    fullras <- terra::mask(fullras,shape)
+    fullras <- terra::crop(fullras,shape)
+    names(fullras) <- prediction_date
+    if (hasvalue(save_path_predictions)) {
+      if (length(prediction_dates) > 1) {terra::writeRaster(fullras,paste0(sub("\\.tif$", "", save_path_predictions),"_", prediction_date, ".tif" ))}
+      else {terra::writeRaster(fullras, save_path_predictions)}
+    }
+
+    if (firstdate) {firstdate <- F
+    allras <- fullras}else{allras <- c(allras, fullras)}
   }
   return(allras)
 }

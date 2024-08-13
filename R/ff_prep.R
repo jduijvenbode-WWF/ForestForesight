@@ -116,7 +116,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   if (length(allfiles) == 0) {stop("after including and excluding the requested variables there are no files left")}
   #create the range between start and end date
   daterange <- daterange(start,end)
-  if (length(tiles) > 1) {cat("No grountruth raster will be returned because multiple tiles are processed together")}
+  if (length(tiles) > 1) {cat("No grountruth raster will be returned because multiple tiles are processed together \n")}
   first <- T
   #######load raster data as matrix#########
   for (tile in tiles) {
