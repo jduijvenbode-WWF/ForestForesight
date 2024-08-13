@@ -88,6 +88,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates,
     if (!hasvalue(train_end)) {train_end <- as.character(lubridate::ymd(prediction_dates[1]) %m-% months(6,abbreviate = F))}
     if (lubridate::ymd(train_end) < lubridate::ymd(train_start)) {stop("train_end is before train_start")}
     if (lubridate::ymd(train_end) > lubridate::ymd(prediction_dates[1])) {stop("train_end is after prediction_date")}
+    if ((lubridate::ymd(prediction_dates[1]) - lubridate::ymd(train_end)) < 170 ) {stop("There should be at least 6 months between training and testing/predicting")}
   }
 
 
