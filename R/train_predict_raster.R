@@ -134,7 +134,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   fltr_condition = ">0", groundtruth_pattern = "groundtruth6m", label_threshold = 1)
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
     predset <- do.call(ff_prep, ff_prep_params_combined)
-    return(predset$testindices)
+
     prediction <- ff_predict(model = trained_model, test_matrix = predset$data_matrix,
                              indices = predset$testindices,
                              templateraster = predset$groundtruthraster,
