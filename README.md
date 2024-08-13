@@ -7,6 +7,9 @@
 
 This R package provides tools for generating 6-month deforestation predictions, facilitating analysis at various spatial scales. The predictions are based on data divided into 10x10 degree tiles and can be conducted at the country, tile, or group-of-tiles level. It leverages both user-provided data and preprocessed datasets available on an open S3 bucket, covering the entire land-covered pantropical belt between -30 and 30 degrees latitude. The system makes for our global model extensive use of the GlobalForestWatch Integrated Alerts, which can be found [here](https://www.globalforestwatch.org/blog/data-and-research/integrated-deforestation-alerts/).
 
+## Instructions
+To start using ForestForesight, check the manual [here](https://github.com/jduijvenbode-WWF/ForestForesight/blob/main/manual%20forest%20foresight.pdf)
+
 ![Logo](https://content.globalforestwatch.org/wp-content/uploads/2021/12/integrated-deforestation-alerts-layer-2021.png)
 
 ## Functions
@@ -17,7 +20,7 @@ This R package provides tools for generating 6-month deforestation predictions, 
 | `ff_train` | Use XGBoost to train a model based on training data and labels|
 | `ff_predict` | Predict deforestation with the trained model and new data input |
 | `ff_analyse` | Analyses the predictions for accuracy (optional: output to powerbi)|
-| `train_predict_raster` | Combines the above functions as a wrapper to do everything you need related to ForestForesight |
+| `ff_run` | Combines the above functions as a wrapper to do everything you need related to ForestForesight |
 
 ## Package data
 The data below can be loaded using 
