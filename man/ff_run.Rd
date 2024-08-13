@@ -12,6 +12,7 @@ ff_run(
   train_start = NULL,
   train_end = NULL,
   save_path = NULL,
+  save_path_predictions = NULL,
   trained_model = NULL,
   ff_prep_params = NULL,
   ff_train_params = NULL,
@@ -36,7 +37,9 @@ ff_run(
 
 \item{train_end}{End date for training data in "YYYY-MM-DD" format. Default is NULL.}
 
-\item{save_path}{Path to save the trained model. Default is NULL.}
+\item{save_path}{Path to save the trained model (with extension ".model"). Default is NULL.}
+
+\item{save_path_predictions}{Path to save the predictions (with extension ".tif"). Default is NULL.}
 
 \item{trained_model}{Pre-trained model object or path to saved model. If NULL, a new model will be trained. Default is NULL.}
 
