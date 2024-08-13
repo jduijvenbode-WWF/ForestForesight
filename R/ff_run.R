@@ -5,7 +5,7 @@
 #'
 #' @param shape SpatVector object representing the area of interest. Either `shape` or `country` must be provided.
 #' @param country ISO3 country code. Either `shape` or `country` must be provided.
-#' @param prediction_date Date for prediction in "YYYY-MM-DD" format.
+#' @param prediction_dates Dates for prediction in "YYYY-MM-DD" format.
 #' @param ff_folder Directory containing the input data.
 #' @param train_start Start date for training data in "YYYY-MM-DD" format. Default is NULL.
 #' @param train_end End date for training data in "YYYY-MM-DD" format. Default is NULL.
@@ -14,17 +14,18 @@
 #' @param ff_prep_params List of parameters for data preprocessing. See `ff_prep` function for details.
 #' @param ff_train_params List of parameters for model training. See `ff_train` function for details.
 #' @param threshold Probability threshold for binary classification. Default is 0.5.
-#' @param mask_feature Probability threshold for binary classification. Default is initialforestcover.
+#' @param mask_feature Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one
+#' @param fltr_condition The condition with value that is used to filter the training dataset based on mask features. Default is ">0". Can be more than one
 #' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
 #' @param overwrite Logical; whether to overwrite existing files. Default is FALSE.
 #' @param verbose Logical; whether to display progress messages. Default is TRUE.
 #'
-#' @return A SpatRaster object containing the predicted deforestation probabilities.
+#' @return A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
 #'
 #' @examples
 #' \dontrun{
 #' # Predict deforestation for a country
-#' prediction <- train_predict_raster(
+#' prediction <- ff_run(
 #'   country = "BRA",
 #'   prediction_date = "2024-01-01",
 #'   ff_folder = "path/to/forestforesight/data",
@@ -54,7 +55,7 @@
 #'
 #' @keywords machine-learning prediction forestry raster
 
-train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
+ff_run <- function(shape = NULL, country = NULL, prediction_dates,
                                   ff_folder,
                                   train_start=NULL,
                                   train_end=NULL,
@@ -64,6 +65,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
                                   ff_train_params = NULL,
                                   threshold = 0.5,
                                  mask_feature = "initialforestcover",
+                                  fltr_condition = ">0",
                                  accuracy_csv = NA,
                                  overwrite=F,
                                  verbose=T) {
@@ -76,12 +78,14 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   #check if all the function parameters have values in the right format
   if (!hasvalue(ff_folder)) {stop("ff_folder is not given")}
   if (!dir.exists(ff_folder)) {stop(paste(ff_folder,"does not exist"))}
-  if (!hasvalue(prediction_date)) {stop("prediction_date is not given")}
+  if (!hasvalue(prediction_dates)&!is.null(trained_model)) {stop("prediction_date is not given and model is given so there is no need to run.")}
+  if(!hasvalue(prediction_dates)){prediction_dates <- "3000-01-01"}
+  prediction_dates <- sort(prediction_dates)
   #check that end is before start
   if (is.null(trained_model)) {
-  if (!hasvalue(train_end)) {train_end <- as.character(lubridate::ymd(prediction_date) %m-% months(6,abbreviate = F))}
+  if (!hasvalue(train_end)) {train_end <- as.character(lubridate::ymd(prediction_dates[1]) %m-% months(6,abbreviate = F))}
   if (lubridate::ymd(train_end) < lubridate::ymd(train_start)) {stop("train_end is before train_start")}
-  if (lubridate::ymd(train_end) > lubridate::ymd(prediction_date)) {stop("train_end is after prediction_date")}
+  if (lubridate::ymd(train_end) > lubridate::ymd(prediction_dates[1])) {stop("train_end is after prediction_date")}
 }
 
 
@@ -107,7 +111,7 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   if (is.null(trained_model)) {
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
     ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
-                                   fltr_condition = ">0",fltr_features = mask_feature,
+                                   fltr_condition = fltr_condition,fltr_features = mask_feature,
                                    sample_size = 0.3, verbose = verbose, shrink = "extract",
                                    groundtruth_pattern = "groundtruth6m",label_threshold = 1)
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
@@ -126,12 +130,15 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   }
 
   # Predict
-  raslist <- list()
+  if(prediction_dates[1]=="3000-01-01"){return(NA)}
+  firstdate=T
+  for(prediction_date in prediction_dates){
+    raslist <- list()
   for (tile in tiles) {
     #run the predict function if a model was not built but was provided by the function
     ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
                                   verbose = verbose, fltr_features = mask_feature,
-                                  fltr_condition = ">0", groundtruth_pattern = "groundtruth6m", label_threshold = 1)
+                                  fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m", label_threshold = 1)
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
     predset <- do.call(ff_prep, ff_prep_params_combined)
 
@@ -157,7 +164,10 @@ train_predict_raster <- function(shape = NULL, country = NULL, prediction_date,
   }
   fullras <- terra::mask(fullras,shape)
   fullras <- terra::crop(fullras,shape)
-  return(fullras)
+  names(fullras)=prediction_date
+  if(firstdate){firstdate=F;allras=fullras}else{allras=c(allras,fullras)}
+  }
+  return(allras)
 }
 
 

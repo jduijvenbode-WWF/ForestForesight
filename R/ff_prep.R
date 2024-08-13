@@ -42,8 +42,8 @@
 #' @export
 #'
 #' @references
-#' Jonas van Duijvenbode (2023)
 #' Zillah Calle (2023)
+#' Jonas van Duijvenbode (2023)
 #'
 #' @examples
 #' \dontrun{
