@@ -19,7 +19,6 @@ ff_prep(
   sample_size = 0.3,
   validation_sample = 0,
   adddate = T,
-  sampleraster = T,
   verbose = T,
   shrink = "none",
   window = NA,
@@ -28,13 +27,14 @@ ff_prep(
 )
 }
 \arguments{
-\item{datafolder}{Path to the data folder. Should contain the degrees folders. Default is the system variable ff_datafolder.}
+\item{datafolder}{Path to the main data directory, which should contain the "input" and "groundtruth" subdirectories.
+These subdirectories must include the respective degree folders.Default is the system variable ff_datafolder.}
 
 \item{country}{ISO3 code of the country or countries for which the data is prepared. Optional if either shape or tiles is given.}
 
 \item{shape}{SpatVector for which the data is prepared. Optional if either country or tiles is given.}
 
-\item{tiles}{Vector of tiles in the syntax of e.g., "10N_080W". Optional if either shape or country is given.}
+\item{tiles}{Vector of tiles in the syntax of e.g., "10N_080W" for which the data is prepared. Optional if either shape or country is given.}
 
 \item{groundtruth_pattern}{Pattern to identify ground truth files. Default is "groundtruth6m" (groundtruth of future six months in binary format).}
 
@@ -42,29 +42,36 @@ ff_prep(
 
 \item{end}{End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.}
 
-\item{inc_features}{Vector of features to include in the data preparation.}
+\item{inc_features}{Vector of features to exclusively include in the data preparation.}
 
 \item{exc_features}{Vector of features to exclude from the data preparation.}
 
 \item{fltr_features}{Vector of features for filtering data. Default is NULL. Example: 'initialforestcover'.}
 
-\item{fltr_condition}{Vector of filtering conditions. Default is NULL. Example: '>0'. Should consist of operator and value.}
+\item{fltr_condition}{Vector of conditions corresponding to `fltr_features`. Each entry should consist of an operator and a value.
+Should be of the same length as `fltr_features`. Default is NULL. Example: '>0'.}
 
 \item{sample_size}{Fraction size of the random sample. Should be > 0 and <= 1. Default is 0.3.}
 
 \item{validation_sample}{Float between 0 and 1 indicating how much of the training dataset should be used for validation. Default is 0. Advised not to set above 0.3.}
 
-\item{adddate}{Boolean indicating whether to add date-related features. Default is TRUE.}
-
-\item{sampleraster}{Boolean indicating if sampling raster should be used. Default is TRUE.}
+\item{adddate}{Boolean indicating whether to add date-related features ("sinmonth", "month","monthssince2019"). Default is TRUE.}
 
 \item{verbose}{Boolean indicating whether to display progress messages. Default is TRUE.}
 
-\item{shrink}{Option to shrink the input area if a country was selected. Options: "none", "crop", "crop-deg", "extract". Default is "none".}
+\item{shrink}{Option to modify the input area when a country is selected. This parameter determines how the spatial extent of the data is adjusted based on the selected country.
+Options are:
+\describe{
+  \item{"none"}{No modification to the input area. The entire extent is used as-is. (Default)}
+  \item{"crop"}{Crops the input area to the boundaries of the selected country using the exact extent of the country's shape.}
+  \item{"crop-deg"}{Similar to "crop", but the resulting extent is adjusted to the nearest whole degree (latitude/longitude). This ensures the extent aligns with whole degree boundaries.}
+  \item{"extract"}{Extracts data only within the boundaries of the selected country. The data is limited to the exact extent of the country's shape, and the function `terra::extract` is used to retrieve the data within this area.}
+}}
 
 \item{window}{Set the extent on which to process. Default is NA to derive it from the data.}
 
-\item{label_threshold}{Threshold for labeling. Default is 1.}
+\item{label_threshold}{Threshold for labeling the ground truth. Default is 1, meaning a pixel is labeled as deforested if at least one deforestation event has occurred.
+If `label_threshold = NA`, the ground truth will represent the total number of deforestation events rather than a binary label.}
 
 \item{addxy}{Boolean indicating whether to add x and y coordinates as features. Default is FALSE.}
 }
@@ -93,8 +100,8 @@ prepared_data <- ff_prep(
 
 }
 \references{
-Jonas van Duijvenbode (2023)
 Zillah Calle (2023)
+Jonas van Duijvenbode (2023)
 }
 \seealso{
 \code{\link{ff_train}} for training a model with the prepared data
