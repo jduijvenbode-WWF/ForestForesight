@@ -18,6 +18,7 @@
 #' @param mask_feature Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one
 #' @param fltr_condition The condition with value that is used to filter the training dataset based on mask features. Default is ">0". Can be more than one
 #' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
+#' @param importance_csv Path to save feature importance metrics in CSV format. Default is NA (no CSV output).
 #' @param verbose Logical; whether to display progress messages. Default is TRUE.
 #'
 #' @return A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
@@ -68,6 +69,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                    mask_feature = "initialforestcover",
                    fltr_condition = ">0",
                    accuracy_csv = NA,
+                   importance_csv = NA,
                    verbose=T) {
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
   if (!hasvalue(shape)) {
@@ -97,14 +99,6 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
   prep_folder <- file.path(ff_folder,"preprocessed")
   if (!dir.exists(prep_folder)) {stop(paste(prep_folder,"does not exist"))}
-  if (is.null(trained_model)) {
-    if (!is.null(save)) {model_folder = dirname(save_path)
-
-
-    if (!hasvalue(model_folder)) {model_folder <- file.path(ff_folder,"models")}
-    if (!dir.exists(model_folder)) {stop(paste(model_folder,"does not exist"))}
-    }
-  }
 
 
 
@@ -129,7 +123,11 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
     trained_model <- do.call(ff_train, ff_train_params_original)
   }
-
+  if(hasvalue(importance_csv)){
+    if(hasvalue(save_path)){ff_importance(save_path,importance_csv,append = T)}else{
+      ff_importance(trained_model,importance_csv,append = T)
+    }
+  }
   # Predict
   if (prediction_dates[1] == "3000-01-01") {return(NA)}
   firstdate <- T
