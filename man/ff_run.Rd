@@ -7,7 +7,7 @@
 ff_run(
   shape = NULL,
   country = NULL,
-  prediction_dates,
+  prediction_dates = NULL,
   ff_folder,
   train_start = NULL,
   train_end = NULL,
@@ -20,7 +20,7 @@ ff_run(
   mask_feature = "initialforestcover",
   fltr_condition = ">0",
   accuracy_csv = NA,
-  overwrite = F,
+  importance_csv = NA,
   verbose = T
 )
 }
@@ -55,7 +55,7 @@ ff_run(
 
 \item{accuracy_csv}{Path to save accuracy metrics in CSV format. Default is NA (no CSV output).}
 
-\item{overwrite}{Logical; whether to overwrite existing files. Default is FALSE.}
+\item{importance_csv}{Path to save feature importance metrics in CSV format. Default is NA (no CSV output).}
 
 \item{verbose}{Logical; whether to display progress messages. Default is TRUE.}
 }
