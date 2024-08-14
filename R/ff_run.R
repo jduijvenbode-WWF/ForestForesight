@@ -18,7 +18,6 @@
 #' @param mask_feature Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one
 #' @param fltr_condition The condition with value that is used to filter the training dataset based on mask features. Default is ">0". Can be more than one
 #' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
-#' @param overwrite Logical; whether to overwrite existing files. Default is FALSE.
 #' @param verbose Logical; whether to display progress messages. Default is TRUE.
 #'
 #' @return A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
@@ -69,7 +68,6 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates,
                    mask_feature = "initialforestcover",
                    fltr_condition = ">0",
                    accuracy_csv = NA,
-                   overwrite=F,
                    verbose=T) {
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
   if (!hasvalue(shape)) {
