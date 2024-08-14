@@ -87,7 +87,6 @@ We put all the data per 10x10 degree tile on an S3 server. You can access the da
 ## Feature Wishlist & Roadmap
 
 - Using categorical data. This is currently not working in R on XGboost and we would like to implement the one-hot encoding for this at some point.
-- Develop the processing chain in python.
 - Implementing our somewhat better performing deep learning algorithm
 - Predicting the actual amount of expected deforestation in a hotzone. Currently we are hitting a correlation coefficient of 0.38 compared to only 0.11 as a correlation between binary certainty (precision/recall).
 - Smart grouping of predictions so that it is easier for users to go to areas. There is however a very large non-technical discussion required to make this step. Feel free if this has your interest to get in touch.
