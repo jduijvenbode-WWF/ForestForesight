@@ -10,7 +10,6 @@
 #' @param subsample Subsample ratio of the training instances. Default is 0.75.
 #' @param eval_metric Evaluation metric. Default is "aucpr". Can be a custom evaluation metric.
 #' @param early_stopping_rounds Number of rounds for early stopping. Default is 10.
-#' @param num_class Number of classes for multi-class classification. Default is NULL.
 #' @param gamma Minimum loss reduction required to make a further partition. Default is NULL.
 #' @param maximize Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.
 #' @param min_child_weight Minimum sum of instance weight needed in a child. Default is 1.
@@ -52,7 +51,7 @@
 
 
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
-                     subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10, num_class=NULL,
+                     subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,
                      gamma=NULL, maximize=NULL, min_child_weight=1, verbose = F, xgb_model = NULL,
                      modelfilename = NULL, features = NULL, objective="binary:logistic") {
 
@@ -79,9 +78,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     watchlist <- list(train = dtrain,eval = deval)}
 
   # Train the XGBoost model
-  if (!is.null(modelfilename)) {
-    cat("saving model to",modelfilename,"\n")
-
+    if (verbose) {cat("starting training\n")}
     model <- xgboost::xgb.train(
     params = params,
     nrounds = nrounds,
@@ -91,23 +88,13 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     , maximize = maximize
     , xgb_model = xgb_model
     , verbose = verbose
-    , save_name = modelfilename
-    , save_period = 0
 )
+    if (!is.null(modelfilename)) {
+    if(verbose) {
+      cat("saving model to",modelfilename,"\n")
+    }
     suppressWarnings({result<-xgboost::xgb.save(model,modelfilename)})
     if(result){save(features,file = gsub("\\.model","\\.rda",modelfilename))}else{warning("model is not saved")}
-    }else{
-    suppressWarnings({
-    model <- xgboost::xgb.train(
-    params = params
-    , nrounds = nrounds
-    , data = dtrain
-    , watchlist = watchlist
-    , early_stopping_rounds = early_stopping_rounds
-    , maximize = maximize
-    , xgb_model = xgb_model
-    , verbose = verbose
-    , num_class = num_class)})
     }
   # Return the trained model
   return(model)
