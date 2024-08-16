@@ -138,7 +138,6 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       if (!is.null(trained_model)) {
         if (file.exists(gsub("\\.model","\\.rda",trained_model))) {
           model_features <- list("inc_features"=get(load(gsub("\\.model","\\.rda",trained_model))))
-          return(model_features)
           if (verbose) {cat("model only includes the following features:",paste(model_features$inc_features,collapse = ", "),"\n") }
           ff_prep_params_combined <- merge_lists(default = model_features,user = ff_prep_params_combined)
         }
