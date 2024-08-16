@@ -129,18 +129,19 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
   for (prediction_date in prediction_dates) {
     raslist <- list()
     for (tile in tiles) {
-      if (!is.null(trained_model) & class(trained_model)=="character") {
+
+      #run the predict function if a model was not built but was provided by the function
+      ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
+                                     verbose = verbose, fltr_features = mask_feature,
+                                     fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m", label_threshold = 1)
+      ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
+      if (!is.null(trained_model)) {
         if (file.exists(gsub("\\.model","\\.rda",trained_model))) {
           model_features <- list("inc_features",get(load(gsub("\\.model","\\.rda",trained_model))))
           if (verbose) {cat("model only includes the following features:",paste(model_features$inc_features,collapse = ", "),"\n") }
           ff_prep_params_combined <- merge_lists(default = model_features,user = ff_prep_params_combined)
         }
       }
-      #run the predict function if a model was not built but was provided by the function
-      ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
-                                     verbose = verbose, fltr_features = mask_feature,
-                                     fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m", label_threshold = 1)
-      ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
       predset <- do.call(ff_prep, ff_prep_params_combined)
 
       prediction <- ff_predict(model = trained_model, test_matrix = predset$data_matrix,
