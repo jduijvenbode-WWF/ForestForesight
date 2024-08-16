@@ -157,12 +157,13 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                         verbose = verbose, forestmask = forestras)
         if (verbose) {if (tile == tiles[1]) {allpols <- pols}else{allpols <- rbind(allpols,pols)}}
       }
-      if (verbose) {
-        precision <- sum(allpols$TP,na.rm = T)/(sum(allpols$TP,na.rm = T) + sum(allpols$FP,na.rm = T))
-        recall <- sum(allpols$TP,na.rm = T)/(sum(allpols$TP,na.rm = T) + sum(allpols$FN, na.rm = T))
-        cat("date:", prediction_date, "precision:", precision,",recall:",recall,",F0.5",(1.25*precision * recall)/(0.25*precision + recall),"\n")
-      }
 
+
+    }
+    if (verbose & exists("allpols")) {
+      precision <- sum(allpols$TP,na.rm = T)/(sum(allpols$TP,na.rm = T) + sum(allpols$FP,na.rm = T))
+      recall <- sum(allpols$TP,na.rm = T)/(sum(allpols$TP,na.rm = T) + sum(allpols$FN, na.rm = T))
+      cat("date:", prediction_date, "precision:", precision,",recall:",recall,",F0.5",(1.25*precision * recall)/(0.25*precision + recall),"\n")
     }
 
     if (length(raslist) == 1) {fullras <- raslist[[1]]}else{
