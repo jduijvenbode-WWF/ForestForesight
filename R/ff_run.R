@@ -110,12 +110,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                                    sample_size = 0.3, verbose = verbose, shrink = "extract",
                                    groundtruth_pattern = "groundtruth6m",label_threshold = 1)
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
-    if (!is.null(trained_model)) {
-      if (file.exists(gsub("\\.model","\\.rda",trained_model))) {
-        model_features <- list("inc_features",get(load(gsub("\\.model","\\.rda",trained_model))))
-        ff_prep_params_combined <- merge_lists(default = model_features,user = ff_prep_params_combined)
-      }
-    }
+
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     ff_train_params_original = list(traindata$data_matrix, verbose = verbose,
                                     modelfilename = save_path,
@@ -123,8 +118,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
     trained_model <- do.call(ff_train, ff_train_params_original)
   }
-  if(hasvalue(importance_csv)){
-    if(hasvalue(save_path)){ff_importance(save_path,importance_csv,append = T)}else{
+  if (hasvalue(importance_csv)) {
+    if (hasvalue(save_path)) { ff_importance(save_path,importance_csv,append = T)}else{
       ff_importance(trained_model,importance_csv,append = T)
     }
   }
@@ -134,6 +129,13 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
   for (prediction_date in prediction_dates) {
     raslist <- list()
     for (tile in tiles) {
+      if (!is.null(trained_model) & class(trained_model)=="character") {
+        if (file.exists(gsub("\\.model","\\.rda",trained_model))) {
+          model_features <- list("inc_features",get(load(gsub("\\.model","\\.rda",trained_model))))
+          if (verbose) {cat("model only includes the following features:",paste(model_features$inc_features,collapse = ", "),"\n") }
+          ff_prep_params_combined <- merge_lists(default = model_features,user = ff_prep_params_combined)
+        }
+      }
       #run the predict function if a model was not built but was provided by the function
       ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
                                      verbose = verbose, fltr_features = mask_feature,
