@@ -177,8 +177,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     fullras <- terra::crop(fullras,shape)
     names(fullras) <- prediction_date
     if (hasvalue(save_path_predictions)) {
-      if (length(prediction_dates) > 1) {terra::writeRaster(fullras,paste0(sub("\\.tif$", "", save_path_predictions),"_", prediction_date, ".tif" ))}
-      else {terra::writeRaster(fullras, save_path_predictions)}
+      if (length(prediction_dates) > 1) {terra::writeRaster(fullras,paste0(sub("\\.tif$", "", save_path_predictions),"_", prediction_date, ".tif" ), overwrite = T)}
+      else {terra::writeRaster(fullras, save_path_predictions,overwrite = T)}
     }
 
     if (firstdate) {firstdate <- F
