@@ -6,9 +6,10 @@
 #' @param pred The predicted vector.
 #' @param threshold The threshold for prediction.
 #' @param beta The weight of precision in the F-score calculation.
+#' @param pr Logical. whether it should also return the precision and recall
 #' @return F-score value.
 #' @export
-getFscore <- function(gt, pred, threshold = 0.5, beta = 0.5) {
+getFscore <- function(gt, pred, threshold = 0.5, beta = 0.5, pr = F) {
   gt[is.na(gt)] = 0
   pred[is.na(pred)] = 0
   # Convert predictions to binary
@@ -25,6 +26,6 @@ getFscore <- function(gt, pred, threshold = 0.5, beta = 0.5) {
 
   # Calculate F-score
   f_score <- (1 + beta^2) * (precision * recall) / ((beta^2 * precision) + recall)
-
-  return(f_score)
+  if(!pr){return(f_score)}
+  return(list("F05"=f_score,"precision"=precision,"recall"=recall))
 }
