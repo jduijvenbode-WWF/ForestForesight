@@ -109,6 +109,6 @@ ff_predict <- function(model, test_matrix, threshold=0.5, groundtruth=NA, indice
       }else{templateraster <- NA}
     }
   }else{templateraster <- NA}
-  if (verbose & !is.na(F05)) {cat(paste("F0.5:",F05,"\n"))}
+  if (verbose & !is.na(F05)) {cat(paste("F0.5:",F05,"precision:",precision,"recall:",recall,"\n"))}
   return(list(threshold = threshold,"precision" = precision,"recall" = recall,"F0.5" = F05,"predicted_raster" = templateraster,"predictions" = predictions))
 }
