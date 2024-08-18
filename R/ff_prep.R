@@ -144,7 +144,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
         extent[4] <- ceiling(extent[4])
       }
       if (!is.na(window[1])) {extent <- terra::intersect(extent,window)}
-      if (verbose) {cat(paste("with extent",extent[1],extent[2],extent[3],extent[4],"\n"))}
+      if (verbose) {cat(paste("with extent",round(extent[1],5),round(extent[2],5),round(extent[3],5),round(extent[4],5),"\n"))}
       rasstack <- terra::rast(sapply(selected_files,function(x) terra::rast(x,win = extent)))
       if (length(tiles) > 1) {
         groundtruth_raster = NA

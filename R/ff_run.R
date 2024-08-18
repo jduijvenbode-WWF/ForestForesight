@@ -133,12 +133,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       #run the predict function if a model was not built but was provided by the function
       ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
                                      verbose = verbose, fltr_features = mask_feature,
-                                     fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m", label_threshold = 1)
+                                     fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m",sample_size = 1, label_threshold = 1)
       ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
-      if (!is.null(trained_model)) {
+      if (class(trained_model)=="character") {
         if (file.exists(gsub("\\.model","\\.rda",trained_model))) {
           model_features <- list("inc_features"=get(load(gsub("\\.model","\\.rda",trained_model))))
-          if (verbose) {cat("model only includes the following features:",paste(model_features$inc_features,collapse = ", "),"\n") }
+          if (verbose) {cat("pre-trained model only includes the following features:",paste(model_features$inc_features,collapse = ", "),"\n") }
           ff_prep_params_combined <- merge_lists(default = model_features,user = ff_prep_params_combined)
         }
       }
