@@ -116,7 +116,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   if (length(allfiles) == 0) {stop("after including and excluding the requested variables there are no files left")}
   #create the range between start and end date
   daterange <- daterange(start,end)
-  if (length(tiles) > 1) {cat("No grountruth raster will be returned because multiple tiles are processed together \n")}
+  if (length(tiles) > 1) {if (verbose) {cat("No grountruth raster will be returned because multiple tiles are processed together \n")}}
   first <- T
   #######load raster data as matrix#########
   for (tile in tiles) {
@@ -154,7 +154,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
             gtfile = selected_files[grep(groundtruth_pattern,selected_files)]
             groundtruth_raster <- terra::rast(gtfile,win = extent)
           }else{
-            if (verbose) {cat("no groundtruth raster was found, first regular raster selected for groundtruth")}
+            if (verbose) {cat("no groundtruth raster was found, first regular raster selected for groundtruth\n")}
             groundtruth_raster <- terra::rast(selected_files[1],win = extent)
             groundtruth_raster[] <- 0}
 
