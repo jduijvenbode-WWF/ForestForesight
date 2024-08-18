@@ -13,14 +13,12 @@ ff_train(
   subsample = 0.75,
   eval_metric = "aucpr",
   early_stopping_rounds = 10,
-  num_class = NULL,
   gamma = NULL,
   maximize = NULL,
   min_child_weight = 1,
   verbose = F,
   xgb_model = NULL,
   modelfilename = NULL,
-  features = NULL,
   objective = "binary:logistic"
 )
 }
@@ -41,8 +39,6 @@ ff_train(
 
 \item{early_stopping_rounds}{Number of rounds for early stopping. Default is 10.}
 
-\item{num_class}{Number of classes for multi-class classification. Default is NULL.}
-
 \item{gamma}{Minimum loss reduction required to make a further partition. Default is NULL.}
 
 \item{maximize}{Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.}
@@ -54,8 +50,6 @@ ff_train(
 \item{xgb_model}{Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.}
 
 \item{modelfilename}{String specifying where to save the model. Should end with ".model" extension.}
-
-\item{features}{Vector of feature names used in the training dataset. Required when modelfilename is provided.}
 
 \item{objective}{Learning objective. Default is "binary:logistic".}
 }
