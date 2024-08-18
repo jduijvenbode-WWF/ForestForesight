@@ -16,7 +16,6 @@
 #' @param verbose Boolean indicating whether to display training progress. Default is FALSE.
 #' @param xgb_model Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.
 #' @param modelfilename String specifying where to save the model. Should end with ".model" extension.
-#' @param features Vector of feature names used in the training dataset. Required when modelfilename is provided.
 #' @param objective Learning objective. Default is "binary:logistic".
 #'
 #' @return A trained XGBoost model (xgb.Booster object).
@@ -53,7 +52,7 @@
 ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.1, max_depth = 5,
                      subsample = 0.75, eval_metric = "aucpr", early_stopping_rounds = 10,
                      gamma=NULL, maximize=NULL, min_child_weight=1, verbose = F, xgb_model = NULL,
-                     modelfilename = NULL, features = NULL, objective="binary:logistic") {
+                     modelfilename = NULL, objective="binary:logistic") {
 
 
   # Convert the matrix to a DMatrix object
@@ -91,11 +90,11 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
 )
 
     if (!is.null(modelfilename)) {
-    if(verbose) {
+    if (verbose) {
       cat("saving model to",modelfilename,"\n")
     }
-    suppressWarnings({result<-xgboost::xgb.save(model,modelfilename)})
-    if(result){save(features,file = gsub("\\.model","\\.rda",modelfilename))}else{warning("model is not saved")}
+    suppressWarnings({result <- xgboost::xgb.save(model,modelfilename)})
+    if (result) {save(model$feature_names,file = gsub("\\.model","\\.rda",modelfilename))}else{warning("model is not saved")}
     }
   # Return the trained model
   return(model)
