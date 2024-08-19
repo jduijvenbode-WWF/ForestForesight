@@ -117,7 +117,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     ff_prep_params_combined = merge_lists(default = ff_prep_params_original, user = ff_prep_params)
     ff_prep_params_combined = merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
     traindata <- do.call(ff_prep, ff_prep_params_combined)
-    sample_size <- min(1,length(traindata$data_matrix$features)/fixed_sample_size)
+    sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))
     if (verbose) {cat("autoscaled sample size:", round(sample_size,2),"\n")}
     }
 
