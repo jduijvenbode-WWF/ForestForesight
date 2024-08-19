@@ -107,8 +107,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
   # Train model if not provided
   if (is.null(trained_model)) {
-    if(autoscale_sample & hasvalue(fltr_condition)){
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
+    if(autoscale_sample & hasvalue(fltr_condition)){
+      if (verbose) {cat("Finding optimal sample size based on filter condition\n")}
     ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
                                    fltr_condition = fltr_condition,fltr_features = fltr_features,
                                    sample_size = 1, shrink = "extract",
@@ -116,8 +117,6 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     ff_prep_params_combined = merge_lists(default = ff_prep_params_original, user = ff_prep_params)
     ff_prep_params_combined = merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
     traindata <- do.call(ff_prep, ff_prep_params_combined)
-
-    print(length(traindata$data_matrix$features))
     sample_size <- min(1,length(traindata$data_matrix$features)/fixed_sample_size)
     if (verbose) {cat("autoscaled sample size:", round(sample_size,2),"\n")}
     }
