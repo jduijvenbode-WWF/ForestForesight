@@ -107,7 +107,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
   # Train model if not provided
   if (is.null(trained_model)) {
-    if(autoscale_sample){
+    if(autoscale_sample & hasvalue(fltr_condition)){
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
     ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
                                    fltr_condition = fltr_condition,fltr_features = fltr_features,
