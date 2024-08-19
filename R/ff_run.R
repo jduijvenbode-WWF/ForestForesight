@@ -112,7 +112,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
                                    fltr_condition = fltr_condition,fltr_features = fltr_features,
                                    sample_size = 1, shrink = "extract",
-                                   groundtruth_pattern = "nogroundtruth",label_threshold = 1)
+                                   groundtruth_pattern = "groundtruth6m",label_threshold = 1)
     ff_prep_params_combined = merge_lists(default = ff_prep_params_original, user = ff_prep_params)
     ff_prep_params_combined = merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
     traindata <- do.call(ff_prep, ff_prep_params_combined)
