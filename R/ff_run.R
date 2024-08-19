@@ -119,9 +119,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
     print(length(traindata$data_matrix$features))
     sample_size <- min(1,length(traindata$data_matrix$features)/fixed_sample_size)
+    if (verbose) {cat("autoscaled sample size:", round(sample_size,2),"\n")}
     }
 
-    return(traindata$data_matrix$features)
 
 
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
