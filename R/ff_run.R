@@ -72,8 +72,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                    accuracy_csv = NA,
                    importance_csv = NA,
                    verbose=T,
-                   autoscale_sample = T) {
+                   autoscale_sample = F) {
   fixed_sample_size <- 6e6
+  sample_size <- 0.3
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
   if (!hasvalue(shape)) {
     data(countries,envir = environment())
@@ -107,6 +108,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
   # Train model if not provided
   if (is.null(trained_model)) {
+    sample_size <- 0.3
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
     if(autoscale_sample & hasvalue(fltr_condition)){
       if (verbose) {cat("Finding optimal sample size based on filter condition\n")}
