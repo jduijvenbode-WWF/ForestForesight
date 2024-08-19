@@ -133,8 +133,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     ff_train_params_original = list(traindata$data_matrix, verbose = verbose,
-                                    modelfilename = save_path,
-                                    features = traindata$features)
+                                    modelfilename = save_path)
     ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
     trained_model <- do.call(ff_train, ff_train_params_original)
   }
