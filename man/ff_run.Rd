@@ -17,11 +17,12 @@ ff_run(
   ff_prep_params = NULL,
   ff_train_params = NULL,
   threshold = 0.5,
-  mask_feature = "initialforestcover",
+  fltr_features = "initialforestcover",
   fltr_condition = ">0",
   accuracy_csv = NA,
   importance_csv = NA,
-  verbose = T
+  verbose = T,
+  autoscale_sample = F
 )
 }
 \arguments{
@@ -49,7 +50,7 @@ ff_run(
 
 \item{threshold}{Probability threshold for binary classification. Default is 0.5.}
 
-\item{mask_feature}{Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one}
+\item{fltr_features}{Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one}
 
 \item{fltr_condition}{The condition with value that is used to filter the training dataset based on mask features. Default is ">0". Can be more than one}
 
@@ -58,6 +59,8 @@ ff_run(
 \item{importance_csv}{Path to save feature importance metrics in CSV format. Default is NA (no CSV output).}
 
 \item{verbose}{Logical; whether to display progress messages. Default is TRUE.}
+
+\item{autoscale_sample}{Logical; Whether to automatically scale the number of samples based on the size of the area and the length of the training period.}
 }
 \value{
 A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
