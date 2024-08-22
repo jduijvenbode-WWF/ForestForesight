@@ -112,15 +112,15 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
     if(autoscale_sample & hasvalue(fltr_condition)){
       if (verbose) {cat("Finding optimal sample size based on filter condition\n")}
-    ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
-                                   fltr_condition = fltr_condition,fltr_features = fltr_features,
-                                   sample_size = 1, shrink = "extract",
-                                   groundtruth_pattern = "groundtruth6m",label_threshold = 1)
-    ff_prep_params_combined = merge_lists(default = ff_prep_params_original, user = ff_prep_params)
-    ff_prep_params_combined = merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
-    traindata <- do.call(ff_prep, ff_prep_params_combined)
-    sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))
-    if (verbose) {cat("autoscaled sample size:", round(sample_size,2),"\n")}
+      ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
+                                     fltr_condition = fltr_condition,fltr_features = fltr_features,
+                                     sample_size = 1, shrink = "extract",
+                                     groundtruth_pattern = "groundtruth6m",label_threshold = 1)
+      ff_prep_params_combined = merge_lists(default = ff_prep_params_original, user = ff_prep_params)
+      ff_prep_params_combined = merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
+      traindata <- do.call(ff_prep, ff_prep_params_combined)
+      sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))
+      if (verbose) {cat("autoscaled sample size:", round(sample_size,2),"\n")}
     }
 
 
@@ -175,9 +175,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       if (!hasvalue(forestras)) {forestras <- NULL}
       if (!is.na(accuracy_csv)) {
         pols <- ff_analyze(prediction$predicted_raster > threshold, groundtruth = predset$groundtruthraster,
-                        csvfile = accuracy_csv, tile = tile, date = prediction_date,
-                        return_polygons = verbose, append = TRUE, country = country,
-                        verbose = verbose, forestmask = forestras)
+                           csvfile = accuracy_csv, tile = tile, date = prediction_date,
+                           return_polygons = verbose, append = TRUE, country = country,
+                           verbose = verbose, forestmask = forestras)
         if (verbose) {if (tile == tiles[1]) {allpols <- pols}else{allpols <- rbind(allpols,pols)}}
       }
 
@@ -196,9 +196,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     fullras <- terra::crop(fullras,shape)
     names(fullras) <- prediction_date
     if (hasvalue(save_path_predictions)) {
-      if (length(prediction_dates) > 1) {terra::writeRaster(fullras,paste0(sub("\\.tif$", "", save_path_predictions),"_", prediction_date, ".tif" ), overwrite = T)}
-      else {terra::writeRaster(fullras, save_path_predictions,overwrite = T)}
-    }
+      if (length(prediction_dates) > 1) {filename <- paste0(sub("\\.tif$", "", save_path_predictions),"_", prediction_date, ".tif" )
+      }else{filename <- save_path_predictions}
+      if(verbose) {cat("saving result to ",filename)}
+      terra::writeRaster(fullras,filename, overwrite = T)}
+
+
 
     if (firstdate) {firstdate <- F
     allras <- fullras}else{allras <- c(allras, fullras)}
