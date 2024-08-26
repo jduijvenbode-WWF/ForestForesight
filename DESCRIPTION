@@ -1,8 +1,8 @@
 Package: ForestForesight
 Type: Package
 Title: Package that aids in all the processing steps to run predictions on the GFW integrated alerts according to the Forest Foresight principles
-Version: 1.2.1
-Date: 2024-08-17
+Version: 1.3.1
+Date: 2024-08-26
 Author: Jonas van Duijvenbode, Zillah Calle
 Maintainer: Jonas van Duijvenbode <jduijvenbode@wwf.nl>
 Description: This package is built for internal use for the ForestForesight programme and for any partners that want to do their own predictions for deforestation.
@@ -12,4 +12,4 @@ License: License: MIT + file LICENSE.txt
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
-Depends: terra, sf, xgboost, httr, lubridate, smoothr
+Depends: terra, sf, xgboost, httr, lubridate, smoothr, crayon

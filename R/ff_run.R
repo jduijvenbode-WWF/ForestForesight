@@ -21,6 +21,7 @@
 #' @param importance_csv Path to save feature importance metrics in CSV format. Default is NA (no CSV output).
 #' @param verbose Logical; whether to display progress messages. Default is TRUE.
 #' @param autoscale_sample Logical; Whether to automatically scale the number of samples based on the size of the area and the length of the training period.
+#' @param validation Logical; Whether to add a validation matrix, which is set at 0.25 of the training matrix.
 #'
 #' @return A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
 #'
@@ -72,7 +73,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                    accuracy_csv = NA,
                    importance_csv = NA,
                    verbose=T,
-                   autoscale_sample = F) {
+                   autoscale_sample = F,
+                   validation = F) {
   fixed_sample_size <- 6e6
   sample_size <- 0.3
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
@@ -119,7 +121,11 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       ff_prep_params_combined = merge_lists(default = ff_prep_params_original, user = ff_prep_params)
       ff_prep_params_combined = merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
       traindata <- do.call(ff_prep, ff_prep_params_combined)
-      sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))
+      if(validation){
+        sample_size <- min(1,1.33*fixed_sample_size/length(traindata$data_matrix$features))
+        if(verbose){cat("adding validation matrix\n")}
+        }else{
+      sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))}
       if (verbose) {cat("autoscaled sample size:", round(sample_size,2),"\n")}
     }
 
@@ -130,12 +136,15 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                                    fltr_condition = fltr_condition,fltr_features = fltr_features,
                                    sample_size = sample_size, verbose = verbose, shrink = "extract",
                                    groundtruth_pattern = "groundtruth6m",label_threshold = 1)
+    if(validation){ff_prep_params_original=c(ff_prep_params_original,list("validation_sample"=0.25))}
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
 
     traindata <- do.call(ff_prep, ff_prep_params_combined)
-    ff_train_params_original = list(traindata$data_matrix, verbose = verbose,
+    ff_train_params_original = list(train_matrix = traindata$data_matrix, verbose = verbose,
                                     modelfilename = save_path)
+    if(validation){ff_train_params_original <- c(ff_train_params_original, list(validation_matrix = traindata$validation_matrix))}
     ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
+
     trained_model <- do.call(ff_train, ff_train_params_original)
   }
   if (hasvalue(importance_csv)) {
