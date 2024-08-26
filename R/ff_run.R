@@ -15,11 +15,12 @@
 #' @param ff_prep_params List of parameters for data preprocessing. See `ff_prep` function for details.
 #' @param ff_train_params List of parameters for model training. See `ff_train` function for details.
 #' @param threshold Probability threshold for binary classification. Default is 0.5.
-#' @param mask_feature Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one
+#' @param fltr_features Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one
 #' @param fltr_condition The condition with value that is used to filter the training dataset based on mask features. Default is ">0". Can be more than one
 #' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
 #' @param importance_csv Path to save feature importance metrics in CSV format. Default is NA (no CSV output).
 #' @param verbose Logical; whether to display progress messages. Default is TRUE.
+#' @param autoscale_sample Logical; Whether to automatically scale the number of samples based on the size of the area and the length of the training period.
 #'
 #' @return A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
 #'
@@ -66,11 +67,14 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                    ff_prep_params = NULL,
                    ff_train_params = NULL,
                    threshold = 0.5,
-                   mask_feature = "initialforestcover",
+                   fltr_features = "initialforestcover",
                    fltr_condition = ">0",
                    accuracy_csv = NA,
                    importance_csv = NA,
-                   verbose=T) {
+                   verbose=T,
+                   autoscale_sample = F) {
+  fixed_sample_size <- 6e6
+  sample_size <- 0.3
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
   if (!hasvalue(shape)) {
     data(countries,envir = environment())
@@ -104,17 +108,33 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
   # Train model if not provided
   if (is.null(trained_model)) {
+    sample_size <- 0.3
+    if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
+    if(autoscale_sample & hasvalue(fltr_condition)){
+      if (verbose) {cat("Finding optimal sample size based on filter condition\n")}
+      ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
+                                     fltr_condition = fltr_condition,fltr_features = fltr_features,
+                                     sample_size = 1, shrink = "extract",
+                                     groundtruth_pattern = "groundtruth6m",label_threshold = 1)
+      ff_prep_params_combined = merge_lists(default = ff_prep_params_original, user = ff_prep_params)
+      ff_prep_params_combined = merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
+      traindata <- do.call(ff_prep, ff_prep_params_combined)
+      sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))
+      if (verbose) {cat("autoscaled sample size:", round(sample_size,2),"\n")}
+    }
+
+
+
     if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
     ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
-                                   fltr_condition = fltr_condition,fltr_features = mask_feature,
-                                   sample_size = 0.3, verbose = verbose, shrink = "extract",
+                                   fltr_condition = fltr_condition,fltr_features = fltr_features,
+                                   sample_size = sample_size, verbose = verbose, shrink = "extract",
                                    groundtruth_pattern = "groundtruth6m",label_threshold = 1)
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
 
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     ff_train_params_original = list(traindata$data_matrix, verbose = verbose,
-                                    modelfilename = save_path,
-                                    features = traindata$features)
+                                    modelfilename = save_path)
     ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
     trained_model <- do.call(ff_train, ff_train_params_original)
   }
@@ -132,8 +152,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
       #run the predict function if a model was not built but was provided by the function
       ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
-                                     verbose = verbose, fltr_features = mask_feature,
-                                     fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m",sample_size = 1, label_threshold = 1)
+                                     verbose = verbose, fltr_features = fltr_features,
+                                     fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m",sample_size = 1, label_threshold = 1, shrink = "crop")
       ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
       if (class(trained_model)=="character") {
         if (file.exists(gsub("\\.model","\\.rda",trained_model))) {
@@ -151,13 +171,13 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       raslist[[tile]] <- prediction$predicted_raster
       # Analyze prediction
 
-      forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = mask_feature)
+      forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = fltr_features)
       if (!hasvalue(forestras)) {forestras <- NULL}
       if (!is.na(accuracy_csv)) {
         pols <- ff_analyze(prediction$predicted_raster > threshold, groundtruth = predset$groundtruthraster,
-                        csvfile = accuracy_csv, tile = tile, date = prediction_date,
-                        return_polygons = verbose, append = TRUE, country = country,
-                        verbose = verbose, forestmask = forestras)
+                           csvfile = accuracy_csv, tile = tile, date = prediction_date,
+                           return_polygons = verbose, append = TRUE, country = country,
+                           verbose = verbose, forestmask = forestras)
         if (verbose) {if (tile == tiles[1]) {allpols <- pols}else{allpols <- rbind(allpols,pols)}}
       }
 
@@ -176,9 +196,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     fullras <- terra::crop(fullras,shape)
     names(fullras) <- prediction_date
     if (hasvalue(save_path_predictions)) {
-      if (length(prediction_dates) > 1) {terra::writeRaster(fullras,paste0(sub("\\.tif$", "", save_path_predictions),"_", prediction_date, ".tif" ), overwrite = T)}
-      else {terra::writeRaster(fullras, save_path_predictions,overwrite = T)}
-    }
+      if (length(prediction_dates) > 1) {filename <- paste0(sub("\\.tif$", "", save_path_predictions),"_", prediction_date, ".tif" )
+      }else{filename <- save_path_predictions}
+      if(verbose) {cat("saving result to ",filename)}
+      terra::writeRaster(fullras,filename, overwrite = T)}
+
+
 
     if (firstdate) {firstdate <- F
     allras <- fullras}else{allras <- c(allras, fullras)}
