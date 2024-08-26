@@ -60,9 +60,9 @@ ff_polygonize <- function(raster,
     pols <- smoothr::smooth(pols, method = "ksmooth", smoothness = smoothness)
   })
   # Extract average values from original raster
-  pols$risk <- terra::extract(raster, pols, fun = "mean", ID = FALSE)
+  pols$risk <- round(terra::extract(raster, pols, fun = "mean", ID = FALSE),2)
   pols$size <- round(terra::expanse(pols)/10000)
-  pols$sumrisk <- pols$size * pols$risk
+  pols$sumrisk <- round(pols$size * pols$risk)
   # Save result
   if(!is.na(output_file)){terra::writeVector(pols, output_file, overwrite = TRUE)}
   return(pols)
