@@ -22,7 +22,8 @@ ff_run(
   accuracy_csv = NA,
   importance_csv = NA,
   verbose = T,
-  autoscale_sample = F
+  autoscale_sample = F,
+  validation = F
 )
 }
 \arguments{
@@ -61,6 +62,8 @@ ff_run(
 \item{verbose}{Logical; whether to display progress messages. Default is TRUE.}
 
 \item{autoscale_sample}{Logical; Whether to automatically scale the number of samples based on the size of the area and the length of the training period.}
+
+\item{validation}{Logical; Whether to add a validation matrix, which is set at 0.25 of the training matrix.}
 }
 \value{
 A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
