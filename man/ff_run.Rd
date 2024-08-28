@@ -49,7 +49,7 @@ ff_run(
 
 \item{ff_train_params}{List of parameters for model training. See `ff_train` function for details.}
 
-\item{threshold}{Probability threshold for binary classification. Default is 0.5.}
+\item{threshold}{Probability threshold for binary classififf_cation. Default is 0.5.}
 
 \item{fltr_features}{Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one}
 

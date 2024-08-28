@@ -14,7 +14,7 @@
 #' @param trained_model Pre-trained model object or path to saved model. If NULL, a new model will be trained. Default is NULL.
 #' @param ff_prep_params List of parameters for data preprocessing. See `ff_prep` function for details.
 #' @param ff_train_params List of parameters for model training. See `ff_train` function for details.
-#' @param threshold Probability threshold for binary classification. Default is 0.5.
+#' @param threshold Probability threshold for binary classififf_cation. Default is 0.5.
 #' @param fltr_features Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one
 #' @param fltr_condition The condition with value that is used to filter the training dataset based on mask features. Default is ">0". Can be more than one
 #' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
@@ -111,9 +111,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
   # Train model if not provided
   if (is.null(trained_model)) {
     sample_size <- 0.3
-    if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
+    if (verbose) {ff_cat("Preparing data\n",color = "green");ff_cat("looking in folder",prep_folder,"\n",color = "green")}
     if(autoscale_sample & hasvalue(fltr_condition)){
-      if (verbose) {cat("Finding optimal sample size based on filter condition\n")}
+      if (verbose) {ff_cat("Finding optimal sample size based on filter condition\n",color = "green")}
       ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
                                      fltr_condition = fltr_condition,fltr_features = fltr_features,
                                      sample_size = 1, shrink = "extract",
@@ -123,15 +123,15 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       traindata <- do.call(ff_prep, ff_prep_params_combined)
       if(validation){
         sample_size <- min(1,1.33*fixed_sample_size/length(traindata$data_matrix$features))
-        if(verbose){cat("adding validation matrix\n")}
+        if(verbose){ff_cat("adding validation matrix\n",color = "green")}
         }else{
       sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))}
-      if (verbose) {cat("autoscaled sample size:", round(sample_size,2),"\n")}
+      if (verbose) {ff_cat("autoscaled sample size:", round(sample_size,2),"\n",color = "green")}
     }
 
 
 
-    if (verbose) {cat("Preparing data\n");cat("looking in folder",prep_folder,"\n")}
+    if (verbose) {ff_cat("Preparing data\n",color = "green");ff_cat("looking in folder",prep_folder,"\n",color = "green")}
     ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
                                    fltr_condition = fltr_condition,fltr_features = fltr_features,
                                    sample_size = sample_size, verbose = verbose, shrink = "extract",
@@ -167,7 +167,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       if (class(trained_model)=="character") {
         if (file.exists(gsub("\\.model","\\.rda",trained_model))) {
           model_features <- list("inc_features"=get(load(gsub("\\.model","\\.rda",trained_model))))
-          if (verbose) {cat("pre-trained model only includes the following features:",paste(model_features$inc_features,collapse = ", "),"\n") }
+          if (verbose) {ff_cat("pre-trained model only includes the following features:",paste(model_features$inc_features,collapse = ", "),"\n",color = "green") }
           ff_prep_params_combined <- merge_lists(default = model_features,user = ff_prep_params_combined)
         }
       }
@@ -183,10 +183,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = fltr_features)
       if (!hasvalue(forestras)) {forestras <- NULL}
       if (!is.na(accuracy_csv)) {
+
+        analysis_polygons=terra::intersect(terra::vect(get(data("degree_polygons"))),terra::aggregate(shape))
         pols <- ff_analyze(prediction$predicted_raster > threshold, groundtruth = predset$groundtruthraster,
                            csvfile = accuracy_csv, tile = tile, date = prediction_date,
                            return_polygons = verbose, append = TRUE, country = country,
-                           verbose = verbose, forestmask = forestras)
+                           verbose = verbose, forestmask = forestras,analysis_polygons = analysis_polygons)
         if (verbose) {if (tile == tiles[1]) {allpols <- pols}else{allpols <- rbind(allpols,pols)}}
       }
 
@@ -195,7 +197,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     if (verbose & exists("allpols")) {
       precision <- sum(allpols$TP,na.rm = T)/(sum(allpols$TP,na.rm = T) + sum(allpols$FP,na.rm = T))
       recall <- sum(allpols$TP,na.rm = T)/(sum(allpols$TP,na.rm = T) + sum(allpols$FN, na.rm = T))
-      cat("date:", prediction_date, "precision:", precision,",recall:",recall,",F0.5",(1.25*precision * recall)/(0.25*precision + recall),"\n")
+      ff_cat("date:", prediction_date, "precision:", precision,",recall:",recall,",F0.5",(1.25*precision * recall)/(0.25*precision + recall),"\n",color = "green")
     }
 
     if (length(raslist) == 1) {fullras <- raslist[[1]]}else{
@@ -207,7 +209,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     if (hasvalue(save_path_predictions)) {
       if (length(prediction_dates) > 1) {filename <- paste0(sub("\\.tif$", "", save_path_predictions),"_", prediction_date, ".tif" )
       }else{filename <- save_path_predictions}
-      if(verbose) {cat("saving result to ",filename)}
+      if(verbose) {ff_cat("saving result to ",filename)}
       terra::writeRaster(fullras,filename, overwrite = T)}
 
 

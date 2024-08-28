@@ -51,7 +51,7 @@ ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, 
   if (is.null(analysis_polygons)) {
     data(degree_polygons,envir = environment())
     pols <- terra::vect(degree_polygons)}else{
-      if (class(analysis_polygons == "character")) {
+      if (class(analysis_polygons) == "character") {
         pols <- terra::vect(analysis_polygons)}else{
           pols <- analysis_polygons}}
   if (!is.null(country)) {pols <- pols[which(pols$iso3 == country)]}
@@ -69,7 +69,13 @@ ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, 
   if (verbose) {cat("adding metadata\n")}
   pols$date <- date
   pols$method <- method
-  if (remove_empty) {pols <- pols[-which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm = T) == 0),]}
+  if (remove_empty) {
+    empty_indices <- which(rowSums(as.data.frame(pols[,c("FP","FN","TP")]),na.rm = T) == 0)
+    if (length(empty_indices) > 0) {
+      if (verbose) {ff_cat("removing",length(empty_indices) ,"empty records\n")}
+      pols <- pols[-empty_indices,]
+    }
+  }
   if (!is.null(csvfile)) {
     if ( append & file.exists(csvfile)) {
       if (verbose) {cat("appending to existing dataset\n")}
