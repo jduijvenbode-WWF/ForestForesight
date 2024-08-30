@@ -11,6 +11,7 @@ ff_run(
   ff_folder,
   train_start = NULL,
   train_end = NULL,
+  validation_dates = NULL,
   save_path = NULL,
   save_path_predictions = NULL,
   trained_model = NULL,
@@ -19,7 +20,7 @@ ff_run(
   threshold = 0.5,
   fltr_features = "initialforestcover",
   fltr_condition = ">0",
-  accuracy_csv = NA,
+  accuracy_csv = NULL,
   importance_csv = NA,
   verbose = T,
   autoscale_sample = F,
@@ -38,6 +39,8 @@ ff_run(
 \item{train_start}{Start date for training data in "YYYY-MM-DD" format. Default is NULL.}
 
 \item{train_end}{End date for training data in "YYYY-MM-DD" format. Default is NULL.}
+
+\item{validation_dates}{The dates for which you want to create a distinct validation matrix (if any, select validation = T to make a subsample of the same dates as the training data).}
 
 \item{save_path}{Path to save the trained model (with extension ".model"). Default is NULL.}
 
@@ -63,7 +66,7 @@ ff_run(
 
 \item{autoscale_sample}{Logical; Whether to automatically scale the number of samples based on the size of the area and the length of the training period.}
 
-\item{validation}{Logical; Whether to add a validation matrix, which is set at 0.25 of the training matrix.}
+\item{validation}{Logical; Whether to add a validation matrix based on the training data, which is set at 0.25 of the training matrix. Should not be set if validation_dates is not NULL.}
 }
 \value{
 A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
