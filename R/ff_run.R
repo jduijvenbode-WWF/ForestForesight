@@ -9,6 +9,7 @@
 #' @param ff_folder Directory containing the input data.
 #' @param train_start Start date for training data in "YYYY-MM-DD" format. Default is NULL.
 #' @param train_end End date for training data in "YYYY-MM-DD" format. Default is NULL.
+#' @param validation_dates The dates for which you want to create a distinct validation matrix (if any, select validation = T to make a subsample of the same dates as the training data).
 #' @param save_path Path to save the trained model (with extension ".model"). Default is NULL.
 #' @param save_path_predictions Path to save the predictions (with extension ".tif"). Default is NULL.
 #' @param trained_model Pre-trained model object or path to saved model. If NULL, a new model will be trained. Default is NULL.
@@ -21,7 +22,7 @@
 #' @param importance_csv Path to save feature importance metrics in CSV format. Default is NA (no CSV output).
 #' @param verbose Logical; whether to display progress messages. Default is TRUE.
 #' @param autoscale_sample Logical; Whether to automatically scale the number of samples based on the size of the area and the length of the training period.
-#' @param validation Logical; Whether to add a validation matrix, which is set at 0.25 of the training matrix.
+#' @param validation Logical; Whether to add a validation matrix based on the training data, which is set at 0.25 of the training matrix. Should not be set if validation_dates is not NULL.
 #'
 #' @return A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
 #'
@@ -148,6 +149,21 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       ff_prep_params_combined["end"] <- tail(sort(validation_dates),1)
       ff_prep_params_combined["sample_size"] <- 1/3*sample_size
       valdata <- do.call(ff_prep, ff_prep_params_combined)
+
+
+      if (train_start < head(sort(validation_dates),1)){
+        extra_features <- which(!valdata$features %in% traindata$features)
+        if (length(extra_features) > 0){
+          valdata$features  <- valdata$features[-extra_features]
+          valdata$data_matrix$features <- valdata$data_matrix$features[,-extra_features]
+        }
+      }else{
+        extra_features <- which(!traindata$features %in% valdata$features)
+        if (length(extra_features) > 0) {
+          traindata$features  <- traindata$features[-extra_features]
+          traindata$data_matrix$features <- traindata$data_matrix$features[,-extra_features]
+        }
+      }
       traindata$validation_matrix <- valdata$data_matrix
     }
 
