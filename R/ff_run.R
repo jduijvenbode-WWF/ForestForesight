@@ -62,6 +62,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                    ff_folder,
                    train_start=NULL,
                    train_end=NULL,
+                   validation_dates = NULL,
                    save_path=NULL,
                    save_path_predictions=NULL,
                    trained_model = NULL,
@@ -70,7 +71,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                    threshold = 0.5,
                    fltr_features = "initialforestcover",
                    fltr_condition = ">0",
-                   accuracy_csv = NA,
+                   accuracy_csv = NULL,
                    importance_csv = NA,
                    verbose=T,
                    autoscale_sample = F,
@@ -84,6 +85,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     shape <- countries[which(countries$iso3 == country),]
   }
   #check if all the function parameters have values in the right format
+  if (hasvalue(validation_dates)) {validation = F}
   if (!hasvalue(ff_folder)) {stop("ff_folder is not given")}
   if (!dir.exists(ff_folder)) {stop(paste(ff_folder,"does not exist"))}
   if (!hasvalue(prediction_dates) & !is.null(trained_model)) {stop("prediction_date is not given and model is given so there is no need to run.")}
@@ -111,8 +113,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
   # Train model if not provided
   if (is.null(trained_model)) {
     sample_size <- 0.3
-    if (verbose) {ff_cat("Preparing data\n",color = "green");ff_cat("looking in folder",prep_folder,"\n",color = "green")}
-    if(autoscale_sample & hasvalue(fltr_condition)){
+    #ff prep to determine the sample size
+    if (autoscale_sample & hasvalue(fltr_condition)){
       if (verbose) {ff_cat("Finding optimal sample size based on filter condition\n",color = "green")}
       ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
                                      fltr_condition = fltr_condition,fltr_features = fltr_features,
@@ -136,13 +138,22 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                                    fltr_condition = fltr_condition,fltr_features = fltr_features,
                                    sample_size = sample_size, verbose = verbose, shrink = "extract",
                                    groundtruth_pattern = "groundtruth6m",label_threshold = 1)
-    if(validation){ff_prep_params_original=c(ff_prep_params_original,list("validation_sample"=0.25))}
+    if (validation) {ff_prep_params_original=c(ff_prep_params_original,list("validation_sample" = 0.25))}
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
 
     traindata <- do.call(ff_prep, ff_prep_params_combined)
+    if (hasvalue(validation_dates)) {
+      if (verbose) {ff_cat("adding validation matrix for dates",paste(validation_dates,collapse = ", "),"\n",color = "green")}
+      ff_prep_params_combined["start"] <- head(sort(validation_dates),1)
+      ff_prep_params_combined["end"] <- tail(sort(validation_dates),1)
+      ff_prep_params_combined["sample_size"] <- 1/3*sample_size
+      valdata <- do.call(ff_prep, ff_prep_params_combined)
+      traindata$validation_matrix <- valdata$data_matrix
+    }
+
     ff_train_params_original = list(train_matrix = traindata$data_matrix, verbose = verbose,
                                     modelfilename = save_path)
-    if(validation){ff_train_params_original <- c(ff_train_params_original, list(validation_matrix = traindata$validation_matrix))}
+    if (validation | hasvalue(validation_dates)) {ff_train_params_original <- c(ff_train_params_original, list(validation_matrix = traindata$validation_matrix))}
     ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
 
     trained_model <- do.call(ff_train, ff_train_params_original)
@@ -182,7 +193,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
       forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = fltr_features)
       if (!hasvalue(forestras)) {forestras <- NULL}
-      if (!is.na(accuracy_csv)) {
+
 
         analysis_polygons=terra::intersect(terra::vect(get(data("degree_polygons"))),terra::aggregate(shape))
         pols <- ff_analyze(prediction$predicted_raster > threshold, groundtruth = predset$groundtruthraster,
@@ -190,7 +201,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                            return_polygons = verbose, append = TRUE, country = country,
                            verbose = verbose, forestmask = forestras,analysis_polygons = analysis_polygons)
         if (verbose) {if (tile == tiles[1]) {allpols <- pols}else{allpols <- rbind(allpols,pols)}}
-      }
+
 
 
     }
