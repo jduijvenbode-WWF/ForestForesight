@@ -101,7 +101,7 @@ To find out how you can contribute, email jduijvenbode@wwf.nl
 Please adhere to this project's `code of conduct`.
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)[![GNU GPLv3 License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://choosealicense.com/licenses/gpl-3.0/)
 
 
 ## Acknowledgements
