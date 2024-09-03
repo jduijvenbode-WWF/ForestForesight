@@ -8,8 +8,7 @@
 #' @param shape SpatVector for which the data is prepared. Optional if either country or tiles is given.
 #' @param tiles Vector of tiles in the syntax of e.g., "10N_080W" for which the data is prepared. Optional if either shape or country is given.
 #' @param groundtruth_pattern Pattern to identify ground truth files. Default is "groundtruth6m" (groundtruth of future six months in binary format).
-#' @param start Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".
-#' @param end End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.
+#' @param dates vector of dates in the format "YYYY-MM-DD". Default is "2021-01-01".
 #' @param inc_features Vector of features to exclusively include in the data preparation.
 #' @param exc_features Vector of features to exclude from the data preparation.
 #' @param fltr_features Vector of features for filtering data. Default is NULL. Example: 'initialforestcover'.
@@ -50,8 +49,7 @@
 #' prepared_data <- ff_prep(
 #'   datafolder = "path/to/data",
 #'   country = "BRA",
-#'   start = "2022-01-01",
-#'   end = "2022-12-31",
+#'   dates = ForestForesight::daterange("2022-01-01","2022-12-31"),
 #'   fltr_features = "initialforestcover",
 #'   fltr_condition = ">0"
 #' )
@@ -63,15 +61,14 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
-ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", start="2023-01-01", end=NA,
+ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", dates="2023-01-01",
                     inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=0.3, validation_sample=0,
                     adddate=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
   ########quality check########
-  if (as.Date(start) < as.Date("2021-01-01")) {stop("the earliest date available is 2021-01-01")}
+  if (as.Date(min(dates)) < as.Date("2021-01-01")) {stop("the earliest date available is 2021-01-01")}
   if (!hasvalue(country) & !hasvalue(shape)) {shrink <- "none"}
-  if (!hasvalue(start)) {stop("no start date given")}
+  if (!hasvalue(dates)) {stop("no dates were given")}
   if (!hasvalue(tiles) & !hasvalue(country) & !hasvalue(shape)) {stop("unknown what to process since no tiles or country or shape were given")}
-  if (!hasvalue(end)) {end <- start}
   if (hasvalue(shape) & !class(shape) == "SpatVector") {stop("shape should be of class spatVector")}
   if (!hasvalue(datafolder)) {datafolder <- Sys.getenv("ff_datafolder")}
   if (datafolder == "") {stop("No environment variable for ff_datafolder and no datafolder parameter set")}
@@ -114,8 +111,8 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
     inc_indices <- unique(unlist(sapply(c(inc_features,groundtruth_pattern),function(x) which(endsWith(gsub(".tif","",basename(allfiles)),x)))))
     if (length(inc_indices > 0)) {allfiles <- allfiles[inc_indices]}}
   if (length(allfiles) == 0) {stop("after including and excluding the requested variables there are no files left")}
-  #create the range between start and end date
-  daterange <- daterange(start,end)
+
+
   if (length(tiles) > 1) {if (verbose) {cat("No grountruth raster will be returned because multiple tiles are processed together \n")}}
   first <- T
   #######load raster data as matrix#########
@@ -125,7 +122,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
     if (!hasvalue(shape) & (shrink == "extract")) {
       if (!exists("countries",inherits = F)) {data(countries,envir = environment());borders <- terra::vect(countries)}
       shape <- aggregate(intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))),borders))}
-    for (i in daterange) {
+    for (i in dates) {
       if (exists("dts",inherits = F)) {rm(dts)}
       if (verbose) {cat(paste("loading tile data from",tile,"for",i," "))}
       selected_files = select_files_date(i, files)
