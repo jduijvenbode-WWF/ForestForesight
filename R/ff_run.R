@@ -7,8 +7,7 @@
 #' @param country ISO3 country code. Either `shape` or `country` must be provided.
 #' @param prediction_dates Dates for prediction in "YYYY-MM-DD" format.
 #' @param ff_folder Directory containing the input data.
-#' @param train_start Start date for training data in "YYYY-MM-DD" format. Default is NULL.
-#' @param train_end End date for training data in "YYYY-MM-DD" format. Default is NULL.
+#' @param train_dates The dates for which you want to create the training data. dates should be a vector with the format YYYY-MM-DD with DD being 01
 #' @param validation_dates The dates for which you want to create a distinct validation matrix (if any, select validation = T to make a subsample of the same dates as the training data).
 #' @param save_path Path to save the trained model (with extension ".model"). Default is NULL.
 #' @param save_path_predictions Path to save the predictions (with extension ".tif"). Default is NULL.
@@ -33,8 +32,7 @@
 #'   country = "BRA",
 #'   prediction_date = "2024-01-01",
 #'   ff_folder = "path/to/forestforesight/data",
-#'   train_start = "2022-01-01",
-#'   train_end = "2023-12-31",
+#'   train_dates = ForestForesight::daterange("2022-01-01","2023-12-31"),
 #'   save_path = "path/to/save/model.model",
 #'   accuracy_csv = "path/to/save/accuracy.csv"
 #' )
@@ -61,8 +59,7 @@
 
 ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                    ff_folder,
-                   train_start=NULL,
-                   train_end=NULL,
+                   train_dates=NULL,
                    validation_dates = NULL,
                    save_path=NULL,
                    save_path_predictions=NULL,
@@ -92,12 +89,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
   if (!hasvalue(prediction_dates) & !is.null(trained_model)) {stop("prediction_date is not given and model is given so there is no need to run.")}
   if (!hasvalue(prediction_dates)) {prediction_dates <- "3000-01-01"}
   prediction_dates <- sort(prediction_dates)
-  #check that end is before start
+
   if (is.null(trained_model)) {
-    if (!hasvalue(train_end)) {train_end <- as.character(lubridate::ymd(prediction_dates[1]) %m-% months(6,abbreviate = F))}
-    if (lubridate::ymd(train_end) < lubridate::ymd(train_start)) {stop("train_end is before train_start")}
-    if (lubridate::ymd(train_end) > lubridate::ymd(prediction_dates[1])) {warning("train_end is after prediction_date")}
-    if ((lubridate::ymd(prediction_dates[1]) - lubridate::ymd(train_end)) < 170 ) {warning("There should be at least 6 months between training and testing/predicting")}
+    if (!hasvalue(train_dates)) {train_dates <- as.character(lubridate::ymd(min(prediction_dates)) %m-% months(6,abbreviate = F))}
+
+    if (lubridate::ymd(max(train_dates)) > lubridate::ymd(prediction_dates[1])) {warning("(some) training dates are after prediction dates")}
+    if ((lubridate::ymd(prediction_dates[1]) - lubridate::ymd(max(train_dates))) < 170 ) {warning("There should be at least 6 months between training and testing/predicting")}
   }
 
 
@@ -117,7 +114,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     #ff prep to determine the sample size
     if (autoscale_sample & hasvalue(fltr_condition)){
       if (verbose) {ff_cat("Finding optimal sample size based on filter condition\n",color = "green")}
-      ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
+      ff_prep_params_original = list(datafolder = prep_folder, shape = shape, dates = train_dates,
                                      fltr_condition = fltr_condition,fltr_features = fltr_features,
                                      sample_size = 1, shrink = "extract",
                                      groundtruth_pattern = "groundtruth6m",label_threshold = 1)
@@ -135,7 +132,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
 
     if (verbose) {ff_cat("Preparing data\n",color = "green");ff_cat("looking in folder",prep_folder,"\n",color = "green")}
-    ff_prep_params_original = list(datafolder = prep_folder, shape = shape, start = train_start, end = train_end,
+    ff_prep_params_original = list(datafolder = prep_folder, shape = shape, dates=train_dates,
                                    fltr_condition = fltr_condition,fltr_features = fltr_features,
                                    sample_size = sample_size, verbose = verbose, shrink = "extract",
                                    groundtruth_pattern = "groundtruth6m",label_threshold = 1)
@@ -145,13 +142,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     if (hasvalue(validation_dates)) {
       if (verbose) {ff_cat("adding validation matrix for dates",paste(validation_dates,collapse = ", "),"\n",color = "green")}
-      ff_prep_params_combined["start"] <- head(sort(validation_dates),1)
-      ff_prep_params_combined["end"] <- tail(sort(validation_dates),1)
+      ff_prep_params_combined["dates"] <- validation_dates
       ff_prep_params_combined["sample_size"] <- 1/3*sample_size
       valdata <- do.call(ff_prep, ff_prep_params_combined)
 
 
-      if (train_start < head(sort(validation_dates),1)){
+      if (min(train_dates) < min(validation_dates)){
         extra_features <- which(!valdata$features %in% traindata$features)
         if (length(extra_features) > 0){
           valdata$features  <- valdata$features[-extra_features]
@@ -187,7 +183,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
     for (tile in tiles) {
 
       #run the predict function if a model was not built but was provided by the function
-      ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, start = prediction_date,
+      ff_prep_params_original = list(datafolder = prep_folder, tiles = tile, dates = prediction_date,
                                      verbose = verbose, fltr_features = fltr_features,
                                      fltr_condition = fltr_condition, groundtruth_pattern = "groundtruth6m",sample_size = 1, label_threshold = 1, shrink = "crop")
       ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
