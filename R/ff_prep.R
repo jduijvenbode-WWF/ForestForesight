@@ -128,7 +128,8 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
       selected_files = select_files_date(i, files)
       #remove groundtruth if it is not of the same month
       if (!(grep(groundtruth_pattern,selected_files) %in% grep(i,selected_files))) {selected_files <- selected_files[-grep(groundtruth_pattern,selected_files)]}
-      for (file in selected_files) {if (!exists("extent")) {extent <- terra::ext(terra::rast(file))}else{extent <- terra::intersect(extent,terra::ext(terra::rast(file)))}}
+      for (file in selected_files) {if (!exists("extent")) {
+        extent <- terra::ext(terra::rast(file))}else{extent <- terra::intersect(extent,terra::ext(terra::rast(file)))}}
 
       if (shrink %in% c("extract","crop")) {extent <- terra::ext(terra::crop(terra::as.polygons(extent),terra::ext(shape)))}
 
@@ -151,7 +152,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
             gtfile = selected_files[grep(groundtruth_pattern,selected_files)]
             groundtruth_raster <- terra::rast(gtfile,win = extent)
           }else{
-            if (verbose) {cat("no groundtruth raster was found, first regular raster selected for groundtruth\n")}
+            if (verbose) {cat("no groundtruth raster was found, first regular raster selected as a template raster.\n")}
             groundtruth_raster <- terra::rast(selected_files[1],win = extent)
             groundtruth_raster[] <- 0}
 
