@@ -37,6 +37,7 @@
 #'   \item{testindices}{Indices of the filtered samples}
 #'   \item{groundtruthraster}{A SpatRaster of the ground truth}
 #'   \item{features}{A vector of feature names}
+#'   \item {hasgroundtruth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
 #'
 #' @export
 #'
@@ -149,9 +150,11 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
         }else{
           if (first) {
           if (length(grep(groundtruth_pattern,selected_files)) > 0) {
+            hasgroundtruth <- T
             gtfile = selected_files[grep(groundtruth_pattern,selected_files)]
             groundtruth_raster <- terra::rast(gtfile,win = extent)
           }else{
+            hasgroundtruth <- F
             if (verbose) {cat("no groundtruth raster was found, first regular raster selected as a template raster.\n")}
             groundtruth_raster <- terra::rast(selected_files[1],win = extent)
             groundtruth_raster[] <- 0}
@@ -240,6 +243,6 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
 
   ##########output data####
   if (hasvalue(data_matrix$label)) {if (sum(data_matrix$label) == 0) {warning("data contains no actuals, all labels are 0")}}
-  return(list("data_matrix" = data_matrix,"validation_matrix" = validation_matrix,"testindices" = allindices,"groundtruthraster" = groundtruth_raster,features = colnames(fdts)))
+  return(list("data_matrix" = data_matrix,"validation_matrix" = validation_matrix,"testindices" = allindices,"groundtruthraster" = groundtruth_raster,features = colnames(fdts),hasgroundtruth = hasgroundtruth))
 }
 

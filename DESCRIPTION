@@ -1,8 +1,8 @@
 Package: ForestForesight
 Type: Package
 Title: Package that aids in all the processing steps to run predictions on the GFW integrated alerts according to the Forest Foresight principles
-Version: 3.0.2
-Date: 2024-09-03
+Version: 3.1.0
+Date: 2024-09-04
 Author: Jonas van Duijvenbode, Zillah Calle
 Maintainer: Jonas van Duijvenbode <jduijvenbode@wwf.nl>
 Description: This package is built for internal use for the ForestForesight programme and for any partners that want to do their own predictions for deforestation.

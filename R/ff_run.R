@@ -124,8 +124,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
       if(validation){
         sample_size <- min(1,1.33*fixed_sample_size/length(traindata$data_matrix$features))
         if(verbose){ff_cat("adding validation matrix\n",color = "green")}
-        }else{
-      sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))}
+      }else{
+        sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))}
       if (verbose) {ff_cat("autoscaled sample size:", round(sample_size,2),"\n",color = "green")}
     }
 
@@ -205,7 +205,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
 
       forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = fltr_features)
       if (!hasvalue(forestras)) {forestras <- NULL}
-
+      if (predset$hasgroundtruth) {
 
         analysis_polygons=terra::intersect(terra::vect(get(data("degree_polygons"))),terra::aggregate(shape))
         pols <- ff_analyze(prediction$predicted_raster > threshold, groundtruth = predset$groundtruthraster,
@@ -215,7 +215,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
         if (verbose) {if (tile == tiles[1]) {allpols <- pols}else{allpols <- rbind(allpols,pols)}}
 
 
-
+      }else{
+        if (verbose) {ff_cat("no analysis is done because no groundtruth is available\n",color="green")}
+      }
     }
     if (verbose & exists("allpols")) {
       precision <- sum(allpols$TP,na.rm = T)/(sum(allpols$TP,na.rm = T) + sum(allpols$FP,na.rm = T))
