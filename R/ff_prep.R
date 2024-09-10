@@ -75,6 +75,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   if (datafolder == "") {stop("No environment variable for ff_datafolder and no datafolder parameter set")}
   inputdatafolder <- file.path(datafolder,"input")
   groundtruthdatafolder <- file.path(datafolder,"groundtruth")
+  hasgroundtruth <- F
   ########preprocess for by-country processing########
   data(gfw_tiles,envir = environment())
   tilesvect <- terra::vect(gfw_tiles)
@@ -147,7 +148,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
       rasstack <- terra::rast(sapply(selected_files,function(x) terra::rast(x,win = extent)))
       if (length(tiles) > 1) {
         groundtruth_raster = NA
-        hasgroundtruth <- F
+
         }else{
           if (first) {
           if (length(grep(groundtruth_pattern,selected_files)) > 0) {
@@ -155,7 +156,6 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
             gtfile = selected_files[grep(groundtruth_pattern,selected_files)]
             groundtruth_raster <- terra::rast(gtfile,win = extent)
           }else{
-            hasgroundtruth <- F
             if (verbose) {cat("no groundtruth raster was found, first regular raster selected as a template raster.\n")}
             groundtruth_raster <- terra::rast(selected_files[1],win = extent)
             groundtruth_raster[] <- 0}
