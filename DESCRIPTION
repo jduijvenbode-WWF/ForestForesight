@@ -1,7 +1,7 @@
 Package: ForestForesight
 Type: Package
 Title: Package created to preprocess, model, predict and analyze deforestation according to the WWF-NL ForestForesight principles.
-Version: 3.1.3
+Version: 3.2.1
 Date: 2024-09-10
 Author: Jonas van Duijvenbode, Zillah Calle
 Maintainer: Jonas van Duijvenbode <jduijvenbode@wwf.nl>
