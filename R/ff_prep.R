@@ -243,6 +243,6 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
 
   ##########output data####
   if (hasvalue(data_matrix$label)) {if (sum(data_matrix$label) == 0) {warning("data contains no actuals, all labels are 0")}}
-  return(list("data_matrix" = data_matrix,"validation_matrix" = validation_matrix,"testindices" = allindices,"groundtruthraster" = groundtruth_raster,features = colnames(fdts),hasgroundtruth = hasgroundtruth))
+  return(list("data_matrix" = data_matrix,"validation_matrix" = validation_matrix,"testindices" = allindices,"groundtruthraster" = groundtruth_raster,features = colnames(fdts),"hasgroundtruth" = hasgroundtruth))
 }
 

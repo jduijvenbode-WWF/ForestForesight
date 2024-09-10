@@ -79,6 +79,7 @@ A list containing:
   \item{testindices}{Indices of the filtered samples}
   \item{groundtruthraster}{A SpatRaster of the ground truth}
   \item{features}{A vector of feature names}
+  \item {hasgroundtruth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
 }
 \description{
 This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
