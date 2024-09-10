@@ -37,7 +37,7 @@
 #'   \item{testindices}{Indices of the filtered samples}
 #'   \item{groundtruthraster}{A SpatRaster of the ground truth}
 #'   \item{features}{A vector of feature names}
-#'   \item {hasgroundtruth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
+#'   \item{hasgroundtruth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
 #'
 #' @export
 #'
@@ -147,6 +147,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
       rasstack <- terra::rast(sapply(selected_files,function(x) terra::rast(x,win = extent)))
       if (length(tiles) > 1) {
         groundtruth_raster = NA
+        hasgroundtruth <- F
         }else{
           if (first) {
           if (length(grep(groundtruth_pattern,selected_files)) > 0) {
