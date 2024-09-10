@@ -59,7 +59,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
 
   # Load countries data
   data("countries", package = "ForestForesight")
-  countries <- vect(get("countries"))
+  countries <- terra::vect(get("countries"))
 
   # Check if input is ISO code or SpatVector
   if (is.character(shape_or_iso) && nchar(shape_or_iso) == 3) {
@@ -71,7 +71,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
     country_groups <- unique(shape$group)
   } else if (inherits(shape_or_iso, "SpatVector")) {
     shape <- shape_or_iso
-    overlapping <- relate(countries, buffer(shape,-1), "intersects")
+    overlapping <- terra::relate(countries, terra::buffer(shape,-1), "intersects")
     overlapping_countries <- countries$name[overlapping]
     country_groups <- unique(countries$group[overlapping])
   } else {
@@ -80,10 +80,10 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
 
   # Load gfw_tiles data
   data("gfw_tiles", package = "ForestForesight")
-  gfw_tiles <- vect(get("gfw_tiles"))
+  gfw_tiles <- terra::vect(get("gfw_tiles"))
 
   # Find intersecting tiles
-  intersecting_tiles <- relate(gfw_tiles, shape, "intersects")
+  intersecting_tiles <- terra::relate(gfw_tiles, shape, "intersects")
   covered_tiles <- gfw_tiles[intersecting_tiles, ]
 
   # Get tile IDs
@@ -98,10 +98,10 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
   }
 
   # Calculate area
-  area <- expanse(shape) / 10000
+  area <- terra::expanse(shape) / 10000
 
   # Get bounding box
-  bbox <- ext(shape)
+  bbox <- terra::ext(shape)
 
   # Prepare results
   results <- list(
