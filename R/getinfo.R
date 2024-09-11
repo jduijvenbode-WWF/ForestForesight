@@ -58,7 +58,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
   }
 
   # Load countries data
-  countries <- terra::vect(get(data("countries")))
+  countries <- terra::vect(get(data("countries",envir = environment())))
 
   # Check if input is ISO code or SpatVector
   if (is.character(shape_or_iso) && nchar(shape_or_iso) == 3) {
@@ -78,7 +78,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
   }
 
   # Load gfw_tiles data
-  gfw_tiles <- terra::vect(get(data("gfw_tiles")))
+  gfw_tiles <- terra::vect(get(data("gfw_tiles",envir = environment())))
 
   # Find intersecting tiles
   intersecting_tiles <- terra::relate(gfw_tiles, shape, "intersects")
