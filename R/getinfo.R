@@ -58,8 +58,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
   }
 
   # Load countries data
-  data("countries", package = "ForestForesight")
-  countries <- terra::vect(get("countries"))
+  countries <- terra::vect(get(data("countries")))
 
   # Check if input is ISO code or SpatVector
   if (is.character(shape_or_iso) && nchar(shape_or_iso) == 3) {
@@ -79,8 +78,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
   }
 
   # Load gfw_tiles data
-  data("gfw_tiles", package = "ForestForesight")
-  gfw_tiles <- terra::vect(get("gfw_tiles"))
+  gfw_tiles <- terra::vect(get(data("gfw_tiles")))
 
   # Find intersecting tiles
   intersecting_tiles <- terra::relate(gfw_tiles, shape, "intersects")
