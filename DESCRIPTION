@@ -1,14 +1,14 @@
 Package: ForestForesight
 Type: Package
-Title: Package that aids in all the processing steps to run predictions on the GFW integrated alerts according to the Forest Foresight principles
-Version: 3.0.0
-Date: 2024-09-03
+Title: Package created to preprocess, model, predict and analyze deforestation according to the WWF-NL ForestForesight principles.
+Version: 3.2.2
+Date: 2024-09-11
 Author: Jonas van Duijvenbode, Zillah Calle
 Maintainer: Jonas van Duijvenbode <jduijvenbode@wwf.nl>
-Description: This package is built for internal use for the ForestForesight programme and for any partners that want to do their own predictions for deforestation.
+Description: This package is built for the ForestForesight programme and for any partners that want to do their own predictions for deforestation.
     With this package you can download among others the GFW-alerts, preprocess those alerts and process per 10x10 degree tile and per country the data. 
-    This processing means, preprocessing, training an XGboost model and predicting future deforestation.
-License: GPL-3
+    This processing means: downloading, preprocessing, training an XGboost model and predicting future deforestation.It also allows you to style the result and export accuracy statistics. 
+License: GPL-3 + COPYING file
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
