@@ -10,8 +10,7 @@ ff_prep(
   shape = NA,
   tiles = NULL,
   groundtruth_pattern = "groundtruth6m",
-  start = "2023-01-01",
-  end = NA,
+  dates = "2023-01-01",
   inc_features = NA,
   exc_features = NA,
   fltr_features = NULL,
@@ -38,9 +37,7 @@ These subdirectories must include the respective degree folders.Default is the s
 
 \item{groundtruth_pattern}{Pattern to identify ground truth files. Default is "groundtruth6m" (groundtruth of future six months in binary format).}
 
-\item{start}{Start date for training data in the format "YYYY-MM-DD". Default is "2021-01-01".}
-
-\item{end}{End date for training data in the format "YYYY-MM-DD". Default is NA to only process the start month.}
+\item{dates}{vector of dates in the format "YYYY-MM-DD". Default is "2021-01-01".}
 
 \item{inc_features}{Vector of features to exclusively include in the data preparation.}
 
@@ -91,8 +88,7 @@ This function prepares data for the ForestForesight training and predicting algo
 prepared_data <- ff_prep(
   datafolder = "path/to/data",
   country = "BRA",
-  start = "2022-01-01",
-  end = "2022-12-31",
+  dates = ForestForesight::daterange("2022-01-01","2022-12-31"),
   fltr_features = "initialforestcover",
   fltr_condition = ">0"
 )
