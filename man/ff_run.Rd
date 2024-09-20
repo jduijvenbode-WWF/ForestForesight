@@ -9,8 +9,7 @@ ff_run(
   country = NULL,
   prediction_dates = NULL,
   ff_folder,
-  train_start = NULL,
-  train_end = NULL,
+  train_dates = NULL,
   validation_dates = NULL,
   save_path = NULL,
   save_path_predictions = NULL,
@@ -36,9 +35,7 @@ ff_run(
 
 \item{ff_folder}{Directory containing the input data.}
 
-\item{train_start}{Start date for training data in "YYYY-MM-DD" format. Default is NULL.}
-
-\item{train_end}{End date for training data in "YYYY-MM-DD" format. Default is NULL.}
+\item{train_dates}{The dates for which you want to create the training data. dates should be a vector with the format YYYY-MM-DD with DD being 01}
 
 \item{validation_dates}{The dates for which you want to create a distinct validation matrix (if any, select validation = T to make a subsample of the same dates as the training data).}
 
@@ -82,8 +79,7 @@ prediction <- ff_run(
   country = "BRA",
   prediction_date = "2024-01-01",
   ff_folder = "path/to/forestforesight/data",
-  train_start = "2022-01-01",
-  train_end = "2023-12-31",
+  train_dates = ForestForesight::daterange("2022-01-01","2023-12-31"),
   save_path = "path/to/save/model.model",
   accuracy_csv = "path/to/save/accuracy.csv"
 )
