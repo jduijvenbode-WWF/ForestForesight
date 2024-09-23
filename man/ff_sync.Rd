@@ -12,14 +12,14 @@ ff_sync(
   download_predictions = FALSE,
   bucket = "forestforesight-public",
   region = "eu-west-1",
-  verbose = T,
-  sync_verbose = F
+  verbose = TRUE,
+  sync_verbose = FALSE
 )
 }
 \arguments{
 \item{ff_folder}{Character. Local folder to sync data to.}
 
-\item{identifier}{Character. Either a tile ID (e.g., "00N_000E") or a country ISO3 code.}
+\item{identifier}{Character or SpatVector. When a character it should be either a tile ID (e.g., "00N_000E") or a country ISO3 code.}
 
 \item{download_model}{Logical. Whether to download the corresponding model. Only works when downloading for entire countries. Default is FALSE.}
 
