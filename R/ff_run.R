@@ -202,8 +202,22 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                                verbose = verbose,certainty = T)
       raslist[[tile]] <- prediction$predicted_raster
       # Analyze prediction
-
-      forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = fltr_features)
+      for (i in seq(length(fltr_features))) {
+        filename <- get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = fltr_features[i])
+        if( !hasvalue(filename)){stop(paste("Cannot find the file for feature",fltr_features[i]))}
+        curras <- terra::rast(filename)
+        operator <- gsub("[[:alnum:]]", "", fltr_condition[i])
+        value <- as.numeric(gsub("[^0-9.-]", "", fltr_condition[i]))
+        curras <- switch(operator,
+                       ">" = curras > value,
+                       "<" = curras < value,
+                       "==" = curras == value,
+                       "!=" = curras != value,
+                       ">=" = curras >= value,
+                       "<=" = curras <= value
+        )
+        if (i == 1) {forestras <- curras}else{forestras <- forestras * curras}
+      }
       if (!hasvalue(forestras)) {forestras <- NULL}
       if (predset$hasgroundtruth) {
 

@@ -7,7 +7,8 @@
 #' @param ff_folder Character. Local folder to sync data to.
 #' @param identifier Character or SpatVector. When a character it should be either a tile ID (e.g., "00N_000E") or a country ISO3 code.
 #' @param download_model Logical. Whether to download the corresponding model. Only works when downloading for entire countries. Default is FALSE.
-#' @param download_data Logical. Whether to download the input and groundtruth data. Default is FALSE.
+#' @param download_data Logical. Whether to download the preprocessed input data. Default is TRUE.
+#' @param download_groundtruth Logical. Whether to download the groundtruth data as well. This should be turned off when you want to use your own data as groundtruth. Default is TRUE.
 #' @param download_predictions Logical. Whether to download the prediction data.Only works when downloading for entire countries. Default is FALSE.
 #' @param bucket Character. Name of the S3 bucket. Default is "forestforesight-public".
 #' @param region Character. AWS region of the bucket. Default is "eu-west-1".
@@ -26,7 +27,7 @@
 #' }
 #'
 #' @export
-ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE, download_predictions = FALSE,
+ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE, download_predictions = FALSE, download_groundtruth = TRUE,
                     bucket = "forestforesight-public", region = "eu-west-1", verbose = TRUE, sync_verbose = FALSE) {
   # Create ff_folder if it doesn't exist
   if (!dir.exists(ff_folder)) {
@@ -62,21 +63,25 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
   }
 
   # Sync input and ground truth data for each tile
-  if (download_data) {
+  if (download_data | download_groundtruth) {
     cat("Downloading input and ground truth data\n")
     for (tile in tiles) {
       # Create input sub-folder
+      if(download_data){
       input_folder <- file.path(ff_folder, "preprocessed", "input", tile)
       dir.create(input_folder, recursive = TRUE, showWarnings = FALSE)
       # Sync input data
       aws.s3::s3sync(input_folder, bucket, region = region, direction = "download",
                      prefix = paste0("preprocessed/input/", tile), verbose = verbose)
+      }
       # Create ground truth sub-folder
-      groundtruth_folder <- file.path(ff_folder, "preprocessed", "groundtruth", tile)
+      if(download_groundtruth)
+        {groundtruth_folder <- file.path(ff_folder, "preprocessed", "groundtruth", tile)
       dir.create(groundtruth_folder, recursive = TRUE, showWarnings = FALSE)
       # Sync ground truth data
       aws.s3::s3sync(groundtruth_folder, bucket, region = region, direction = "download",
                      prefix = paste0("preprocessed/groundtruth/", tile), verbose = verbose)
+      }
     }
   }
 
