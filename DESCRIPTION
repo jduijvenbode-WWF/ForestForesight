@@ -12,4 +12,4 @@ License: GPL-3 + COPYING file
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
-Depends: terra, sf, xgboost, httr, lubridate, smoothr, crayon, rBayesianOptimization, aWS.S3
+Depends: terra, sf, xgboost, httr, lubridate, smoothr, crayon, rBayesianOptimization, aws.s3
