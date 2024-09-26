@@ -3,7 +3,8 @@
 #' This function analyzes the accuracy of Forest Foresight predictions,
 #' generating visualizations of F0.5 scores by region and metrics over time.
 #'
-#' @param file_paths Character string vector. Path to the CSV file containing accuracy data.
+#' @param accuracy_paths Character string vector. Path to the CSV file(s) containing accuracy data.
+#' @param importance_paths Character string vector. Path to the CSV file(s) containing model importance data.
 #' @param output_path Character string. Path where the output PDF will be saved.
 #' @param title Character string. Title for the analysis (default: "Accuracy Analysis: Forest Foresight").
 #'
@@ -22,11 +23,12 @@
 #' }
 #'
 #' @export
-ff_accuracyreport <- function(file_paths, output_path, title = "Accuracy Analysis: Forest Foresight") {
+ff_accuracyreport <- function(accuracy_paths, importance_paths=NULL, output_path, title = "Accuracy Analysis: Forest Foresight") {
   # Load required data
-  for (i in file_paths) {
-    if (i == 1) { results <- read.csv(i)}else{results <- rbind(results,read.csv(i))}
+  for (i in accuracy_paths) {
+    if (i == accuracy_paths[1]) { results <- read.csv(i)}else{results <- rbind(results,read.csv(i))}
   }
+
   pols <- terra::vect(get(data("degree_polygons")))
 
   # Prepare data
@@ -129,7 +131,43 @@ ff_accuracyreport <- function(file_paths, output_path, title = "Accuracy Analysi
 
   # Add title to the entire page
   mtext(title, outer = TRUE, line = -2, cex = 1.5)
+ if (hasvalue(importance_paths)){
+   for (i in importance_paths) {
+     if (i == importance_paths[1]) { importance_results <- read.csv(i)}else{results <- rbind(importance_results,read.csv(i))}
+   }
+  if(length(importance_paths)>1){
 
+
+    # Assuming your data frame is called 'df'
+    # Group by feature and calculate mean importance
+    model_names =  paste(unique(importance_results$model_name),collapse = ", ")
+    avg_importance <- aggregate(importance ~ feature, data = importance_results, FUN = mean)
+
+    # Add rank
+    avg_importance$rank <- rank(-avg_importance$importance, ties.method = "first")
+
+    # Sort by rank
+    avg_importance <- avg_importance[order(avg_importance$rank), ]
+
+    # If you need to keep the model_name column:
+    importance_results = data.frame(model_name=model_names,feature=avg_importance$feature,rank=avg_importance$rank,importance=avg_importance$importance)
+  }
+   par(mar = c(5, 20, 4, 2))  # Adjust margins (bottom, left, top, right)
+   importance_results <- importance_results[nrow(importance_results):1, ]
+   barplot(importance_results$importance,
+           horiz = TRUE,
+           names.arg = importance_results$feature,
+           las = 1,  # Make y-axis labels horizontal
+           cex.names = 0.7,  # Adjust size of feature names
+           cex.axis = 0.8,  # Adjust size of x-axis labels
+           col = "lightgreen",
+           xlab = "Importance",
+           cex.lab = 1.2,  # Increase size of x-axis label
+           main = importance_results$model_name[1],  # Use the first model name as title
+           cex.main = 1.5,  # Increase size of title
+           xlim = c(0, max(importance_results$importance) * 1.05))  # Extend x-axis slightly
+
+ }
   # Close PDF device
   dev.off()
 }
