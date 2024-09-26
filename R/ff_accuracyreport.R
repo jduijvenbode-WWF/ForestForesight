@@ -72,7 +72,9 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths=NULL, output_path
   # Plot 1: F0.5 Score Distribution Map
   par(mar = c(5, 4, 4, 2) + 0.1)
   col_palette <- colorRampPalette(c("red", "yellow", "green"))(100)
-  breaks <- seq(min(spatialdata$F05, na.rm = TRUE), max(spatialdata$F05, na.rm = TRUE), length.out = 10)
+  maxf05=max(spatialdata$F05, na.rm = TRUE)+0.05
+  minf05=min(spatialdata$F05, na.rm = TRUE)-0.05
+  breaks <- seq(minf05, maxf05, length.out = 10)
   plot(spatialdata, "F05",
        main = "F0.5 Score Distribution",
        col = col_palette,
