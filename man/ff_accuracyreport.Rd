@@ -5,13 +5,16 @@
 \title{Generate Accuracy Report for Forest Foresight}
 \usage{
 ff_accuracyreport(
-  file_paths,
+  accuracy_paths,
+  importance_paths = NULL,
   output_path,
   title = "Accuracy Analysis: Forest Foresight"
 )
 }
 \arguments{
-\item{file_paths}{Character string vector. Path to the CSV file containing accuracy data.}
+\item{accuracy_paths}{Character string vector. Path to the CSV file(s) containing accuracy data.}
+
+\item{importance_paths}{Character string vector. Path to the CSV file(s) containing model importance data.}
 
 \item{output_path}{Character string. Path where the output PDF will be saved.}
 
