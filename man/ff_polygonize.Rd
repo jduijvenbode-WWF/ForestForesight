@@ -10,7 +10,8 @@ ff_polygonize(
   min_pixel = 5,
   threshold = 0.5,
   window_size = 7,
-  smoothness = 2
+  smoothness = 2,
+  verbose = F
 )
 }
 \arguments{
@@ -20,11 +21,20 @@ ff_polygonize(
 
 \item{min_pixel}{Numeric. Base pixel count to filter on. Default is 5}
 
-\item{threshold}{Numeric. Threshold to apply to the raster. Default is 0.5}
+\item{threshold}{Numeric or Character. Threshold to apply to the raster. Default is 0.5.
+Options are:
+\describe{
+  \item{"numeric"}{A value between 0 and 1 that reflects the value that you want as a threshold}
+  \item{"medium"}{Automatically chosen threshold for medium risk}
+  \item{"high"}{Automatically chosen threshold for medium risk}
+  \item{"very high"}{Automatically chosen threshold for medium risk}
+}}
 
 \item{window_size}{Numeric. Window size for focal calculation. Default is 7.}
 
 \item{smoothness}{Numeric. Smoothness parameter for ksmooth method. Default is 2}
+
+\item{verbose}{Logical. Whether the automatically detected threshold should be plotted}
 }
 \value{
 A SpatVector object containing the processed and simplified polygons.

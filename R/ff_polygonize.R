@@ -6,9 +6,17 @@
 #' @param raster Character or SpatRaster. Path to the input raster file or a SpatRaster.
 #' @param output_file Character. File path to save shapefiles. Default is NA and means the polygons are returned and not written.
 #' @param min_pixel Numeric. Base pixel count to filter on. Default is 5
-#' @param threshold Numeric. Threshold to apply to the raster. Default is 0.5
+#' @param threshold Numeric or Character. Threshold to apply to the raster. Default is 0.5.
+#' Options are:
+#' \describe{
+#'   \item{"numeric"}{A value between 0 and 1 that reflects the value that you want as a threshold}
+#'   \item{"medium"}{Automatically chosen threshold for medium risk}
+#'   \item{"high"}{Automatically chosen threshold for medium risk}
+#'   \item{"very high"}{Automatically chosen threshold for medium risk}
+#' }
 #' @param window_size Numeric. Window size for focal calculation. Default is 7.
 #' @param smoothness Numeric. Smoothness parameter for ksmooth method. Default is 2
+#' @param verbose Logical. Whether the automatically detected threshold should be plotted
 #'
 #' @return A SpatVector object containing the processed and simplified polygons.
 #'
@@ -31,7 +39,8 @@ ff_polygonize <- function(raster,
                           min_pixel = 5,
                           threshold = 0.5,
                           window_size = 7,
-                          smoothness = 2) {
+                          smoothness = 2,
+                          verbose = F) {
   # Load raster
   pixel_size = 2e5
   if(class(raster)=="character"){raster <- terra::rast(raster)}
@@ -40,6 +49,14 @@ ff_polygonize <- function(raster,
   pixel_min <- 5 * pixel_size
   # Apply focal mean and threshold
   br <- terra::focal(raster, w = window_size, fun = "mean")
+  if(is.character(threshold)){
+    if (threshold == "medium") {newthreshold <- quantile(as.matrix(br),probs = 0.7,na.rm=T)}
+    if (threshold == "high") {newthreshold <- quantile(as.matrix(br),probs = 0.9,na.rm=T)}
+    if (threshold == "very high") {newthreshold <- quantile(as.matrix(br),probs = 0.97,na.rm=T)}
+    if (!exists("newthreshold")) {stop("the given character is not one of the possibilities medium, high or very high")}
+    if(verbose){ff_cat("new threshold is",newthreshold)}
+    threshold <- newthreshold
+  }
   br <- br > threshold
   # Create patches
   clumped_raster <- terra::patches(br, directions = 8, zeroAsNA = TRUE)
@@ -49,7 +66,9 @@ ff_polygonize <- function(raster,
   sorted_pols <- pols[order(terra::expanse(pols), decreasing = TRUE)]
 
   # Take all polygons larger than pixel_min, or at least the 25 largest
-  pols <- sorted_pols[1:max(25, sum(terra::expanse(sorted_pols) >= pixel_min))]
+  ceiling_pols <- ceiling(sqrt(terra::expanse(raster))/1e4)
+  if (verbose) {cat("based on area of raster, at maximum",ceiling_pols,"are generated\n")}
+  pols <- sorted_pols[1:max(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min))]
 
   # Select top polygons by size
 
