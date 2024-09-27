@@ -24,14 +24,15 @@ filter_by_feature = function(fltr_features,fltr_condition,matrix,verbose=T) {
       operator <- gsub("[[:alnum:]]", "", fltr_condition[i])
       value <- gsub("[^0-9]", "", fltr_condition[i])
       filtercolumn <- which(colnames(matrix) == fltr_features[i])
-      if (operator == ">") {sf_indices <- which(matrix[,filtercolumn] > value)}
-      if (operator == "<") {sf_indices <- which(matrix[,filtercolumn] < value)}
-      if (operator == "==") {sf_indices <- which(matrix[,filtercolumn] == value)}
-      if (operator == "!=") {sf_indices <- which(matrix[,filtercolumn] != value)}
-      if (operator == ">=") {sf_indices <- which(matrix[,filtercolumn] >= value)}
-      if (operator == "<=") {sf_indices <- which(matrix[,filtercolumn] <= value)}
-
-      if (verbose) {cat(paste("filtering feature",fltr_features[i],"on",fltr_condition[i],"\n"))}
+      if (length(filtercolumn) == 0) {ff_cat("The feature", fltr_features[i], "was not found, skipping filtering for this feature",color = "yellow")}else{
+        if (verbose) {cat(paste("filtering feature",fltr_features[i],"on",fltr_condition[i],"\n"))}
+        if (operator == ">") {sf_indices <- which(matrix[,filtercolumn] > value)}
+        if (operator == "<") {sf_indices <- which(matrix[,filtercolumn] < value)}
+        if (operator == "==") {sf_indices <- which(matrix[,filtercolumn] == value)}
+        if (operator == "!=") {sf_indices <- which(matrix[,filtercolumn] != value)}
+        if (operator == ">=") {sf_indices <- which(matrix[,filtercolumn] >= value)}
+        if (operator == "<=") {sf_indices <- which(matrix[,filtercolumn] <= value)}
+      }
       if (length(sfa_indices) == 0) {sfa_indices <- c(sfa_indices,sf_indices)}else{sfa_indices <- intersect(sfa_indices,sf_indices)}
     }
     sf_indices <- unique(sfa_indices)
