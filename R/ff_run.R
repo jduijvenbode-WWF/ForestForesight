@@ -93,8 +93,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
   if (is.null(trained_model)) {
     if (!hasvalue(train_dates)) {train_dates <- as.character(lubridate::ymd(min(prediction_dates)) %m-% months(6,abbreviate = F))}
 
-    if (lubridate::ymd(max(train_dates)) > lubridate::ymd(prediction_dates[1])) {warning("(some) training dates are after prediction dates")}
-    if ((lubridate::ymd(prediction_dates[1]) - lubridate::ymd(max(train_dates))) < 170 ) {warning("There should be at least 6 months between training and testing/predicting")}
+    if (lubridate::ymd(max(train_dates)) > lubridate::ymd(prediction_dates[1])) {ff_cat("(some) training dates are after prediction dates",color="yellow")}
+    if ((lubridate::ymd(prediction_dates[1]) - lubridate::ymd(max(train_dates))) < 170 ) {ff_cat("There should be at least 6 months between training and testing/predicting",color="yellow")}
   }
 
 

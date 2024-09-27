@@ -204,7 +204,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
         common_cols <- intersect(colnames(dts), colnames(fdts))
         notin1 <- colnames(dts)[which(!(colnames(dts) %in% common_cols))]
         notin2 <- colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
-        if (length(c(notin1,notin2)) > 0) {warning(paste(i,": the following columns are dropped because they are not present in the entire time series: ",paste(c(notin1,notin2),collapse = ", ")))}
+        if (length(c(notin1,notin2)) > 0) {ff_cat(paste(i,": the following columns are dropped because they are not present in the entire time series: ",paste(c(notin1,notin2),collapse = ", ")),color="yellow")}
         # Subset matrices based on common column names
         # Merge matrices by column names
         fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
@@ -227,7 +227,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
 
     fdts <- fdts[,-groundtruth_index]
   }else{
-    if (verbose) {warning("no groundtruth rasters found")}
+    if (verbose) {ff_cat("no groundtruth rasters found",color="yellow")}
     data_label <- NA
   }
 
@@ -243,7 +243,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   }
 
   ##########output data####
-  if (hasvalue(data_matrix$label)) {if (sum(data_matrix$label) == 0) {warning("data contains no actuals, all labels are 0")}}
+  if (hasvalue(data_matrix$label)) {if (sum(data_matrix$label) == 0) {ff_cat("data contains no actuals, all labels are 0",color="yellow")}}
   return(list("data_matrix" = data_matrix,"validation_matrix" = validation_matrix,"testindices" = allindices,"groundtruthraster" = groundtruth_raster,features = colnames(fdts),"hasgroundtruth" = hasgroundtruth))
 }
 

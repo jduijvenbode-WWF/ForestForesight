@@ -82,7 +82,7 @@ ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, 
       pastdata <- read.csv(csvfile)
       pastdata$X <- NULL
       write.csv(rbind(pastdata,as.data.frame(pols)),csvfile)}else{
-        if (!file.exists(csvfile) & append & verbose) {warning("the given file does not exist, while append was set to TRUE")}
+        if (!file.exists(csvfile) & append & verbose) {ff_cat("the given file does not exist, while append was set to TRUE",color="yellow")}
         write.csv(as.data.frame(pols),csvfile)
       }
   }
