@@ -19,6 +19,6 @@
 get_raster <- function(datafolder, date, feature, tile) {
   allfiles <- list.files(datafolder, recursive = TRUE, pattern = tile, full.names = TRUE)
   allfiles <- allfiles[grep("tif$", allfiles)]
-  allfiles <- allfiles[grep(feature, allfiles)]
+  allfiles <- allfiles[grep(paste0("_",feature,"\\."), allfiles)]
   return(ForestForesight::select_files_date(date, allfiles))
 }
