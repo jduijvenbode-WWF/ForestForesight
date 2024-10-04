@@ -78,6 +78,9 @@ ff_polygonize <- function(raster,
     pols <- smoothr::fill_holes(pols, threshold = 5 * pixel_size)
     pols <- smoothr::smooth(pols, method = "ksmooth", smoothness = smoothness)
   })
+  if (length(pols) == 0){ff_cat("Based on the chosen threshold no polygons were generated. Lower the threshold to get polygons for this area\n",color = "yellow")
+    return(NA)
+  }
   # Extract average values from original raster
   pols$risk <- round(terra::extract(raster, pols, fun = "mean", ID = FALSE),2)
   pols$size <- round(terra::expanse(pols)/10000)
