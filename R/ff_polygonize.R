@@ -45,16 +45,16 @@ ff_polygonize <- function(raster,
   pixel_size = 2e5
   if(class(raster)=="character"){raster <- terra::rast(raster)}
   # Set options and initialize variables
-  raster[is.na(raster)] <- 0
+
   pixel_min <- 5 * pixel_size
   # Apply focal mean and threshold
-  br <- terra::focal(raster, w = window_size, fun = "mean")
+  br <- terra::focal(raster, w = window_size, fun = "mean",na.policy="omit",na.rm=T)
   if(is.character(threshold)){
     if (threshold == "medium") {newthreshold <- quantile(as.matrix(br),probs = 0.7,na.rm=T)}
     if (threshold == "high") {newthreshold <- quantile(as.matrix(br),probs = 0.9,na.rm=T)}
     if (threshold == "very high") {newthreshold <- quantile(as.matrix(br),probs = 0.97,na.rm=T)}
     if (!exists("newthreshold")) {stop("the given character is not one of the possibilities medium, high or very high")}
-    if(verbose){ff_cat("new threshold is",newthreshold)}
+    if(verbose){ff_cat("new threshold is",newthreshold,"\n")}
     threshold <- newthreshold
   }
   br <- br > threshold
@@ -66,7 +66,7 @@ ff_polygonize <- function(raster,
   sorted_pols <- pols[order(terra::expanse(pols), decreasing = TRUE)]
 
   # Take all polygons larger than pixel_min, or at least the 25 largest
-  ceiling_pols <- ceiling(sqrt(terra::expanse(raster))/1e4)
+  ceiling_pols <- as.numeric(ceiling(sqrt(terra::expanse(raster))/1e4)[2])
   if (verbose) {cat("based on area of raster, at maximum",ceiling_pols,"are generated\n")}
   pols <- sorted_pols[1:max(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min))]
 
@@ -82,6 +82,7 @@ ff_polygonize <- function(raster,
   pols$risk <- round(terra::extract(raster, pols, fun = "mean", ID = FALSE),2)
   pols$size <- round(terra::expanse(pols)/10000)
   pols$sumrisk <- round(pols$size * pols$risk)
+  pols$threshold <- threshold
   # Save result
   if(!is.na(output_file)){terra::writeVector(pols, output_file, overwrite = TRUE)}
   return(pols)
