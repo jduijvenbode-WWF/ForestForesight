@@ -66,8 +66,8 @@ ff_polygonize <- function(raster,
   sorted_pols <- pols[order(terra::expanse(pols), decreasing = TRUE)]
 
   # Take all polygons larger than pixel_min, or at least the 25 largest
-  ceiling_pols <- as.numeric(ceiling(sqrt(terra::expanse(raster))/1e4)[2])
-  if (verbose) {cat("based on area of raster, at maximum",ceiling_pols,"are generated\n")}
+  ceiling_pols <- ceiling(as.numeric(sqrt(terra::expanse(raster))/1e4)[2]*as.numeric(terra::global(!is.na(raster),"mean")))
+  if (verbose) {cat("based on area of raster, at maximum",ceiling_pols," polygons are generated\n")}
   pols <- sorted_pols[1:max(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min))]
 
   # Select top polygons by size
