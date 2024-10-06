@@ -46,7 +46,7 @@ ff_polygonize <- function(raster,
                           calc_max = F,
                           contain_polygons = NA) {
   if (calc_max & !hasvalue(contain_polygons)) {
-    ff_cat("since no container polygons were given the calc_max option might give weird results, with higher risk areas popping up where no medium risk areas are found.",color = "yellow")
+    ff_cat("since no container polygons were given the calc_max option might give weird results, with higher risk areas popping up where no medium risk areas are found.\n",color = "yellow")
   }
   # Load raster
   pixel_size = 2e5
