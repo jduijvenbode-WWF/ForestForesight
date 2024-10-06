@@ -11,7 +11,9 @@ ff_polygonize(
   threshold = 0.5,
   window_size = 7,
   smoothness = 2,
-  verbose = F
+  verbose = F,
+  calc_max = F,
+  contain_polygons = NA
 )
 }
 \arguments{
@@ -35,6 +37,10 @@ Options are:
 \item{smoothness}{Numeric. Smoothness parameter for ksmooth method. Default is 2}
 
 \item{verbose}{Logical. Whether the automatically detected threshold should be plotted}
+
+\item{calc_max}{Logical. If this is set to True a reasonable amount of polygons will be outputted depending on the area size}
+
+\item{contain_polygons}{Logical. If calc_max is enabled, only polygons will be created that lie within the SpatVector contain_polygons}
 }
 \value{
 A SpatVector object containing the processed and simplified polygons.
