@@ -70,6 +70,11 @@ ff_polygonize <- function(raster,
 
   # Convert to polygons and filter by size
   pols <- terra::as.polygons(clumped_raster, values = FALSE, aggregate = TRUE, round = FALSE)
+  suppressWarnings({
+    pols <- smoothr::fill_holes(pols, threshold = 5 * pixel_size)
+    pols <- smoothr::smooth(pols, method = "ksmooth", smoothness = smoothness)
+  })
+  pols <- terra::disagg(pols)
   sorted_pols <- pols[order(terra::expanse(pols), decreasing = TRUE)]
   if (calc_max) {
     if (hasvalue(contain_polygons)) {sorted_pol <- sorted_pols[contain_polygons,]}
@@ -89,10 +94,7 @@ ff_polygonize <- function(raster,
 
 
   # Fill holes and smooth
-  suppressWarnings({
-    pols <- smoothr::fill_holes(pols, threshold = 5 * pixel_size)
-    pols <- smoothr::smooth(pols, method = "ksmooth", smoothness = smoothness)
-  })
+
   if (length(pols) == 0) {ff_cat("Based on the chosen threshold no polygons were generated. Lower the threshold to get polygons for this area\n",color = "yellow")
     return(NA)
   }
