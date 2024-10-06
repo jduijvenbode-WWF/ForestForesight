@@ -66,9 +66,16 @@ ff_polygonize <- function(raster,
   sorted_pols <- pols[order(terra::expanse(pols), decreasing = TRUE)]
 
   # Take all polygons larger than pixel_min, or at least the 25 largest
-  ceiling_pols <- ceiling(as.numeric(sqrt(terra::expanse(raster))/1e4)[2]*as.numeric(terra::global(!is.na(raster),"mean")))
-  if (verbose) {cat("based on area of raster, at maximum",ceiling_pols," polygons are generated\n")}
-  pols <- sorted_pols[1:max(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min))]
+  perc_covered=as.numeric(terra::global(!is.na(raster),"mean"))
+
+
+  sqmras=as.numeric(terra::expanse(raster)[2])
+
+  ceiling_pols <- ceiling(sqrt(sqmras/5e3)*perc_covered)
+  if (verbose) {cat("based on area of raster ("
+                    ,round(sqmras/1e5),
+                    "ha, actual coverage",round(perc_covered*100),"percent), at maximum",ceiling_pols," polygons are generated\n")}
+  pols <- sorted_pols[1:max(1,min(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min)))]
 
   # Select top polygons by size
 
@@ -86,7 +93,9 @@ ff_polygonize <- function(raster,
   pols$size <- round(terra::expanse(pols)/10000)
   pols$sumrisk <- round(pols$size * pols$risk)
   pols$threshold <- threshold
+  pols$date = as.character(as.Date(Sys.time()))
+  if(verbose){ff_cat("writing",length(pols),"polygons to",output_file)}
   # Save result
-  if(!is.na(output_file)){terra::writeVector(pols, output_file, overwrite = TRUE)}
+  if(!is.na(output_file)){terra::writeVector(x = pols, filename = output_file, overwrite = TRUE)}
   return(pols)
 }
