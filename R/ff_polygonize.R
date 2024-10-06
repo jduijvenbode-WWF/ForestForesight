@@ -77,14 +77,14 @@ ff_polygonize <- function(raster,
   pols <- terra::disagg(pols)
   sorted_pols <- pols[order(terra::expanse(pols), decreasing = TRUE)]
   if (calc_max) {
-    if (hasvalue(contain_polygons)) {sorted_pol <- sorted_pols[contain_polygons,]}
+    if (hasvalue(contain_polygons)) {sorted_pols <- sorted_pols[contain_polygons,]}
   # Take all polygons larger than pixel_min, or at least the 25 largest
   perc_covered <- as.numeric(terra::global(!is.na(raster),"mean"))
 
 
   sqmras <- as.numeric(terra::expanse(raster)[2])
 
-  ceiling_pols <- ceiling(sqrt(sqmras/5e3)*perc_covered)
+  ceiling_pols <- ceiling(sqrt(sqmras/1e3)*perc_covered)
   if (verbose) {cat("based on area of raster (hectares:"
                     ,round(sqmras/1e5),
                     ", actual coverage:",round(perc_covered*100),"percent), at maximum",ceiling_pols," polygons are generated\n")}
