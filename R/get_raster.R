@@ -35,7 +35,7 @@ get_raster <- function(datafolder, date, feature, tile=NULL, shape =NULL, return
   if (!hasvalue(filename)) {stop("no files were found in this folder with this combination of date, tile and feature")}
   if (verbose) {ff_cat("found files",paste(filename,collapse = ", "),"\n")}
   if (return_raster) {
-    if (length(tile) == 1) {return(terra::rast(allfiles))}else{
+    if (length(tile) == 1) {return(terra::rast(filename))}else{
       if (verbose) {ff_cat("merging tiles\n")}
       return(do.call(terra::merge,unname(sapply(filename,function(x) terra::rast(x)))))
     }
