@@ -4,16 +4,30 @@
 \alias{get_raster}
 \title{Retrieve raster files based on specified criteria.}
 \usage{
-get_raster(datafolder, date, feature, tile)
+get_raster(
+  datafolder,
+  date,
+  feature,
+  tile = NULL,
+  shape = NULL,
+  return_raster = F,
+  verbose = F
+)
 }
 \arguments{
-\item{datafolder}{A character string specifying the path to the data folder where raster files are stored.}
+\item{datafolder}{A character string specifying the path to the data folder where raster files are stored.This should be in the preprocessed folder of Forest Foresight.}
 
 \item{date}{A Date object representing the date for which raster files are to be retrieved.}
 
 \item{feature}{A character string specifying the feature of interest to filter raster files.}
 
 \item{tile}{A character string specifying the pattern to filter specific tiles of raster files.}
+
+\item{shape}{A spatial shape that can be used instead of tile to return the files for one or more files.}
+
+\item{return_raster}{Logical. Whether it should return the (mosaiced) raster instead of just the file names.}
+
+\item{verbose}{Logical. Whether print statements should be output.}
 }
 \value{
 A character vector containing the file paths of the selected raster files.
