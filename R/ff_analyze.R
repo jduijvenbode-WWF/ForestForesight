@@ -31,11 +31,7 @@ ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, 
       if (class(groundtruth) == "character") {date <- substr(basename(predictions),10,19)}else{stop("no method to derive date from filename")}
     }
   }
-  if (is.null(tile) & (!is.null(analysis_polygons))) {
-    if (!class(predictions) == "character") {stop("tile ID not given and cannot be derived from raster itself")}
-    tile <- basename(dirname(predictions))
-    if (tile == ".") {stop("tile was not given and cannot be derived from directory name")}
-  }
+
   if (class(predictions) == "character") {predictions <- terra::rast(predictions)}
   if (class(groundtruth) == "character") {groundtruth <- terra::rast(groundtruth,win = terra::ext(predictions))}
   if (verbose) {cat("rasters loaded\n")}
@@ -82,7 +78,7 @@ ff_analyze <- function(predictions,groundtruth,forestmask=NULL, csvfile = NULL, 
       pastdata <- read.csv(csvfile)
       pastdata$X <- NULL
       write.csv(rbind(pastdata,as.data.frame(pols)),csvfile)}else{
-        if (!file.exists(csvfile) & append & verbose) {ff_cat("the given file does not exist, while append was set to TRUE",color="yellow")}
+        if (!file.exists(csvfile) & append & verbose) {ff_cat("the given file does not exist, while append was set to TRUE\n",color="yellow")}
         write.csv(as.data.frame(pols),csvfile)
       }
   }
