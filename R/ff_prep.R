@@ -140,6 +140,35 @@ list_files_and_exclude_features <- function(tiles, groundtruth_pattern, verbose)
   return(allfiles)
 }
 
+filter_files_by_features <- function(allfiles, exc_features, inc_features, groundtruth_pattern, verbose) {
+  if (!is.na(exc_features[1])) {
+    if (verbose) {
+      cat("Excluding features\n")
+    }
+    exc_indices <- unique(unlist(sapply(exc_features, function(x) {
+      which(endsWith(gsub(".tif", "", basename(allfiles)), x))
+    })))
+    if (length(exc_indices) > 0) {
+      allfiles <- allfiles[-exc_indices]
+    }
+  }
+
+  if (!is.na(inc_features[1])) {
+    inc_indices <- unique(unlist(sapply(c(inc_features, groundtruth_pattern), function(x) {
+      which(endsWith(gsub(".tif", "", basename(allfiles)), x))
+    })))
+    if (length(inc_indices) > 0) {
+      allfiles <- allfiles[inc_indices]
+    }
+  }
+
+  if (length(allfiles) == 0) {
+    stop("After including and excluding the requested variables there are no files left")
+  }
+
+  return(allfiles)
+}
+
 ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", dates="2023-01-01",
                     inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=0.3, validation_sample=0,
                     adddate=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
@@ -163,18 +192,15 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   allfiles <- list_files_and_exclude_features(tiles, groundtruth_pattern, verbose)
 
   #remove features that are not wanted
-  if (!is.na(exc_features[1])) {
-    if (verbose) {cat("excluding features\n")}
-    exc_indices <- unique(unlist(sapply(exc_features,function(x) which(endsWith(gsub(".tif","",basename(allfiles)),x)))))
-    if (length(exc_indices) > 0) {allfiles <- allfiles[-exc_indices]}}
-  if (!is.na(inc_features[1])) {
-    inc_indices <- unique(unlist(sapply(c(inc_features,groundtruth_pattern),function(x) which(endsWith(gsub(".tif","",basename(allfiles)),x)))))
-    if (length(inc_indices > 0)) {allfiles <- allfiles[inc_indices]}}
-  if (length(allfiles) == 0) {stop("after including and excluding the requested variables there are no files left")}
+  allfiles <- filter_files_by_features(allfiles, exc_features, inc_features, groundtruth_pattern, verbose)
 
+  if (length(tiles) > 1) {
+    if (verbose) {
+      cat("No groundtruth raster will be returned because multiple tiles are processed together \n")
+    }
+  }
 
-  if (length(tiles) > 1) {if (verbose) {cat("No grountruth raster will be returned because multiple tiles are processed together \n")}}
-  first <- T
+first <- T
   #######load raster data as matrix#########
   for (tile in tiles) {
     if (exists("extent",inherits = F)) {rm(extent)}
