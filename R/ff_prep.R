@@ -62,47 +62,105 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
+
+quality_check <- function(dates, country, shape, tiles, datafolder) {
+  if (as.Date(min(dates)) < as.Date("2021-01-01")) {
+    stop("The earliest date available is 2021-01-01")
+  }
+
+  if (!hasvalue(country) & !hasvalue(shape)) {
+    stop("Either 'country' or 'shape' must be provided")
+  }
+
+  if (!hasvalue(dates)) {
+    stop("No dates were given")
+  }
+
+  if (!hasvalue(tiles) & !hasvalue(country) & !hasvalue(shape)) {
+    stop("Unknown what to process since no tiles, country, or shape were given")
+  }
+
+  if (hasvalue(shape) & !inherits(shape, "SpatVector")) {
+    stop("Shape should be of class SpatVector")
+  }
+
+  if (!hasvalue(datafolder)) {
+    datafolder <- Sys.getenv("ff_datafolder")
+  }
+
+  if (datafolder == "") {
+    stop("No environment variable for ff_datafolder and no datafolder parameter set")
+  }
+
+  return(datafolder)
+}
+
+preprocess_by_shape_or_country <- function(country, shape, tilesvect, tiles, verbose) {
+  if (hasvalue(country)) {
+    if (verbose) {cat("Selecting based on country\n")}
+    data(countries, envir = environment())
+    countries <- terra::vect(countries)
+    shape <- countries[which(countries$iso3 %in% country)]
+    tilesvect <- tilesvect[shape]$tile_id
+    if (is.null(tiles)) {
+      tiles <- tilesvect
+    }
+    cat(paste("Country contains the following tiles that will be processed:", paste(tiles, collapse = ", "), "\n"))
+  } else if (hasvalue(shape)) {
+    if (!terra::is.lonlat(shape)) {
+      shape <- terra::project(shape, "epsg:4326")
+    }
+    if (verbose) {cat("Selecting based on shape\n")}
+    tiles <- tilesvect[shape]$tile_id
+    if (verbose) {cat("Processing tiles:", paste(tiles, collapse = ", "), "\n")}
+  }
+
+  return(list(shape = shape, tiles = tiles, tilesvect = tilesvect))
+}
+
+list_files_and_exclude_features <- function(tiles, groundtruth_pattern, verbose) {
+  inputdatafolder <- file.path(datafolder,"input")
+  groundtruthdatafolder <- file.path(datafolder,"groundtruth")
+
+  if (verbose) {cat("Searching", inputdatafolder, "for tiles", paste(tiles, collapse = ", "), "\n")}
+
+  # List all files from the input and ground truth directories
+  allfiles <- as.character(unlist(sapply(tiles, function(x) list.files(path = file.path(inputdatafolder, x), full.names = TRUE, recursive = TRUE, pattern = "tif$"))))
+  allgroundtruth <- as.character(unlist(sapply(tiles, function(x) list.files(path = file.path(groundtruthdatafolder, x), full.names = TRUE, recursive = TRUE, pattern = "tif$"))))
+
+  # Filter ground truth files
+  allgroundtruth <- allgroundtruth[endsWith(gsub(".tif", "", allgroundtruth), groundtruth_pattern)]
+  allfiles <- c(allfiles, allgroundtruth)
+
+  # Error handling if no files are found
+  if (length(allfiles) == 0) {
+    stop(paste("No folders with tif-files found that correspond to the given tile IDs:", paste(tiles, collapse = ",")))
+  }
+
+  return(allfiles)
+}
+
 ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", dates="2023-01-01",
                     inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=0.3, validation_sample=0,
                     adddate=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
   ########quality check########
-  if (as.Date(min(dates)) < as.Date("2021-01-01")) {stop("the earliest date available is 2021-01-01")}
-  if (!hasvalue(country) & !hasvalue(shape)) {shrink <- "none"}
-  if (!hasvalue(dates)) {stop("no dates were given")}
-  if (!hasvalue(tiles) & !hasvalue(country) & !hasvalue(shape)) {stop("unknown what to process since no tiles or country or shape were given")}
-  if (hasvalue(shape) & !class(shape) == "SpatVector") {stop("shape should be of class spatVector")}
-  if (!hasvalue(datafolder)) {datafolder <- Sys.getenv("ff_datafolder")}
-  if (datafolder == "") {stop("No environment variable for ff_datafolder and no datafolder parameter set")}
-  inputdatafolder <- file.path(datafolder,"input")
-  groundtruthdatafolder <- file.path(datafolder,"groundtruth")
+  datafolder <- quality_check(dates, country, shape, tiles, datafolder)
+
+
   hasgroundtruth <- F
   ########preprocess for by-country processing########
   data(gfw_tiles,envir = environment())
   tilesvect <- terra::vect(gfw_tiles)
-  if (hasvalue(country)) {
-    if (verbose) {cat("selecting based on country\n")}
-    data(countries,envir = environment())
-    countries <- terra::vect(countries)
-    shape <- countries[which(countries$iso3 %in% country)]
-    tilesvect <- tilesvect[shape]$tile_id
-    cat(paste("country contains the following tiles that will be processed:",paste(tilesvect,collapse = ", "),"\n"))
-    if (is.null(tiles)) {tiles <- tilesvect}
-  }else{
-    if (hasvalue(shape)) {
-      if ( !terra::is.lonlat(shape)) {shape <- terra::project(shape,"epsg:4326")}
-      if (verbose) {cat("selecting based on shape\n")}
-      tiles <- tilesvect[shape]$tile_id
-      if (verbose) {cat("processing tiles:",paste(tiles,collapse = ", "),"\n")}
-    }
-  }
+
+  result <- preprocess_by_shape_or_country(country, shape, tilesvect, tiles, verbose)
+
+  shape <- result$shape
+  tiles <- result$tiles
+  tilesvect <- result$tilesvect
 
   ##########list files and exclude features######
-  if (verbose) {cat("searching",inputdatafolder,"for tiles",paste(tiles,collapse = ", "),"\n")}
-  allfiles <- as.character(unlist(sapply(tiles,function(x) list.files(path = file.path(inputdatafolder,x),full.names = T,recursive = T,pattern = "tif$"))))
-  allgroundtruth = as.character(unlist(sapply(tiles,function(x) list.files(path = file.path(groundtruthdatafolder,x),full.names = T,recursive = T,pattern = "tif$"))))
-  allgroundtruth = allgroundtruth[endsWith(gsub(".tif","",allgroundtruth),groundtruth_pattern)]
-  allfiles = c(allfiles,allgroundtruth)
-  if (length(allfiles) == 0) {stop(paste("no folders with tif-files found that correspond to the given tile id's:",paste(tiles,collapse = ",")))}
+
+  allfiles <- list_files_and_exclude_features(tiles, groundtruth_pattern, verbose)
 
   #remove features that are not wanted
   if (!is.na(exc_features[1])) {
