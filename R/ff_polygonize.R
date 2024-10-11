@@ -52,11 +52,12 @@ ff_polygonize <- function(raster,
   pixel_size = 2e5
   if (class(raster) == "character") {raster <- terra::rast(raster)}
   # Set options and initialize variables
+  meanras <- as.numeric(terra::global(raster < 0.5, fun = "mean",na.rm=T))
+  high_thresh = as.numeric(terra::global(raster < quantile(raster[raster > 0.5], 0.5), fun = "mean",na.rm=T))
+  highest_thresh = as.numeric(terra::global(raster < quantile(raster[raster > 0.5], 0.75), fun = "mean",na.rm=T))
 
   if (class(threshold) == "character") {
-    if (calc_max) {perc_covered <- as.numeric(terra::global(!is.na(raster),"mean"))}
-    raster[raster < 0.5] = NA
-  if (terra::global(!is.na(raster), fun = "sum") == 0) {
+  if (meanras==0)  {
     ff_cat("no values in this raster above 0.5 were found,
            which is the minimum threshold of predictions FF provides when using auto-thresholding.
            Use a value as threshold if you still want polygons\n",color = "yellow")
@@ -66,10 +67,12 @@ ff_polygonize <- function(raster,
   pixel_min <- 5 * pixel_size
   # Apply focal mean and threshold
   br <- terra::focal(raster, w = window_size, fun = "mean",na.policy = "omit",na.rm = T)
+  highthresh= meanras+(1 - meanras)*0.5
+  highthresh= meanras+(1 - meanras)*0.5
   if (is.character(threshold)) {
-    if (threshold == "medium") {newthreshold <- quantile(as.matrix(br), probs = 0,na.rm = T)}
-    if (threshold == "high") {newthreshold <- quantile(as.matrix(br), probs = 0.5,na.rm = T)}
-    if (threshold == "very high") {newthreshold <- quantile(as.matrix(br), probs = 0.75,na.rm = T)}
+    if (threshold == "medium") {newthreshold <- quantile(as.matrix(br), probs = meanras,na.rm = T)}
+    if (threshold == "high") {newthreshold <- quantile(as.matrix(br), probs = high_thresh,na.rm = T)}
+    if (threshold == "very high") {newthreshold <- quantile(as.matrix(br), probs = highest_thresh,na.rm = T)}
     if (!exists("newthreshold")) {stop("the given character is not one of the possibilities medium, high or very high")}
     if (verbose) {ff_cat("new threshold is",newthreshold,"\n")}
     threshold <- newthreshold
