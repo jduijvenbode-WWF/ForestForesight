@@ -316,12 +316,49 @@ sample_and_combine_data <- function(dts, fdts, sf_indices, sample_size, first, a
     return(list(fdts = fdts, allindices = allindices, first = first))
 }
 
+create_validation_sample <- function(fdts, data_label, validation_sample) {
+  if (validation_sample > 0) {
+    sample_indices <- sample(seq(nrow(fdts)), round(validation_sample * nrow(fdts)))
+    data_matrix <- list(features = fdts[-sample_indices, ], label = data_label[-sample_indices])
+    validation_matrix <- list(features = fdts[sample_indices, ], label = data_label[sample_indices])
+  } else {
+    data_matrix <- list(features = fdts, label = data_label)
+    validation_matrix <- NA
+  }
+
+  return(list(data_matrix = data_matrix, validation_matrix = validation_matrix))
+}
+
+split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_threshold, groundtruth_raster, verbose) {
+  groundtruth_index <- which(colnames(fdts) == groundtruth_pattern)
+
+  if (length(groundtruth_index) == 1) {
+    data_label <- fdts[, groundtruth_index]
+
+    if (hasvalue(label_threshold)) {
+      data_label <- as.numeric(data_label > label_threshold)
+      if (inherits(groundtruth_raster, "SpatRaster")) {
+        groundtruth_raster <- as.numeric(groundtruth_raster > label_threshold)
+      }
+    }
+
+    fdts <- fdts[, -groundtruth_index]  # Remove groundtruth column from features
+  } else {
+    if (verbose) {
+      ff_cat("No groundtruth rasters found", color = "yellow")
+    }
+    data_label <- NA
+  }
+
+  return(list(fdts = fdts, data_label = data_label, groundtruth_raster = groundtruth_raster))
+}
+
 ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", dates="2023-01-01",
                     inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=0.3, validation_sample=0,
                     adddate=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
+
   ########quality check########
   datafolder <- quality_check(dates, country, shape, tiles, datafolder)
-
 
   hasgroundtruth <- FALSE
   ########preprocess for by-country processing########
@@ -347,7 +384,7 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
     }
   }
 
-  first <- T
+  first <- TRUE
   #######load raster data as matrix#########
   for (tile in tiles) {
 
@@ -418,32 +455,32 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
 
   #######create groundtruth data#######
   #split data into feature data and label data
-  groundtruth_index <- which(colnames(fdts) == groundtruth_pattern)
-  if (length(groundtruth_index) == 1) {
-    data_label <- fdts[,groundtruth_index]
-    if (hasvalue(label_threshold)) {
-      data_label <- as.numeric(data_label > label_threshold)
-      if (inherits(groundtruth_raster, "SpatRaster")) {groundtruth_raster <- as.numeric(groundtruth_raster > label_threshold)}}
 
-    fdts <- fdts[,-groundtruth_index]
-  }else{
-    if (verbose) {ff_cat("no groundtruth rasters found",color="yellow")}
-    data_label <- NA
-  }
+  split_result <- split_feature_and_label_data(fdts, groundtruth_pattern, label_threshold, groundtruth_raster, verbose)
+  fdts <- split_result$fdts
+  data_label <- split_result$data_label
+  groundtruth_raster <- split_result$groundtruth_raster
 
   #make sure that label data is binary
   ##########create validation sample#######
-  if (validation_sample > 0) {
-    sample_indices <- sample(seq(nrow(fdts)),round(validation_sample*nrow(fdts)))
-    data_matrix <- list(features = fdts[-sample_indices,], label = data_label[-sample_indices])
-    validation_matrix <- list(features = fdts[sample_indices,], label = data_label[sample_indices])
-  }else{
-    data_matrix <- list(features = fdts, label = data_label)
-    validation_matrix <- NA
-  }
+
+  validation_result <- create_validation_sample(fdts, data_label, validation_sample)
+  data_matrix <- validation_result$data_matrix
+  validation_matrix <- validation_result$validation_matrix
 
   ##########output data####
-  if (hasvalue(data_matrix$label)) {if (sum(data_matrix$label) == 0) {ff_cat("data contains no actuals, all labels are 0",color="yellow")}}
-  return(list("data_matrix" = data_matrix,"validation_matrix" = validation_matrix,"testindices" = allindices,"groundtruthraster" = groundtruth_raster,features = colnames(fdts),"hasgroundtruth" = hasgroundtruth))
-}
+  if (hasvalue(data_matrix$label)) {
+    if (sum(data_matrix$label) == 0 && verbose) {
+      ff_cat("Data contains no actuals, all labels are 0", color = "yellow")
+    }
+  }
 
+  return(list(
+    "data_matrix" = data_matrix,
+    "validation_matrix" = validation_matrix,
+    "testindices" = allindices,
+    "groundtruthraster" = groundtruth_raster,
+    "features" = colnames(fdts),
+    "hasgroundtruth" = hasgroundtruth
+  ))
+}
