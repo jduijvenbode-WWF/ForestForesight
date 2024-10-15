@@ -34,7 +34,7 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
     dir.create(ff_folder, recursive = TRUE)
   }
 
-  country_codes <- "test"
+  country_codes <- ""
 
   # Determine if identifier is a tile, country code, or SpatVector
   if (class(identifier) == "character" && nchar(identifier) == 7 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
