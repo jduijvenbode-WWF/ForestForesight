@@ -71,7 +71,7 @@ ff_predict <- function(model, test_matrix, threshold=0.5, groundtruth=NA, indice
     extra_features <- setdiff(test_features, model_features)
     # If there are extra features, remove them from the test matrix
     if (length(extra_features) > 0) {
-      warning(paste("Removing extra features from the test matrix:", paste(extra_features, collapse = ", ")))
+      ff_cat(paste("Removing extra features from the test matrix:", paste(extra_features, collapse = ", ")),color="yellow")
       test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
     }
   }

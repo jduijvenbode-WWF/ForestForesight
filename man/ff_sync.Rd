@@ -10,22 +10,25 @@ ff_sync(
   download_model = FALSE,
   download_data = TRUE,
   download_predictions = FALSE,
+  download_groundtruth = TRUE,
   bucket = "forestforesight-public",
   region = "eu-west-1",
-  verbose = T,
-  sync_verbose = F
+  verbose = TRUE,
+  sync_verbose = FALSE
 )
 }
 \arguments{
 \item{ff_folder}{Character. Local folder to sync data to.}
 
-\item{identifier}{Character. Either a tile ID (e.g., "00N_000E") or a country ISO3 code.}
+\item{identifier}{Character or SpatVector. When a character it should be either a tile ID (e.g., "00N_000E") or a country ISO3 code.}
 
 \item{download_model}{Logical. Whether to download the corresponding model. Only works when downloading for entire countries. Default is FALSE.}
 
-\item{download_data}{Logical. Whether to download the input and groundtruth data. Default is FALSE.}
+\item{download_data}{Logical. Whether to download the preprocessed input data. Default is TRUE.}
 
 \item{download_predictions}{Logical. Whether to download the prediction data.Only works when downloading for entire countries. Default is FALSE.}
+
+\item{download_groundtruth}{Logical. Whether to download the groundtruth data as well. This should be turned off when you want to use your own data as groundtruth. Default is TRUE.}
 
 \item{bucket}{Character. Name of the S3 bucket. Default is "forestforesight-public".}
 
