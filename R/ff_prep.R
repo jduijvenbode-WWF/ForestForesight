@@ -65,7 +65,6 @@
 ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", dates="2023-01-01",
                     inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=0.3, validation_sample=0,
                     adddate=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
-  cat("FF PREP RUNNING")
   ########quality check########
   if (as.Date(min(dates)) < as.Date("2021-01-01")) {stop("the earliest date available is 2021-01-01")}
   if (!hasvalue(country) & !hasvalue(shape)) {shrink <- "none"}

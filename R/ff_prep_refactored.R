@@ -67,7 +67,10 @@ ff_prep_refactored <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, 
                     adddate=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
 
   ########quality check########
-  datafolder <- quality_check(dates, country, shape, tiles, datafolder)
+  quality_result <- quality_check(dates, country, shape, tiles, datafolder, shrink)
+
+  datafolder <- quality_result$datafolder
+  shrink <- quality_result$shrink
 
   hasgroundtruth <- FALSE
   ########preprocess for by-country processing########
@@ -194,13 +197,13 @@ ff_prep_refactored <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, 
   ))
 }
 
-quality_check <- function(dates, country, shape, tiles, datafolder) {
+quality_check <- function(dates, country, shape, tiles, datafolder, shrink) {
   if (as.Date(min(dates)) < as.Date("2021-01-01")) {
     stop("The earliest date available is 2021-01-01")
   }
 
   if (!hasvalue(country) & !hasvalue(shape)) {
-    stop("Either 'country' or 'shape' must be provided")
+    shrink <- "none"
   }
 
   if (!hasvalue(dates)) {
@@ -223,7 +226,7 @@ quality_check <- function(dates, country, shape, tiles, datafolder) {
     stop("No environment variable for ff_datafolder and no datafolder parameter set")
   }
 
-  return(datafolder)
+  return(list(datafolder = datafolder, shrink = shrink))
 }
 
 preprocess_by_shape_or_country <- function(country, shape, tilesvect, tiles, verbose) {
