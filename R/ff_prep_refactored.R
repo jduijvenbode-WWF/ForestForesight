@@ -198,16 +198,16 @@ ff_prep_refactored <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, 
 }
 
 quality_check <- function(dates, country, shape, tiles, datafolder, shrink) {
+  if (!hasvalue(dates) || any(is.na(dates)) || dates == "") {
+    stop("No dates were given")
+  }
+
   if (as.Date(min(dates)) < as.Date("2021-01-01")) {
     stop("The earliest date available is 2021-01-01")
   }
 
   if (!hasvalue(country) & !hasvalue(shape)) {
     shrink <- "none"
-  }
-
-  if (!hasvalue(dates)) {
-    stop("No dates were given")
   }
 
   if (!hasvalue(tiles) & !hasvalue(country) & !hasvalue(shape)) {
