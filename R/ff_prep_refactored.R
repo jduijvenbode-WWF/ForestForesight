@@ -68,10 +68,6 @@ quality_check <- function(dates, country, shape, tiles, datafolder) {
     stop("The earliest date available is 2021-01-01")
   }
 
-  if (!hasvalue(country) & !hasvalue(shape)) {
-    stop("Either 'country' or 'shape' must be provided")
-  }
-
   if (!hasvalue(dates)) {
     stop("No dates were given")
   }
@@ -356,6 +352,10 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
 ff_prep_refactored <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth_pattern="groundtruth6m", dates="2023-01-01",
                     inc_features=NA, exc_features=NA, fltr_features=NULL, fltr_condition=NULL, sample_size=0.3, validation_sample=0,
                     adddate=T, verbose=T, shrink="none", window=NA, label_threshold=1, addxy=F){
+
+  if (!hasvalue(country) & !hasvalue(shape)) {
+    shrink <- "none"
+  }
 
   ########quality check########
   datafolder <- quality_check(dates, country, shape, tiles, datafolder)
