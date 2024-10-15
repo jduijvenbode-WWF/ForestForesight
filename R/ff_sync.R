@@ -34,6 +34,8 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
     dir.create(ff_folder, recursive = TRUE)
   }
 
+  country_codes <- "test"
+
   # Determine if identifier is a tile, country code, or SpatVector
   if (class(identifier) == "character" && nchar(identifier) == 7 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
     tiles <- identifier
@@ -47,6 +49,8 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
     intersected <- terra::intersect(identifier, countries)
     country_codes <- unique(intersected$iso3)
 
+    cat("Country codes in the if else block: ", country_codes, "\n")
+
     # Get tiles that intersect with the provided SpatVector
     tiles <- terra::intersect(gfw_tiles, identifier)
     tiles <- tiles$tile_id
@@ -55,12 +59,18 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
     countries <- terra::vect(get(data("countries")))
     gfw_tiles <- terra::vect(get(data("gfw_tiles")))
 
+    country_codes = identifier
+
+    cat("Country codes in the else block: ", country_codes, "\n")
+
     # Filter country and get tiles
     country_shape <- countries[countries$iso3 == identifier, ]
     if (nrow(country_shape) == 0) stop("Invalid country code")
     tiles <- terra::intersect(gfw_tiles, country_shape)
     tiles <- tiles$tile_id
   }
+
+  cat("Country codes: ", country_codes, "\n")
 
   # Sync input and ground truth data for each tile
   if (download_data | download_groundtruth) {
