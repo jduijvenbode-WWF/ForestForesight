@@ -65,9 +65,8 @@
 ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = "groundtruth6m", dates = "2023-01-01",
                     inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
                     adddate = T, verbose = T, shrink = "none", window = NA, label_threshold = 1, addxy = F) {
+  cat("FF PREP RUNNING")
   ######## quality check########
-
-  cat("running ff_prep \n")
   if (as.Date(min(dates)) < as.Date("2021-01-01")) {
     stop("the earliest date available is 2021-01-01")
   }
@@ -282,7 +281,7 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
           notin1 <- colnames(dts)[which(!(colnames(dts) %in% common_cols))]
           notin2 <- colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
           if (length(c(notin1, notin2)) > 0) {
-            ff_cat(paste(i, ": the following columns are dropped because they are not present in the entire time series: ", paste(c(notin1, notin2), collapse = ", ")), color = "yellow")
+            warning(paste(i, ": the following columns are dropped because they are not present in the entire time series: ", paste(c(notin1, notin2), collapse = ", ")))
           }
           # Subset matrices based on common column names
           # Merge matrices by column names
@@ -314,7 +313,7 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
     fdts <- fdts[, -groundtruth_index]
   } else {
     if (verbose) {
-      ff_cat("no groundtruth rasters found", color = "yellow")
+      warning("no groundtruth rasters found")
     }
     data_label <- NA
   }
@@ -333,7 +332,7 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
   ########## output data####
   if (hasvalue(data_matrix$label)) {
     if (sum(data_matrix$label) == 0) {
-      ff_cat("data contains no actuals, all labels are 0", color = "yellow")
+      warning("data contains no actuals, all labels are 0")
     }
   }
   return(list("data_matrix" = data_matrix, "validation_matrix" = validation_matrix, "testindices" = allindices, "groundtruthraster" = groundtruth_raster, features = colnames(fdts), "hasgroundtruth" = hasgroundtruth))
