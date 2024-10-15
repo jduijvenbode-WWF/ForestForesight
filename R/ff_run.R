@@ -1,8 +1,7 @@
 #' Train a Model and Predict Deforestation on Raster Data
 #'
 #' This function trains an XGBoost model using historical data and then predicts deforestation
-#' on raster data for a specified date and area. It now includes an option for Bayesian optimization
-#' of hyperparameters.
+#' on raster data for a specified date and area.
 #'
 #' @param shape SpatVector object representing the area of interest. Either `shape` or `country` must be provided.
 #' @param country ISO3 country code. Either `shape` or `country` must be provided.
@@ -15,7 +14,7 @@
 #' @param trained_model Pre-trained model object or path to saved model. If NULL, a new model will be trained. Default is NULL.
 #' @param ff_prep_params List of parameters for data preprocessing. See `ff_prep` function for details.
 #' @param ff_train_params List of parameters for model training. See `ff_train` function for details.
-#' @param threshold Probability threshold for binary classification. Default is 0.5.
+#' @param threshold Probability threshold for binary classififf_cation. Default is 0.5.
 #' @param fltr_features Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one
 #' @param fltr_condition The condition with value that is used to filter the training dataset based on mask features. Default is ">0". Can be more than one
 #' @param accuracy_csv Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
@@ -23,14 +22,12 @@
 #' @param verbose Logical; whether to display progress messages. Default is TRUE.
 #' @param autoscale_sample Logical; Whether to automatically scale the number of samples based on the size of the area and the length of the training period.
 #' @param validation Logical; Whether to add a validation matrix based on the training data, which is set at 0.25 of the training matrix. Should not be set if validation_dates is not NULL.
-#' @param use_optimizer Logical; Whether to use Bayesian optimization for hyperparameter tuning. Default is FALSE.
-#' @param optimizer_params List of parameters for the Bayesian optimizer. See `ff_optimizer` function for details.
 #'
-#' @return A SpatRaster object containing the predicted deforestation probabilities. If multiple prediction dates are given you receive a rasterstack with a raster per date
+#' @return A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
 #'
 #' @examples
 #' \dontrun{
-#' # Predict deforestation for a country with default settings
+#' # Predict deforestation for a country
 #' prediction <- ff_run(
 #'   country = "BRA",
 #'   prediction_date = "2024-01-01",
@@ -40,41 +37,32 @@
 #'   accuracy_csv = "path/to/save/accuracy.csv"
 #' )
 #'
-#' # Predict deforestation using Bayesian optimization for hyperparameter tuning
-#' prediction_optimized <- ff_run(
-#'   country = "BRA",
-#'   prediction_date = "2024-01-01",
-#'   ff_folder = "path/to/forestforesight/data",
-#'   train_dates = ForestForesight::daterange("2022-01-01","2023-12-31"),
-#'   use_optimizer = TRUE,
-#'   optimizer_params = list(
-#'     bounds = list(eta = c(0.01, 0.2), nrounds = c(100, 300)),
-#'     n_iter = 30
-#'   ),
-#'   verbose = TRUE
-#' )
-#'
 #' # Plot the prediction
 #' plot(prediction)
 #' }
+#'
+#' @importFrom lubridate ymd months %m-%
+#' @importFrom terra project mask crop vect merge
+#' @export
 #'
 #' @seealso
 #' \code{\link{ff_prep}} for data preparation
 #' \code{\link{ff_train}} for model training
 #' \code{\link{ff_predict}} for making predictions
 #' \code{\link{ff_analyze}} for analyzing prediction results
-#' \code{\link{ff_optimizer}} for Bayesian optimization of hyperparameters
 #'
-#' @importFrom lubridate ymd months %m-%
-#' @importFrom terra project mask crop vect merge
-#' @export
+#' @references
+#' Jonas van Duijvenbode (2023)
+#' Zillah Calle (2023)
+#'
+#' @keywords machine-learning prediction forestry raster
 
-ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
+ff_run <- function(shape = NULL, country = NULL, prediction_dates=NULL,
                    ff_folder,
-                   train_dates = NULL,
+                   train_dates=NULL,
                    validation_dates = NULL,
-                   save_path = NULL,
-                   save_path_predictions = NULL,
+                   save_path=NULL,
+                   save_path_predictions=NULL,
                    trained_model = NULL,
                    ff_prep_params = NULL,
                    ff_train_params = NULL,
@@ -83,23 +71,19 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
                    fltr_condition = ">0",
                    accuracy_csv = NULL,
                    importance_csv = NA,
-                   verbose = TRUE,
-                   autoscale_sample = FALSE,
-                   validation = FALSE,
-                   use_optimizer = FALSE,
-                   optimizer_params = list()) {
-
+                   verbose=T,
+                   autoscale_sample = F,
+                   validation = F) {
   fixed_sample_size <- 6e6
   sample_size <- 0.3
   if (!hasvalue(shape) & !hasvalue(country)) {stop("either input shape or country should be given")}
   if (!hasvalue(shape)) {
-    data(countries, envir = environment())
+    data(countries,envir = environment())
     countries <- terra::vect(countries)
     shape <- countries[which(countries$iso3 == country),]
   }
-
-  # check if all the function parameters have values in the right format
-  if (hasvalue(validation_dates)) {validation = FALSE}
+  #check if all the function parameters have values in the right format
+  if (hasvalue(validation_dates)) {validation = F}
   if (!hasvalue(ff_folder)) {stop("ff_folder is not given")}
   if (!dir.exists(ff_folder)) {stop(paste(ff_folder,"does not exist"))}
   if (!hasvalue(prediction_dates) & !is.null(trained_model)) {stop("prediction_date is not given and model is given so there is no need to run.")}
@@ -113,120 +97,78 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     if ((lubridate::ymd(prediction_dates[1]) - lubridate::ymd(max(train_dates))) < 170 ) {ff_cat("There should be at least 6 months between training and testing/predicting",color="yellow")}
   }
 
+
   if (!terra::is.lonlat(shape)) {shape <- terra::project(shape, "epsg:4326")}
-  data(gfw_tiles, envir = environment())
+  data(gfw_tiles,envir = environment())
   tiles <- terra::vect(gfw_tiles)[shape,]$tile_id
 
-  prep_folder <- file.path(ff_folder, "preprocessed")
-  if (!dir.exists(prep_folder)) {stop(paste(prep_folder, "does not exist"))}
+
+  prep_folder <- file.path(ff_folder,"preprocessed")
+  if (!dir.exists(prep_folder)) {stop(paste(prep_folder,"does not exist"))}
+
+
 
   # Train model if not provided
   if (is.null(trained_model)) {
     sample_size <- 0.3
-    # ff prep to determine the sample size
+    #ff prep to determine the sample size
     if (autoscale_sample & hasvalue(fltr_condition)){
-      if (verbose) {ff_cat("Finding optimal sample size based on filter condition\n", color = "green")}
+      if (verbose) {ff_cat("Finding optimal sample size based on filter condition\n",color = "green")}
       ff_prep_params_original = list(datafolder = prep_folder, shape = shape, dates = train_dates,
-                                     fltr_condition = fltr_condition, fltr_features = fltr_features,
+                                     fltr_condition = fltr_condition,fltr_features = fltr_features,
                                      sample_size = 1, shrink = "extract",
-                                     groundtruth_pattern = "groundtruth6m", label_threshold = 1)
+                                     groundtruth_pattern = "groundtruth6m",label_threshold = 1)
       ff_prep_params_combined = merge_lists(default = ff_prep_params_original, user = ff_prep_params)
       ff_prep_params_combined = merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
       traindata <- do.call(ff_prep, ff_prep_params_combined)
       if(validation){
-        sample_size <- min(1, 1.33*fixed_sample_size/length(traindata$data_matrix$features))
-        if(verbose){ff_cat("adding validation matrix\n", color = "green")}
-      } else {
-        sample_size <- min(1, fixed_sample_size/length(traindata$data_matrix$features))
-      }
-      if (verbose) {ff_cat("autoscaled sample size:", round(sample_size, 2), "\n", color = "green")}
+        sample_size <- min(1,1.33*fixed_sample_size/length(traindata$data_matrix$features))
+        if(verbose){ff_cat("adding validation matrix\n",color = "green")}
+      }else{
+        sample_size <- min(1,fixed_sample_size/length(traindata$data_matrix$features))}
+      if (verbose) {ff_cat("autoscaled sample size:", round(sample_size,2),"\n",color = "green")}
     }
 
-    if (verbose) {ff_cat("Preparing data\n", color = "green"); ff_cat("looking in folder", prep_folder, "\n", color = "green")}
-    ff_prep_params_original = list(datafolder = prep_folder, shape = shape, dates = train_dates,
-                                   fltr_condition = fltr_condition, fltr_features = fltr_features,
+
+
+    if (verbose) {ff_cat("Preparing data\n",color = "green");ff_cat("looking in folder",prep_folder,"\n",color = "green")}
+    ff_prep_params_original = list(datafolder = prep_folder, shape = shape, dates=train_dates,
+                                   fltr_condition = fltr_condition,fltr_features = fltr_features,
                                    sample_size = sample_size, verbose = verbose, shrink = "extract",
-                                   groundtruth_pattern = "groundtruth6m", label_threshold = 1)
-    if (validation) {ff_prep_params_original = c(ff_prep_params_original, list("validation_sample" = 0.25))}
+                                   groundtruth_pattern = "groundtruth6m",label_threshold = 1)
+    if (validation) {ff_prep_params_original=c(ff_prep_params_original,list("validation_sample" = 0.25))}
     ff_prep_params_combined = merge_lists(ff_prep_params_original, ff_prep_params)
 
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     if (hasvalue(validation_dates)) {
-      if (verbose) {ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n", color = "green")}
+      if (verbose) {ff_cat("adding validation matrix for dates",paste(validation_dates,collapse = ", "),"\n",color = "green")}
       ff_prep_params_combined["dates"] <- validation_dates
       ff_prep_params_combined["sample_size"] <- 1/3*sample_size
       valdata <- do.call(ff_prep, ff_prep_params_combined)
+
 
       if (min(train_dates) < min(validation_dates)){
         extra_features <- which(!valdata$features %in% traindata$features)
         if (length(extra_features) > 0){
           valdata$features  <- valdata$features[-extra_features]
-          valdata$data_matrix$features <- valdata$data_matrix$features[, -extra_features]
+          valdata$data_matrix$features <- valdata$data_matrix$features[,-extra_features]
         }
-      } else {
+      }else{
         extra_features <- which(!traindata$features %in% valdata$features)
         if (length(extra_features) > 0) {
           traindata$features  <- traindata$features[-extra_features]
-          traindata$data_matrix$features <- traindata$data_matrix$features[, -extra_features]
+          traindata$data_matrix$features <- traindata$data_matrix$features[,-extra_features]
         }
       }
       traindata$validation_matrix <- valdata$data_matrix
     }
 
-    if (use_optimizer) {
-      if (verbose) {ff_cat("Using Bayesian optimization for hyperparameter tuning\n", color = "green")}
+    ff_train_params_original = list(train_matrix = traindata$data_matrix, verbose = verbose,
+                                    modelfilename = save_path)
+    if (validation | hasvalue(validation_dates)) {ff_train_params_original <- c(ff_train_params_original, list(validation_matrix = traindata$validation_matrix))}
+    ff_train_params_original = merge_lists(ff_train_params_original, ff_train_params)
 
-      # Prepare optimizer parameters
-      optimizer_params_default <- list(
-        bounds = list(
-          eta = c(0.01, 0.3),
-          nrounds = c(50, 500),
-          max_depth = c(3, 10),
-          subsample = c(0.5, 1),
-          gamma = c(0.01, 1),
-          min_child_weight = c(1, 10)
-        ),
-        init_points = 5,
-        n_iter = 25,
-        acq = "ucb",
-        kappa = 2.576
-      )
-      optimizer_params <- merge_lists(optimizer_params_default, optimizer_params)
-
-      # Run optimizer
-      opt_result <- ff_optimizer(
-        ff_folder = ff_folder,
-        shape = shape,
-        country = country,
-        train_dates = train_dates,
-        val_dates = if (hasvalue(validation_dates)) validation_dates else NULL,
-        bounds = optimizer_params$bounds,
-        init_points = optimizer_params$init_points,
-        n_iter = optimizer_params$n_iter,
-        acq = optimizer_params$acq,
-        kappa = optimizer_params$kappa,
-        ff_prep_params = ff_prep_params,
-        ff_train_params = ff_train_params,
-        verbose = verbose,
-        validation_sample = if (validation) 0.25 else 0  # Use 0.25 if validation is TRUE, otherwise 0
-      )
-
-      trained_model <- opt_result$final_model
-      if (verbose) {
-        ff_cat("Best hyperparameters found:\n", color = "green")
-        print(opt_result$best_params)
-      }
-    } else {
-      # Original training process
-      ff_train_params_original <- list(train_matrix = traindata$data_matrix, verbose = verbose,
-                                       modelfilename = save_path)
-      if (validation | hasvalue(validation_dates)) {
-        ff_train_params_original <- c(ff_train_params_original, list(validation_matrix = traindata$validation_matrix))
-      }
-      ff_train_params_original <- merge_lists(ff_train_params_original, ff_train_params)
-
-      trained_model <- do.call(ff_train, ff_train_params_original)
-    }
+    trained_model <- do.call(ff_train, ff_train_params_original)
   }
   if (hasvalue(importance_csv)) {
     if (hasvalue(save_path)) { ff_importance(save_path,importance_csv,append = T)}else{
