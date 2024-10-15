@@ -109,8 +109,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   if (is.null(trained_model)) {
     if (!hasvalue(train_dates)) {train_dates <- as.character(lubridate::ymd(min(prediction_dates)) %m-% months(6,abbreviate = F))}
 
-    if (lubridate::ymd(max(train_dates)) > lubridate::ymd(prediction_dates[1])) {warning("(some) training dates are after prediction dates")}
-    if ((lubridate::ymd(prediction_dates[1]) - lubridate::ymd(max(train_dates))) < 170 ) {warning("There should be at least 6 months between training and testing/predicting")}
+    if (lubridate::ymd(max(train_dates)) > lubridate::ymd(prediction_dates[1])) {ff_cat("(some) training dates are after prediction dates",color="yellow")}
+    if ((lubridate::ymd(prediction_dates[1]) - lubridate::ymd(max(train_dates))) < 170 ) {ff_cat("There should be at least 6 months between training and testing/predicting",color="yellow")}
   }
 
   if (!terra::is.lonlat(shape)) {shape <- terra::project(shape, "epsg:4326")}
@@ -260,8 +260,22 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
                                verbose = verbose,certainty = T)
       raslist[[tile]] <- prediction$predicted_raster
       # Analyze prediction
-
-      forestras = get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = fltr_features)
+      for (i in seq(length(fltr_features))) {
+        filename <- get_raster(tile = tile,date = prediction_date,datafolder = paste0(prep_folder,"/input/"),feature = fltr_features[i])
+        if( !hasvalue(filename)){stop(paste("Cannot find the file for feature",fltr_features[i]))}
+        curras <- terra::rast(filename)
+        operator <- gsub("[[:alnum:]]", "", fltr_condition[i])
+        value <- as.numeric(gsub("[^0-9.-]", "", fltr_condition[i]))
+        curras <- switch(operator,
+                       ">" = curras > value,
+                       "<" = curras < value,
+                       "==" = curras == value,
+                       "!=" = curras != value,
+                       ">=" = curras >= value,
+                       "<=" = curras <= value
+        )
+        if (i == 1) {forestras <- curras}else{forestras <- forestras * curras}
+      }
       if (!hasvalue(forestras)) {forestras <- NULL}
       if (predset$hasgroundtruth) {
 

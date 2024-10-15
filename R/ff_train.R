@@ -95,7 +95,7 @@ ff_train <- function(train_matrix, validation_matrix=NA, nrounds = 200, eta = 0.
     }
       feature_names=xgbmodel$feature_names
     suppressWarnings({result <- xgboost::xgb.save(xgbmodel,modelfilename)})
-    if (result) {save(feature_names,file = gsub("\\.model","\\.rda",modelfilename))}else{warning("model is not saved")}
+    if (result) {save(feature_names,file = gsub("\\.model","\\.rda",modelfilename))}else{ff_cat("Warning: model is not saved",color="yellow")}
     }
   # Return the trained model
   return(xgbmodel)

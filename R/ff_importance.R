@@ -65,6 +65,7 @@ ff_importance <- function(model_path, output_csv, append = TRUE) {
   )
 
   # Write to CSV
+  if (!file.exists(output_csv)) {append = FALSE}
   write.table(df, file = output_csv, sep = ",", row.names = FALSE,
               col.names = !append, append = append)
 
