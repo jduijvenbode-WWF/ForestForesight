@@ -8,7 +8,7 @@ tiles <- NULL
 datafolder <- "D:/WWF/preprocessed"
 shrink <- "none"
 
-test_that("process_inputs works as expected", {
+test_that("quality_check works as expected", {
   # Test valid input, expecting to return a list with datafolder and shrink
   result <- quality_check(dates, country, shape, tiles, datafolder, shrink)
   expect_equal(result$datafolder, datafolder)
