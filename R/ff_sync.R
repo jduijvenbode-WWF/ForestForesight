@@ -29,10 +29,13 @@
 #' @export
 ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE, download_predictions = FALSE, download_groundtruth = TRUE,
                     bucket = "forestforesight-public", region = "eu-west-1", verbose = TRUE, sync_verbose = FALSE) {
-  # Create ff_folder if it doesn't exist
+  cat("Hello wolrd")
+    # Create ff_folder if it doesn't exist
   if (!dir.exists(ff_folder)) {
     dir.create(ff_folder, recursive = TRUE)
   }
+
+  country_codes <- ""
 
   # Determine if identifier is a tile, country code, or SpatVector
   if (class(identifier) == "character" && nchar(identifier) == 7 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
@@ -54,6 +57,8 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
     # Load necessary data sets
     countries <- terra::vect(get(data("countries")))
     gfw_tiles <- terra::vect(get(data("gfw_tiles")))
+
+    country_codes <- identifier
 
     # Filter country and get tiles
     country_shape <- countries[countries$iso3 == identifier, ]
