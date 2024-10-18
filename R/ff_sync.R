@@ -29,7 +29,7 @@
 #' @export
 ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE, download_predictions = FALSE, download_groundtruth = TRUE,
                     bucket = "forestforesight-public", region = "eu-west-1", verbose = TRUE, sync_verbose = FALSE) {
-  cat("Hello wolrd")
+
   # Create ff_folder if it doesn't exist
   if (!dir.exists(ff_folder)) {
     dir.create(ff_folder, recursive = TRUE)
@@ -50,8 +50,6 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
     intersected <- terra::intersect(identifier, countries)
     country_codes <- unique(intersected$iso3)
 
-    cat("Country codes in the if else block: ", country_codes, "\n")
-
     # Get tiles that intersect with the provided SpatVector
     tiles <- terra::intersect(gfw_tiles, identifier)
     tiles <- tiles$tile_id
@@ -68,8 +66,6 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
     tiles <- terra::intersect(gfw_tiles, country_shape)
     tiles <- tiles$tile_id
   }
-
-  cat("Country codes: ", country_codes, "\n")
 
   # Sync input and ground truth data for each tile
   if (download_data | download_groundtruth) {
