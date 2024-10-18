@@ -57,7 +57,6 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
     return(feature_name)
   }
 
-  cat("hello from getinfo \n")
   # Load countries data
   countries <- terra::vect(get(data("countries",envir = environment())))
 
