@@ -29,8 +29,8 @@
 #' @export
 ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE, download_predictions = FALSE, download_groundtruth = TRUE,
                     bucket = "forestforesight-public", region = "eu-west-1", verbose = TRUE, sync_verbose = FALSE) {
-  cat("Hello wolrd")
-    # Create ff_folder if it doesn't exist
+
+  # Create ff_folder if it doesn't exist
   if (!dir.exists(ff_folder)) {
     dir.create(ff_folder, recursive = TRUE)
   }
@@ -72,33 +72,39 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
     cat("Downloading input and ground truth data\n")
     for (tile in tiles) {
       # Create input sub-folder
-      if(download_data){
-      input_folder <- file.path(ff_folder, "preprocessed", "input", tile)
-      dir.create(input_folder, recursive = TRUE, showWarnings = FALSE)
-      # Sync input data
-      aws.s3::s3sync(input_folder, bucket, region = region, direction = "download",
-                     prefix = paste0("preprocessed/input/", tile), verbose = verbose)
+      if (download_data) {
+        input_folder <- file.path(ff_folder, "preprocessed", "input", tile)
+        dir.create(input_folder, recursive = TRUE, showWarnings = FALSE)
+        # Sync input data
+        aws.s3::s3sync(input_folder, bucket,
+          region = region, direction = "download",
+          prefix = paste0("preprocessed/input/", tile), verbose = verbose
+        )
       }
       # Create ground truth sub-folder
-      if(download_groundtruth)
-        {groundtruth_folder <- file.path(ff_folder, "preprocessed", "groundtruth", tile)
-      dir.create(groundtruth_folder, recursive = TRUE, showWarnings = FALSE)
-      # Sync ground truth data
-      aws.s3::s3sync(groundtruth_folder, bucket, region = region, direction = "download",
-                     prefix = paste0("preprocessed/groundtruth/", tile), verbose = verbose)
+      if (download_groundtruth) {
+        groundtruth_folder <- file.path(ff_folder, "preprocessed", "groundtruth", tile)
+        dir.create(groundtruth_folder, recursive = TRUE, showWarnings = FALSE)
+        # Sync ground truth data
+        aws.s3::s3sync(groundtruth_folder, bucket,
+          region = region, direction = "download",
+          prefix = paste0("preprocessed/groundtruth/", tile), verbose = verbose
+        )
       }
     }
   }
 
   # Download model if requested
   if (download_model) {
-    if (length(country_codes) == 1) {  # It's a single country
+    if (length(country_codes) == 1) { # It's a single country
       group <- countries$group[countries$iso3 == country_codes]
       model_folder <- file.path(ff_folder, "models", group)
       if (verbose) cat("Downloading model to", model_folder, "\n")
       if (!dir.exists(model_folder)) dir.create(model_folder, recursive = TRUE)
-      aws.s3::s3sync(model_folder, bucket, region = region, direction = "download",
-                     prefix = paste0("models/", group), verbose = sync_verbose)
+      aws.s3::s3sync(model_folder, bucket,
+        region = region, direction = "download",
+        prefix = paste0("models/", group), verbose = sync_verbose
+      )
     } else {
       warning("Model download is only available when specifying a single country code or a SpatVector that intersects with a single country.")
     }
@@ -106,12 +112,14 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
 
   # Download predictions if requested
   if (download_predictions) {
-    if (length(country_codes) == 1) {  # It's a single country
+    if (length(country_codes) == 1) { # It's a single country
       pred_folder <- file.path(ff_folder, "predictions", country_codes)
       if (verbose) cat("Downloading predictions to", pred_folder, "\n")
       if (!dir.exists(pred_folder)) dir.create(pred_folder, recursive = TRUE)
-      aws.s3::s3sync(pred_folder, bucket, region = region, direction = "download",
-                     prefix = paste0("predictions/", country_codes), verbose = sync_verbose)
+      aws.s3::s3sync(pred_folder, bucket,
+        region = region, direction = "download",
+        prefix = paste0("predictions/", country_codes), verbose = sync_verbose
+      )
     } else {
       warning("Predictions download is only available when specifying a single country code or a SpatVector that intersects with a single country.")
     }
