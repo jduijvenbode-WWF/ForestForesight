@@ -83,7 +83,7 @@ ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles 
 
   ########## list files and exclude features######
 
-  allfiles <- list_files_and_exclude_features(datafolder = datafolder, tiles, groundtruth_pattern, verbose)
+  allfiles <- list_and_filter_tile_files(datafolder = datafolder, tiles, groundtruth_pattern, verbose)
 
   # remove features that are not wanted
   allfiles <- filter_files_by_features(allfiles, exc_features, inc_features, groundtruth_pattern, verbose)
@@ -97,7 +97,7 @@ ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles 
   first <- TRUE
   # Process tiles and dates
   ####### load raster data as matrix#########
-  process_result <- process_tiles(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, first, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition)
+  process_result <- process_tile_data(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, first, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition)
 
   fdts <- process_result$fdts
   allindices <- process_result$allindices
@@ -200,7 +200,7 @@ preprocess_by_shape_or_country <- function(country, shape, tilesvect, tiles, ver
   return(list(shape = shape, tiles = tiles))
 }
 
-list_files_and_exclude_features <- function(datafolder = NA, tiles, groundtruth_pattern, verbose) {
+list_and_filter_tile_files <- function(datafolder = NA, tiles, groundtruth_pattern, verbose) {
   inputdatafolder <- file.path(datafolder, "input")
   groundtruthdatafolder <- file.path(datafolder, "groundtruth")
 
@@ -253,7 +253,7 @@ filter_files_by_features <- function(allfiles, exc_features, inc_features, groun
   return(allfiles)
 }
 
-load_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
+prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
   for (file in files) {
     if (!exists("extent")) {
       extent <- terra::ext(terra::rast(file))
@@ -286,7 +286,7 @@ load_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
   return(rasstack)
 }
 
-handle_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, hasgroundtruth) {
+load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, hasgroundtruth) {
   #   groundtruth_raster <- NULL
   #   hasgroundtruth <- FALSE
 
@@ -307,7 +307,7 @@ handle_groundtruth_raster <- function(selected_files, groundtruth_pattern, first
   return(list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth))
 }
 
-process_shape_country <- function(shape, shrink, files, borders) {
+initialize_shape_from_borders <- function(shape, shrink, files, borders) {
   if (!hasvalue(shape) & (shrink == "extract")) {
     if (!exists("countries", inherits = FALSE)) {
       data(countries, envir = environment())
@@ -318,7 +318,7 @@ process_shape_country <- function(shape, shrink, files, borders) {
   return(shape)
 }
 
-process_date_and_groundtruth <- function(i, files, groundtruth_pattern) {
+filter_files_by_date_and_groundtruth <- function(i, files, groundtruth_pattern) {
   selected_files <- select_files_date(i, files)
   # Remove groundtruth if it is not of the same month
   if (!(grep(groundtruth_pattern, selected_files) %in% grep(i, selected_files))) {
@@ -328,7 +328,7 @@ process_date_and_groundtruth <- function(i, files, groundtruth_pattern) {
   return(selected_files)
 }
 
-process_raster_data <- function(rasstack, shape, shrink, addxy, dts, coords) {
+transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts, coords) {
   if (shrink == "extract") {
     dts <- terra::extract(rasstack, shape, raw = TRUE, ID = FALSE, xy = addxy)
   } else {
@@ -341,7 +341,7 @@ process_raster_data <- function(rasstack, shape, shrink, addxy, dts, coords) {
   return(dts)
 }
 
-add_date_features <- function(dts, i) {
+append_date_based_features <- function(dts, i) {
   dts <- cbind(
     dts, rep(sin((2 * pi * as.numeric(format(as.Date(i), "%m"))) / 12), nrow(dts)),
     rep(as.numeric(format(as.Date(i), "%m")), nrow(dts)),
@@ -351,7 +351,7 @@ add_date_features <- function(dts, i) {
   return(dts)
 }
 
-finalize_data <- function(dts, selected_files, addxy, adddate) {
+finalize_columns_and_data <- function(dts, selected_files, addxy, adddate) {
   dts[is.na(dts)] <- 0
   newcolnames <- gsub(".tif", "", sapply(basename(selected_files), function(x) strsplit(x, "_")[[1]][4]))
 
@@ -438,7 +438,7 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
   return(list(fdts = fdts, data_label = data_label, groundtruth_raster = groundtruth_raster))
 }
 
-process_tiles <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, first, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition) {
+process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, first, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition) {
   ####### load raster data as matrix#########
   for (tile in tiles) {
     if (exists("extent", inherits = F)) {
@@ -446,7 +446,7 @@ process_tiles <- function(tiles, allfiles, shape, shrink, window, borders, verbo
     }
 
     files <- allfiles[grep(tile, allfiles)]
-    shape <- process_shape_country(shape, shrink, files, borders)
+    shape <- initialize_shape_from_borders(shape, shrink, files, borders)
 
     result <- process_tile_dates(tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size, allindices, hasgroundtruth, fltr_features, fltr_condition)
 
@@ -474,26 +474,26 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
       cat(paste("loading tile data from", tile, "for", i, " "))
     }
 
-    selected_files <- process_date_and_groundtruth(i, files, groundtruth_pattern)
-    rasstack <- load_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
+    selected_files <- filter_files_by_date_and_groundtruth(i, files, groundtruth_pattern)
+    rasstack <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
 
     if (length(tiles) > 1) {
       groundtruth_raster <- NA
     } else {
-      groundtruth_result <- handle_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
+      groundtruth_result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
       groundtruth_raster <- groundtruth_result$groundtruth_raster
       hasgroundtruth <- groundtruth_result$hasgroundtruth
     }
 
     # Process raster data
-    dts <- process_raster_data(rasstack, shape, shrink, addxy, dts, coords)
+    dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, dts, coords)
 
     # Add date features if necessary
     if (adddate) {
-      dts <- add_date_features(dts, i)
+      dts <- append_date_based_features(dts, i)
     }
 
-    result <- finalize_data(dts, selected_files, addxy, adddate)
+    result <- finalize_columns_and_data(dts, selected_files, addxy, adddate)
     dts <- result$dts
     newcolnames <- result$newcolnames
 
