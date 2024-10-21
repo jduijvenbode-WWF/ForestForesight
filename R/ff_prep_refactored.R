@@ -95,69 +95,14 @@ ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles 
   }
 
   first <- TRUE
+  # Process tiles and dates
   ####### load raster data as matrix#########
-  for (tile in tiles) {
-    if (exists("extent", inherits = F)) {
-      rm(extent)
-    }
+  process_result <- process_tiles(tiles, allfiles, shape, shrink, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, first, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition)
 
-    files <- allfiles[grep(tile, allfiles)]
-
-    shape <- process_shape_country(shape, shrink, files, borders, verbose)
-
-    for (i in dates) {
-      if (exists("dts", inherits = F)) {
-        rm(dts)
-      }
-
-      if (verbose) {
-        cat(paste("loading tile data from", tile, "for", i, " "))
-      }
-
-      selected_files <- process_date_and_groundtruth(i, files, groundtruth_pattern)
-
-      rasstack <- load_raster_data_by_tile(selected_files, shape, shrink, NA, verbose)
-
-      if (length(tiles) > 1) {
-        groundtruth_raster <- NA
-      } else {
-        groundtruth_result <- handle_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
-        groundtruth_raster <- groundtruth_result$groundtruth_raster
-        hasgroundtruth <- groundtruth_result$hasgroundtruth
-      }
-
-      # Process raster data
-      dts <- process_raster_data(rasstack, shape, shrink, addxy, dts, coords)
-
-      # Add date features if necessary
-      if (adddate) {
-        dts <- add_date_features(dts, i)
-      }
-
-      result <- finalize_data(dts, selected_files, addxy, adddate)
-      dts <- result$dts
-      newcolnames <- result$newcolnames
-
-      # filter on filter conditions
-
-      filterresult <- filter_by_feature(fltr_features, fltr_condition, dts, verbose = verbose)
-      dts <- filterresult$filtered_matrix
-      sf_indices <- filterresult$filtered_indices
-
-      # take a random sample if that was applied
-
-      # Subset matrices based on common column names
-      # Merge matrices by column names
-      combine_result <- sample_and_combine_data(dts, fdts, sf_indices, sample_size, first, allindices, verbose)
-      fdts <- combine_result$fdts
-      allindices <- combine_result$allindices
-      first <- combine_result$first
-    }
-
-    if (verbose) {
-      cat(paste("loading finished, features:", paste(newcolnames, collapse = ", "), "\n"))
-    }
-  }
+  fdts <- process_result$fdts
+  allindices <- process_result$allindices
+  groundtruth_raster <- process_result$groundtruth_raster
+  hasgroundtruth <- process_result$hasgroundtruth
 
   ###### filter data based on features#######
   # filter training data on features that have been declared
@@ -491,4 +436,80 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
   }
 
   return(list(fdts = fdts, data_label = data_label, groundtruth_raster = groundtruth_raster))
+}
+
+process_tiles <- function(tiles, allfiles, shape, shrink, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, first, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition) {
+  ####### load raster data as matrix#########
+  for (tile in tiles) {
+    if (exists("extent", inherits = F)) {
+      rm(extent)
+    }
+
+    files <- allfiles[grep(tile, allfiles)]
+    shape <- process_shape_country(shape, shrink, files, borders, verbose)
+
+    result <- process_tile_dates(tiles, tile, files, shape, shrink, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size, allindices, hasgroundtruth, fltr_features, fltr_condition)
+
+    fdts <- result$fdts
+    allindices <- result$allindices
+    first <- result$first
+    groundtruth_raster <- result$groundtruth_raster
+    newcolnames <- result$newcolnames
+    hasgroundtruth <- result$hasgroundtruth
+
+    if (verbose) {
+    cat(paste("loading finished, features:", paste(newcolnames, collapse = ", "), "\n"))
+  }
+  }
+  return(list(fdts = fdts, allindices = allindices, groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth))
+}
+
+process_tile_dates <- function(tiles, tile, files, shape, shrink, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size, allindices, hasgroundtruth, fltr_features, fltr_condition) {
+  for (i in dates) {
+    if (exists("dts", inherits = F)) {
+      rm(dts)
+    }
+
+    if (verbose) {
+      cat(paste("loading tile data from", tile, "for", i, " "))
+    }
+
+    selected_files <- process_date_and_groundtruth(i, files, groundtruth_pattern)
+    rasstack <- load_raster_data_by_tile(selected_files, shape, shrink, NA, verbose)
+
+    if (length(tiles) > 1) {
+      groundtruth_raster <- NA
+    } else {
+      groundtruth_result <- handle_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
+      groundtruth_raster <- groundtruth_result$groundtruth_raster
+      hasgroundtruth <- groundtruth_result$hasgroundtruth
+    }
+
+    # Process raster data
+    dts <- process_raster_data(rasstack, shape, shrink, addxy, dts, coords)
+
+    # Add date features if necessary
+    if (adddate) {
+      dts <- add_date_features(dts, i)
+    }
+
+    result <- finalize_data(dts, selected_files, addxy, adddate)
+    dts <- result$dts
+    newcolnames <- result$newcolnames
+
+    # filter on filter conditions
+    filterresult <- filter_by_feature(fltr_features, fltr_condition, dts, verbose = verbose)
+    dts <- filterresult$filtered_matrix
+    sf_indices <- filterresult$filtered_indices
+
+    # take a random sample if that was applied
+    #
+    # Subset matrices based on common column names
+    # Merge matrices by column names
+    combine_result <- sample_and_combine_data(dts, fdts, sf_indices, sample_size, first, allindices)
+    fdts <- combine_result$fdts
+    allindices <- combine_result$allindices
+    first <- combine_result$first
+  }
+  return(list(fdts = fdts, allindices = allindices, first = first, groundtruth_raster = groundtruth_raster, newcolnames = newcolnames, hasgroundtruth = hasgroundtruth))
 }
