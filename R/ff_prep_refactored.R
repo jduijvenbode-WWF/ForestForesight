@@ -307,7 +307,7 @@ handle_groundtruth_raster <- function(selected_files, groundtruth_pattern, first
   return(list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth))
 }
 
-process_shape_country <- function(shape, shrink, files, borders, verbose) {
+process_shape_country <- function(shape, shrink, files, borders) {
   if (!hasvalue(shape) & (shrink == "extract")) {
     if (!exists("countries", inherits = FALSE)) {
       data(countries, envir = environment())
@@ -368,7 +368,7 @@ finalize_data <- function(dts, selected_files, addxy, adddate) {
   return(list(dts = dts, newcolnames = newcolnames))
 }
 
-sample_and_combine_data <- function(dts, fdts, sf_indices, sample_size, first, allindices, verbose) {
+sample_and_combine_data <- function(dts, fdts, sf_indices, sample_size, first, allindices) {
   # take a random sample if that was applied
 
   if (sample_size < 1) {
@@ -446,7 +446,7 @@ process_tiles <- function(tiles, allfiles, shape, shrink, borders, verbose, date
     }
 
     files <- allfiles[grep(tile, allfiles)]
-    shape <- process_shape_country(shape, shrink, files, borders, verbose)
+    shape <- process_shape_country(shape, shrink, files, borders)
 
     result <- process_tile_dates(tiles, tile, files, shape, shrink, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size, allindices, hasgroundtruth, fltr_features, fltr_condition)
 
