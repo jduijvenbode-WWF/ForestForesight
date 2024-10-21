@@ -458,8 +458,8 @@ process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, v
     hasgroundtruth <- result$hasgroundtruth
 
     if (verbose) {
-    cat(paste("loading finished, features:", paste(newcolnames, collapse = ", "), "\n"))
-  }
+      cat(paste("loading finished, features:", paste(newcolnames, collapse = ", "), "\n"))
+    }
   }
   return(list(fdts = fdts, allindices = allindices, groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth))
 }
