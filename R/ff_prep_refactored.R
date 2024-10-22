@@ -353,7 +353,7 @@ append_date_based_features <- function(dts, i) {
   return(dts)
 }
 
-finalize_columns_and_data <- function(dts, selected_files, addxy, adddate) {
+finalize_column_names_and_data_matrix <- function(dts, selected_files, addxy, adddate) {
   dts[is.na(dts)] <- 0
   newcolnames <- gsub(".tif", "", sapply(basename(selected_files), function(x) strsplit(x, "_")[[1]][4]))
 
@@ -500,7 +500,7 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
       dts <- append_date_based_features(dts, i)
     }
 
-    result <- finalize_columns_and_data(dts, selected_files, addxy, adddate)
+    result <- finalize_column_names_and_data_matrix(dts, selected_files, addxy, adddate)
     dts <- result$dts
     newcolnames <- result$newcolnames
 
