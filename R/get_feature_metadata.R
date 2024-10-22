@@ -1,8 +1,10 @@
+load_config()
+
 get_feature_metadata=function(){
   library(utils)
 
   # URL of the Markdown file
-  url <- "https://raw.githubusercontent.com/jduijvenbode-WWF/ForestForesight/main/README.md"
+  url <- config$URL_MARKDOWN
 
   # Read the Markdown file
   markdown_text <- readLines(url)

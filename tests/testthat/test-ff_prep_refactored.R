@@ -1,18 +1,25 @@
-test_that("refactored ff_prep has the same output as the original", {
-  download_folder <- "C:/Kodingan3/FFdata"
+# load_config()
+source("load_config.R")
 
-  identifier <- "PER"  # Example: Gabon
+# ForestForesight::load_config()
+test_that("refactored ff_prep has the same output as the original", {
+
+  cat("b4 test-ff_prep_refactored load_config\n")
+  # ForestForesight::load_config()
+  identifier <- "GAB"  # Example: Gabon
 
   features <- c("temperature", "lastmonth", "confidence", "totallossalerts")
 
-  # Change to your own data_folder because we can't store it locally
-  data_folder <- "C:/Kodingan3/FFdata/preprocessed"
-
+  # Change to your own prep_data_folder because we can't store it locally
+  prep_data_folder <- config$TEST_PREP_DATA
+  # prep_data_folder <- "C:/Kodingan3/FFdata/preprocessed"
+  cat("prep_data_folder from config: ")
+  cat(prep_data_folder)
   # sample_size=1 in order to remove randomness
   # running on tiles
   tiles <- c("00N_000E", "00N_010E")
-  tile_prepped_ref <- ff_prep_refactored(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
-  tile_prepped <- ff_prep(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
+  tile_prepped_ref <- ff_prep_refactored(datafolder = prep_data_folder, tiles = tiles, sample_size = 1, inc_features = features)
+  tile_prepped <- ff_prep(datafolder = prep_data_folder, tiles = tiles, sample_size = 1, inc_features = features)
 
   tile_hash_ref <- digest(tile_prepped_ref$data_matrix, algo = "md5")
   cat("tile hash ", tile_hash_ref, "\n")
@@ -21,8 +28,8 @@ test_that("refactored ff_prep has the same output as the original", {
   cat("tile hash ", tile_hash, "\n")
 
   # running on country
-  country_prepped <- ff_prep(datafolder = data_folder, country = identifier, sample_size = 1, inc_features = features)
-  country_prepped_ref <- ff_prep_refactored(datafolder = data_folder, country = identifier, sample_size = 1, inc_features = features)
+  country_prepped <- ff_prep(datafolder = prep_data_folder, country = identifier, sample_size = 1, inc_features = features)
+  country_prepped_ref <- ff_prep_refactored(datafolder = prep_data_folder, country = identifier, sample_size = 1, inc_features = features)
 
   country_hash <- digest(country_prepped$data_matrix, algo = "md5")
   cat("Country hash", country_hash, "\n")
@@ -33,8 +40,8 @@ test_that("refactored ff_prep has the same output as the original", {
   ## running on shape
   countries <- vect(get(data("countries")))
   shape <- countries[countries$iso3 == "GAB"]
-  shape_prepped <- ff_prep(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
-  shape_prepped_ref <- ff_prep_refactored(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
+  shape_prepped <- ff_prep(datafolder = prep_data_folder, shape = shape, sample_size = 1, inc_features = features)
+  shape_prepped_ref <- ff_prep_refactored(datafolder = prep_data_folder, shape = shape, sample_size = 1, inc_features = features)
 
   shape_hash <- digest(shape_prepped$data_matrix, algo = "md5")
   cat("Shape hash", shape_hash, "\n")
