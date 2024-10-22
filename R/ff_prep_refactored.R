@@ -94,10 +94,9 @@ ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles 
     }
   }
 
-  first <- TRUE
   # Process tiles and dates
   ####### load raster data as matrix#########
-  process_result <- process_tile_data(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, first, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition)
+  process_result <- process_tile_data(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition)
 
   fdts <- process_result$fdts
   allindices <- process_result$allindices
@@ -438,7 +437,8 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
   return(list(fdts = fdts, data_label = data_label, groundtruth_raster = groundtruth_raster))
 }
 
-process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, first, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition) {
+process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate, fdts, sample_size, allindices, fltr_features, fltr_condition) {
+  first <- TRUE
   ####### load raster data as matrix#########
   for (tile in tiles) {
     if (exists("extent", inherits = F)) {
