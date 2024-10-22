@@ -317,10 +317,10 @@ initialize_shape_from_borders <- function(shape, shrink, files, borders) {
   return(shape)
 }
 
-filter_files_by_date_and_groundtruth <- function(i, files, groundtruth_pattern) {
-  selected_files <- select_files_date(i, files)
+filter_files_by_date_and_groundtruth <- function(date, files, groundtruth_pattern) {
+  selected_files <- select_files_date(date, files)
   # Remove groundtruth if it is not of the same month
-  if (!(grep(groundtruth_pattern, selected_files) %in% grep(i, selected_files))) {
+  if (!(grep(groundtruth_pattern, selected_files) %in% grep(date, selected_files))) {
     selected_files <- selected_files[-grep(groundtruth_pattern, selected_files)]
   }
 
@@ -367,7 +367,7 @@ finalize_columns_and_data <- function(dts, selected_files, addxy, adddate) {
   return(list(dts = dts, newcolnames = newcolnames))
 }
 
-sample_and_combine_data <- function(dts, fdts, sf_indices, sample_size, first, allindices) {
+sample_and_combine_data <- function(date, dts, fdts, sf_indices, sample_size, first, allindices) {
   # take a random sample if that was applied
 
   if (sample_size < 1) {
@@ -386,7 +386,7 @@ sample_and_combine_data <- function(dts, fdts, sf_indices, sample_size, first, a
       notin1 <- colnames(dts)[which(!(colnames(dts) %in% common_cols))]
       notin2 <- colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
       if (length(c(notin1, notin2)) > 0) {
-        ff_cat(paste(i, ": the following columns are dropped because they are not present in the entire time series: ", paste(c(notin1, notin2), collapse = ", ")), color = "yellow")
+        ff_cat(paste(date, ": the following columns are dropped because they are not present in the entire time series: ", paste(c(notin1, notin2), collapse = ", ")), color = "yellow")
       }
 
       # Subset matrices based on common column names
@@ -465,7 +465,7 @@ process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, v
 }
 
 process_tile_dates <- function(tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size, allindices, hasgroundtruth, fltr_features, fltr_condition) {
-  for (i in dates) {
+  for (date in dates) {
     if (exists("dts", inherits = F)) {
       rm(dts)
     }
@@ -474,7 +474,7 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
       cat(paste("loading tile data from", tile, "for", i, " "))
     }
 
-    selected_files <- filter_files_by_date_and_groundtruth(i, files, groundtruth_pattern)
+    selected_files <- filter_files_by_date_and_groundtruth(date, files, groundtruth_pattern)
     rasstack <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
 
     if (length(tiles) > 1) {
@@ -506,7 +506,7 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
     #
     # Subset matrices based on common column names
     # Merge matrices by column names
-    combine_result <- sample_and_combine_data(dts, fdts, sf_indices, sample_size, first, allindices)
+    combine_result <- sample_and_combine_data(date, dts, fdts, sf_indices, sample_size, first, allindices)
     fdts <- combine_result$fdts
     allindices <- combine_result$allindices
     first <- combine_result$first
