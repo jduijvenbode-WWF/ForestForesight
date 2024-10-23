@@ -1,4 +1,4 @@
-run_all_checks <- function() {
+code_quality_checks <- function() {
   # Lint the package
   cat("Running lint...\n")
   lintr::lint_package()
