@@ -1,7 +1,6 @@
 library(testthat)
 
 test_that("list_and_filter_tile_files function works as expected", {
-
   tiles <- c("00N_000E", "00N_010E")
   groundtruth_pattern <- "groundtruth6m"
   verbose <- TRUE
@@ -31,14 +30,16 @@ test_that("list_and_filter_tile_files function works as expected", {
   expect_true(groundtruth_file1 %in% allfiles)
 
   # Case 2: Empty data folder, expect error
-  empty_datafolder <- tempdir()  # Create a new empty temporary directory
+  empty_datafolder <- tempdir() # Create a new empty temporary directory
 
   unlink(list.files(file.path(empty_datafolder, "input"), full.names = TRUE), recursive = TRUE)
   unlink(list.files(file.path(empty_datafolder, "groundtruth"), full.names = TRUE), recursive = TRUE)
 
   # Test error when no files are found
-  expect_error(list_and_filter_tile_files(empty_datafolder, tiles, groundtruth_pattern, verbose),
-               paste("No folders with tif-files found that correspond to the given tile IDs:", paste(tiles, collapse = ",")))
+  expect_error(
+    list_and_filter_tile_files(empty_datafolder, tiles, groundtruth_pattern, verbose),
+    paste("No folders with tif-files found that correspond to the given tile IDs:", paste(tiles, collapse = ","))
+  )
 
   # Clean up mock files
   unlink(temp_datafolder, recursive = TRUE)

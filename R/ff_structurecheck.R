@@ -17,7 +17,7 @@
 #' @export
 ff_structurecheck <- function(shape, folder_path, check_date = NULL) {
   # Get info from shape
-  info <- getinfo(shape,verbose = F)
+  info <- getinfo(shape, verbose = F)
 
   # Set check_date if not provided
   if (is.null(check_date)) {
@@ -66,7 +66,7 @@ ff_structurecheck <- function(shape, folder_path, check_date = NULL) {
               ff_cat(paste("Correct file naming in", subfolder, "for tile", tile, "\n"), color = "green")
             }
             has_check_date <- any(grepl(paste0("^", tile, "_", check_date, "_lastsixmonths.tif$"), files))
-            if(subfolder != "groundtruth"){
+            if (subfolder != "groundtruth") {
               if (!has_check_date) {
                 ff_cat(paste("No EWS features for check date", check_date, "in", subfolder, "for tile", tile, "\n"), color = "yellow")
               } else {
@@ -114,8 +114,8 @@ ff_structurecheck <- function(shape, folder_path, check_date = NULL) {
   # Check predictions folder
   cat("\nChecking predictions folder\n")
   for (cname in info$overlapping_countries) {
-    countries <- get(data("countries",envir=environment()))
-    iso3<- countries$iso3[countries$name==cname]
+    countries <- get(data("countries", envir = environment()))
+    iso3 <- countries$iso3[countries$name == cname]
     iso3_folder <- file.path(folder_path, "predictions", iso3)
     if (!dir.exists(iso3_folder)) {
       ff_cat(paste("No subfolder for ISO3 code", iso3, "in predictions\n"), color = "red")

@@ -1,7 +1,7 @@
 test_that("refactored ff_prep has the same output as the original", {
   download_folder <- "C:/Kodingan3/FFdata"
-  
-  identifier <- "GAB"  # Example: Gabon
+
+  identifier <- "GAB" # Example: Gabon
 
   features <- c("temperature", "lastmonth", "confidence", "totallossalerts")
 
@@ -81,5 +81,3 @@ test_that("refactored ff_prep has the same output as the original", {
 
   expect_equal(df_original, df_refactored)
 })
-
-

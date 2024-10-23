@@ -22,7 +22,6 @@ test_that("preprocess_by_shape_or_country works when country is provided", {
 })
 
 test_that("preprocess_by_shape_or_country works when shape is provided", {
-
   data(countries, envir = environment())
   countries <- vect(get(data("countries")))
   shape_from_countries <- countries[countries$iso3 == "GAB"]

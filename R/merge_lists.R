@@ -18,7 +18,7 @@
 #'
 #' @export
 merge_lists <- function(default, user) {
-  indices = -which(names(default) %in% names(user))
+  indices <- -which(names(default) %in% names(user))
   if (length(indices) != 0) {
     c(default[indices], user)
   } else {
