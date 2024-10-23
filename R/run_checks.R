@@ -10,10 +10,6 @@ run_all_checks <- function() {
   # Run tests
   cat("Running tests...\n")
   devtools::test()
-
-  # Optionally, check package
-  cat("Running devtools::check()...\n")
-  devtools::check()
 }
 
 run_lintr_and_styler_for_file <- function(file_string) {
@@ -21,11 +17,6 @@ run_lintr_and_styler_for_file <- function(file_string) {
   styler::style_file(file_string)
   cat("Linting file ", file_string, "\n")
   run_lintr_for_file(file_string)
-}
-
-run_test_active_file <- function() {
-  devtools::test_active_file()
-  cat("test coverage: ", devtools::test_coverage_active_file())
 }
 
 run_lint_style_package <- function() {
@@ -39,10 +30,9 @@ run_lint_style_package <- function() {
 
 run_tests <- function() {
   devtools::test()
-  devtools::test_coverage()
 }
 
-run_CRAN_test <- function() {
+run_CRAN_tests <- function() {
   devtools::check()
 }
 
