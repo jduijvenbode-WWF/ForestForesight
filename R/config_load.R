@@ -1,4 +1,4 @@
-ff_load_config <- function(config_path = "config.json") {
+config_load <- function(config_path = "config.json") {
   # Check if jsonlite is installed
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     install.packages("jsonlite")
