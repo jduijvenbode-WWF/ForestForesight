@@ -13,5 +13,5 @@ config_load <- function(config_path = "config.json") {
 
   # Read the config file
   config <- fromJSON(config_path)
-  return (config)
+  return(config)
 }

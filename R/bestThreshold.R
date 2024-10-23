@@ -16,7 +16,6 @@
 #' @export
 bestThreshold <- function(prediction, groundtruth, optimize_function = getFscore,
                           a = 0.45, b = 0.55, tol = 0.001, maxiter = 100, beta = 0.5) {
-
   # Golden ratio
   phi <- (1 + sqrt(5)) / 2
 
@@ -36,13 +35,13 @@ bestThreshold <- function(prediction, groundtruth, optimize_function = getFscore
       x2 <- x1
       f2 <- f1
       x1 <- b - inv_phi * (b - a)
-      f1 <-  optimize_function(groundtruth, prediction, x1, beta)
+      f1 <- optimize_function(groundtruth, prediction, x1, beta)
     } else {
       a <- x1
       x1 <- x2
       f1 <- f2
       x2 <- a + inv_phi * (b - a)
-      f2 <-  optimize_function(groundtruth, prediction, x2, beta)
+      f2 <- optimize_function(groundtruth, prediction, x2, beta)
     }
 
     # Check for convergence

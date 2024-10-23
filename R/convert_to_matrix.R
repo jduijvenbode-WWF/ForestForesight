@@ -19,7 +19,6 @@ convert_to_matrix <- function(files, daterange) {
 
   # Iterate over each date in the date range
   for (i in daterange) {
-
     # Select files for the current date
     selfiles <- select_files_date(i, files)
 
@@ -29,7 +28,7 @@ convert_to_matrix <- function(files, daterange) {
     curmat <- t(do.call(cbind, lapply(features, function(x) select_by_featurename(selfiles, x))))
 
     # Set column names
-    colnames(curmat) <- basename(dirname(curmat[1,]))
+    colnames(curmat) <- basename(dirname(curmat[1, ]))
 
     # Append the current matrix to the list of feature matrices
     featurelist <- append(featurelist, list(as.data.frame(curmat)))

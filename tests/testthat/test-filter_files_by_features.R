@@ -22,7 +22,6 @@ verbose <- TRUE
 
 
 test_that("filter_files_by_features works as expected for excluding and including features in the file", {
-
   #
   # Case 1: Exclude features "featureA" and "featureB"
   filtered_files <- filter_files_by_features(allfiles, exc_features, NA, groundtruth_pattern, verbose)
@@ -44,8 +43,8 @@ test_that("filter_files_by_features works as expected for excluding and includin
 test_that("filter_files_by_features results in empty allfiles when all files are excluded", {
   # Create some mock files for testing
   allfiles <- c(
-    file.path(temp_datafolder, "file_featureA.tif"),    # Excluded by exc_features
-    file.path(temp_datafolder, "file_featureB.tif")     # Excluded by exc_features
+    file.path(temp_datafolder, "file_featureA.tif"), # Excluded by exc_features
+    file.path(temp_datafolder, "file_featureB.tif") # Excluded by exc_features
   )
 
   # Create these files
