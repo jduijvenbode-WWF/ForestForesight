@@ -1,4 +1,4 @@
-load_config <- function(config_path = "config.json") {
+ff_load_config <- function(config_path = "config.json") {
   # Check if jsonlite is installed
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     install.packages("jsonlite")
@@ -13,6 +13,5 @@ load_config <- function(config_path = "config.json") {
 
   # Read the config file
   config <- fromJSON(config_path)
+  return (config)
 }
-
-load_config()

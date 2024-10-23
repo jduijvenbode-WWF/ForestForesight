@@ -29,7 +29,7 @@
 #' @export
 
 # source(system.file("R", "load_config.R", package = "ForestForesight"))
-load_config()
+config <- ff_load_config()
 
 ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE, download_predictions = FALSE, download_groundtruth = TRUE,
                     bucket = config$AWS_BUCKET, region = config$AWS_BUCKET_REGION, verbose = TRUE, sync_verbose = FALSE) {
