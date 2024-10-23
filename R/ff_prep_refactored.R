@@ -346,12 +346,12 @@ transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts,
   return(dts)
 }
 
-append_date_based_features <- function(dts, i) {
+append_date_based_features <- function(dts, date) {
   dts <- cbind(
-    dts, rep(sin((2 * pi * as.numeric(format(as.Date(i), "%m"))) / 12), nrow(dts)),
-    rep(as.numeric(format(as.Date(i), "%m")), nrow(dts)),
+    dts, rep(sin((2 * pi * as.numeric(format(as.Date(date), "%m"))) / 12), nrow(dts)),
+    rep(as.numeric(format(as.Date(date), "%m")), nrow(dts)),
     # add the months since 2019
-    rep(round(as.numeric(lubridate::as.period(as.Date(i) - as.Date("2019-01-01"), "months"), "months")), nrow(dts))
+    rep(round(as.numeric(lubridate::as.period(as.Date(date) - as.Date("2019-01-01"), "months"), "months")), nrow(dts))
   )
   return(dts)
 }
@@ -481,7 +481,7 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
     }
 
     if (verbose) {
-      cat(paste("loading tile data from", tile, "for", i, " "))
+      cat(paste("loading tile data from", tile, "for", date, " "))
     }
 
     selected_files <- filter_files_by_date_and_groundtruth(date, files, groundtruth_pattern)
@@ -500,7 +500,7 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
 
     # Add date features if necessary
     if (adddate) {
-      dts <- append_date_based_features(dts, i)
+      dts <- append_date_based_features(dts, date)
     }
 
     result <- finalize_column_names_and_data_matrix(dts, selected_files, addxy, adddate)
