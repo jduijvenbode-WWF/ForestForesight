@@ -66,7 +66,7 @@ config <- config_load()
 
 ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, dates = "2023-01-01",
                                inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
-                               adddate = T, verbose = T, shrink = "none", window = NA, label_threshold = 1, addxy = F) {
+                               adddate = TRUE, verbose = TRUE, shrink = "none", window = NA, label_threshold = 1, addxy = FALSE) {
   ######## quality check########
   quality_result <- quality_check(dates, country, shape, tiles, datafolder, shrink)
 
@@ -98,8 +98,10 @@ ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles 
 
   # Process tiles and dates
   ####### load raster data as matrix#########
-  process_result <- process_tile_data(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
-                                      fdts, sample_size, allindices, fltr_features, fltr_condition)
+  process_result <- process_tile_data(
+    tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
+    fdts, sample_size, allindices, fltr_features, fltr_condition
+  )
 
   fdts <- process_result$fdts
   allindices <- process_result$allindices
@@ -211,10 +213,18 @@ list_and_filter_tile_files <- function(datafolder = NA, tiles, groundtruth_patte
   }
 
   # List all files from the input and ground truth directories
-  allfiles <- as.character(unlist(sapply(tiles, function(x) list.files(path = file.path(inputdatafolder, x), full.names = TRUE, recursive = TRUE,
-                                                                       pattern = "tif$"))))
-  allgroundtruth <- as.character(unlist(sapply(tiles, function(x) list.files(path = file.path(groundtruthdatafolder, x), full.names = TRUE,
-                                                                             recursive = TRUE, pattern = "tif$"))))
+  allfiles <- as.character(unlist(sapply(tiles, function(x) {
+    list.files(
+      path = file.path(inputdatafolder, x), full.names = TRUE, recursive = TRUE,
+      pattern = "tif$"
+    )
+  })))
+  allgroundtruth <- as.character(unlist(sapply(tiles, function(x) {
+    list.files(
+      path = file.path(groundtruthdatafolder, x), full.names = TRUE,
+      recursive = TRUE, pattern = "tif$"
+    )
+  })))
 
   # Filter ground truth files
   allgroundtruth <- allgroundtruth[endsWith(gsub(".tif", "", allgroundtruth), groundtruth_pattern)]
@@ -392,7 +402,8 @@ sample_and_combine_data <- function(date, dts, fdts, sf_indices, sample_size, fi
       notin2 <- colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
       if (length(c(notin1, notin2)) > 0) {
         ff_cat(paste(date, ": the following columns are dropped because they are not present in the entire time series: ", paste(c(notin1, notin2),
-                                                                                                                                 collapse = ", ")), color = "yellow")
+          collapse = ", "
+        )), color = "yellow")
       }
 
       # Subset matrices based on common column names
@@ -400,7 +411,7 @@ sample_and_combine_data <- function(date, dts, fdts, sf_indices, sample_size, fi
       fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
     }
     fdts <- fdts[, order(colnames(fdts))]
-    first <- F
+    first <- FALSE
   }
 
   return(list(fdts = fdts, allindices = allindices, first = first))
@@ -448,15 +459,17 @@ process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, v
   first <- TRUE
   ####### load raster data as matrix#########
   for (tile in tiles) {
-    if (exists("extent", inherits = F)) {
+    if (exists("extent", inherits = FALSE)) {
       rm(extent)
     }
 
     files <- allfiles[grep(tile, allfiles)]
     shape <- initialize_shape_from_borders(shape, shrink, files, borders)
 
-    result <- process_tile_dates(tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size,
-                                 allindices, hasgroundtruth, fltr_features, fltr_condition)
+    result <- process_tile_dates(
+      tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size,
+      allindices, hasgroundtruth, fltr_features, fltr_condition
+    )
 
     fdts <- result$fdts
     allindices <- result$allindices
@@ -475,7 +488,7 @@ process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, v
 process_tile_dates <- function(tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size,
                                allindices, hasgroundtruth, fltr_features, fltr_condition) {
   for (date in dates) {
-    if (exists("dts", inherits = F)) {
+    if (exists("dts", inherits = FALSE)) {
       rm(dts)
     }
 
@@ -520,6 +533,8 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
     allindices <- combine_result$allindices
     first <- combine_result$first
   }
-  return(list(fdts = fdts, allindices = allindices, first = first, groundtruth_raster = groundtruth_raster, newcolnames = newcolnames,
-              hasgroundtruth = hasgroundtruth))
+  return(list(
+    fdts = fdts, allindices = allindices, first = first, groundtruth_raster = groundtruth_raster, newcolnames = newcolnames,
+    hasgroundtruth = hasgroundtruth
+  ))
 }
