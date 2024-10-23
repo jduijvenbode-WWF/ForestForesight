@@ -1,6 +1,8 @@
 library(testthat)
+# config <- ff_load_config() # Hasrul: enabling this makes error in my testthat run 
 
 # Mock input data
+# dates <- config$TEST_FF_PREP_QC_DATE # Hasrul: we should find another way to use config file for our tests
 dates <- "2023-01-01"
 country <- "GAB"
 shape <- NULL

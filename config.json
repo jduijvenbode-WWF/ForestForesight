@@ -6,7 +6,7 @@
     "DEFAULT_GROUNDTRUTH": "groundtruth6m",
     "DATA_FOLDER": "C:/Kodingan3/FFdata/",
 
-    "TEST_PREP_DATA": "C:/Kodingan3/FFdata/preprocessed"
-
+    "TEST_FF_PREP_DATA": "C:/Kodingan3/FFdata/preprocessed",
+    "TEST_FF_PREP_QC_DATE": "2023-01-01"
 }
   
