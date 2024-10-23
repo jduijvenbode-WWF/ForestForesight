@@ -1,4 +1,4 @@
-load_config()
+config <- ff_load_config()
 
 get_feature_metadata=function(){
   library(utils)

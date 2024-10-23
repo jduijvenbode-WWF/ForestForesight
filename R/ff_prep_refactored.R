@@ -63,7 +63,7 @@
 #' @keywords machine-learning data-preparation forestry
 
 # source(system.file("R", "load_config.R", package = "ForestForesight"))
-load_config()
+config <- ff_load_config()
 
 ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, dates = "2023-01-01",
                                inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
@@ -148,7 +148,7 @@ quality_check <- function(dates, country, shape, tiles, datafolder, shrink) {
   }
 
   if (as.Date(min(dates)) < as.Date(config$EARLIEST_DATA_DATE)) {
-    stop(paste0("The earliest date available is ", EARLIEST_DATA_DATE))
+    stop(paste0("The earliest date available is ", config$EARLIEST_DATA_DATE))
   }
 
   if (!hasvalue(country) & !hasvalue(shape)) {
