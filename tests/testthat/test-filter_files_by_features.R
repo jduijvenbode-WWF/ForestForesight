@@ -52,7 +52,7 @@ test_that("filter_files_by_features results in empty allfiles when all files are
   file.create(allfiles)
 
   # After exclusion of all features, all files should be removed,
-  # the vector will be empty and it should through an error
+  # the vector will be empty and it should throw an error
   expect_error(
     filter_files_by_features(allfiles, exc_features, inc_features, groundtruth_pattern, verbose),
     "After including and excluding the requested variables there are no files left"
