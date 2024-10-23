@@ -7,7 +7,7 @@
 #' @param country ISO3 code of the country or countries for which the data is prepared. Optional if either shape or tiles is given.
 #' @param shape SpatVector for which the data is prepared. Optional if either country or tiles is given.
 #' @param tiles Vector of tiles in the syntax of e.g., "10N_080W" for which the data is prepared. Optional if either shape or country is given.
-#' @param groundtruth_pattern Pattern to identify ground truth files. Default is "groundtruth6m" (groundtruth of future six months in binary format).
+#' @param groundtruth_pattern Pattern to identify ground truth files. Default is "groundtruth6m" (set in config.json, groundtruth of future six months in binary format).
 #' @param dates vector of dates in the format "YYYY-MM-DD". Default is "2021-01-01".
 #' @param inc_features Vector of features to exclusively include in the data preparation.
 #' @param exc_features Vector of features to exclude from the data preparation.
@@ -62,7 +62,9 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
-ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = "groundtruth6m", dates = "2023-01-01",
+config <- config_load()
+
+ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, dates = "2023-01-01",
                                inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
                                adddate = TRUE, verbose = TRUE, shrink = "none", window = NA, label_threshold = 1, addxy = FALSE) {
   ######## quality check########
@@ -146,8 +148,8 @@ quality_check <- function(dates, country, shape, tiles, datafolder, shrink) {
     stop("No dates were given")
   }
 
-  if (as.Date(min(dates)) < as.Date("2021-01-01")) {
-    stop("The earliest date available is 2021-01-01")
+  if (as.Date(min(dates)) < as.Date(config$EARLIEST_DATA_DATE)) {
+    stop(paste0("The earliest date available is ", config$EARLIEST_DATA_DATE))
   }
 
   if (!hasvalue(country) & !hasvalue(shape)) {
