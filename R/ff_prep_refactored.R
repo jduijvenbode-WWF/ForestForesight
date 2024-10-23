@@ -62,7 +62,6 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
-# source(system.file("R", "load_config.R", package = "ForestForesight"))
 config <- ff_load_config()
 
 ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, dates = "2023-01-01",
