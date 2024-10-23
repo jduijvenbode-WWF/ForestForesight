@@ -1,12 +1,12 @@
 test_that("refactored ff_prep has the same output as the original", {
-  download_folder <- "D:/WWF"
-
+  download_folder <- "C:/Kodingan3/FFdata"
+  
   identifier <- "GAB"  # Example: Gabon
 
   features <- c("temperature", "lastmonth", "confidence", "totallossalerts")
 
   # Change to your own data_folder because we can't store it locally
-  data_folder <- "D:/WWF/preprocessed"
+  data_folder <- "C:/Kodingan3/FFdata/preprocessed"
 
   # sample_size=1 in order to remove randomness
   # running on tiles
@@ -81,6 +81,5 @@ test_that("refactored ff_prep has the same output as the original", {
 
   expect_equal(df_original, df_refactored)
 })
-
 
 
