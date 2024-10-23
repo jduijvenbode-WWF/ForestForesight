@@ -16,7 +16,7 @@ file.create(allfiles)
 
 # Set exclusion and inclusion features
 exc_features <- c("featureA", "featureB")
-inc_features <- "groundtruth6m"
+inc_features <- c("groundtruth6m", "featureB")
 groundtruth_pattern <- "groundtruth6m"
 verbose <- TRUE
 
@@ -51,7 +51,8 @@ test_that("filter_files_by_features results in empty allfiles when all files are
   # Create these files
   file.create(allfiles)
 
-  # After exclusion of all features, all files should be removed
+  # After exclusion of all features, all files should be removed,
+  # the vector will be empty and it should throw an error
   expect_error(
     filter_files_by_features(allfiles, exc_features, inc_features, groundtruth_pattern, verbose),
     "After including and excluding the requested variables there are no files left"
