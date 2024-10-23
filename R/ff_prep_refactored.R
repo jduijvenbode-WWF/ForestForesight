@@ -62,7 +62,7 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
-config <- ff_load_config()
+config <- config_load()
 
 ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, dates = "2023-01-01",
                                inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
