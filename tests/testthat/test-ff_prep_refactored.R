@@ -48,7 +48,7 @@ test_that("refactored ff_prep has the same output as the original", {
   combined_features <- paste(features, collapse = ", ")
 
   # change this to wherever you want to save it
-  hash_folder <- paste(download_folder, "hashes", sep = "/")
+  hash_folder <- paste(download_folder, "hashes/", sep = "/")
   date <- Sys.Date()
   hash_matrix <- data.frame(
     identifier_or_tiles = c(combined_tiles, identifier, "shape_of_GAB"),
