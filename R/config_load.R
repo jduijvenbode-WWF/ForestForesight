@@ -1,17 +1,25 @@
-config_load <- function(config_path = "config.json") {
-  # Check if jsonlite is installed
-  if (!requireNamespace("jsonlite", quietly = TRUE)) {
-    install.packages("jsonlite")
-  }
-  library(jsonlite)
+library(config)
 
-  # Check if here is installed. here package ensures the relative path to the root of R project.
-  if (!requireNamespace("here", quietly = TRUE)) {
-    install.packages("here")
-  }
-  library(here)
+config_load <- function() {
+  config_filename <- "config.yml"
 
-  # Read the config file
-  config <- fromJSON(config_path)
+  # Check if the config file exists in the working directory
+  if (file.exists(config_filename)) {
+    message("Loading config.yml from the working directory.")
+    config <- config::get()
+  } else {
+    # Define the path to the config file in the package directory
+    package_config_file <- system.file(config_filename, package = "ForestForesight")
+    cat("package_config_file: ")
+    cat(package_config_file)
+    cat("\n")
+    if (file.exists(package_config_file)) {
+      message("Loading config.yml from the package directory.")
+      config <- config::get(file = package_config_file)
+    } else {
+      stop("Config file not found in working directory or package directory.")
+    }
+  }
+
   return(config)
 }

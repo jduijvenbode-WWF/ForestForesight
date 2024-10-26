@@ -1,5 +1,6 @@
 test_that("refactored ff_prep has the same output as the original", {
   download_folder <- "C:/Kodingan3/FFdata"
+  # config <- config_load()
 
   identifier <- "GAB" # Example: Gabon
 

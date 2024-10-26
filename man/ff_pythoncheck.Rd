@@ -17,8 +17,8 @@ This function checks the versions of specified Python packages and the Python ve
 }
 \examples{
 \dontrun{
-  result <- package_dependencies(c("numpy", "scipy", "rasterio", "argparse"))
-  print(result)
+result <- package_dependencies(c("numpy", "scipy", "rasterio", "argparse"))
+print(result)
 }
 
 }

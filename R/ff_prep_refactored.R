@@ -67,6 +67,8 @@ config <- config_load()
 ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, dates = "2023-01-01",
                                inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
                                adddate = TRUE, verbose = TRUE, shrink = "none", window = NA, label_threshold = 1, addxy = FALSE) {
+
+  
   ######## quality check########
   quality_result <- quality_check(dates, country, shape, tiles, datafolder, shrink)
 

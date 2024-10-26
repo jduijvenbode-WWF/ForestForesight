@@ -1,0 +1,98 @@
+Hasrul is just screaming -1 ...
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-01-01_aridityannual.tif.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-01-01_ariditydriestquarter.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_catexcap.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2015-01-01_cattlesmoothed.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2015-01-01_closenesstocattleabove10000.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2015-01-01_closenesstocattleabove2000.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_closenesstococoa.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_closenesstocoffee.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_closenesstocropland.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_closenesstofiber.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-01-01_closenesstoforestedge.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_closenesstomennonites.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_closenesstomining.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_closenesstooilpalm.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_closenesstorice.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2023-01-01_closenesstoroads.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_closenesstorubber.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-01-01_closenesstosoybean.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_closenesstowaterways.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_confidence.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_croplandcapacity100p.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_croplandcapacitybelow50p.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_croplandcapacityover50p.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2023-01-01_diminishinghotspot.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2018-01-01_dpicoal.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2018-01-01_dpiconvgas.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2018-01-01_dpiconvoil.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2018-01-01_dpihydro.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2018-01-01_dpimetallicmining.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2018-01-01_dpinonmetallicmining.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2018-01-01_dpiunconvgas.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_elevation.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-01-01_firealerts.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-01-01_forestedgedensity.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_forestheight.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-12-01_fwi.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2023-10-01_groundtruth12m.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_groundtruth1m.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_groundtruth3m.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_groundtruth6m.tif
+C:/Kodingan3/FFdata/preprocessed/groundtruth/00N_070W/00N_070W_2024-03-01_groundtruth6m.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_historicloss.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-01-01_initialforestcount.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_initialforestcover.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2023-01-01_intensifyinghotspot.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_landpercentage.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_lastmonth.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_lastsixmonths.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_lastthreemonths.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2023-01-01_losslastyear.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2020-01-01_mennonitessmoothed.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_miningsmoothed.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2023-01-01_newhotspot.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_nightlights.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_palmoilmills.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_patchdensity.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2016-01-01_peatlands.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2023-01-01_persistanthotspot.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_populationcurrent.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_populationincrease.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_precipitation.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_previoussameseason.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_slope.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_smoothedsixmonths.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_smoothedtotal.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-01-01_soybeansmoothed.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2023-01-01_sporadichotspot.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_temperature.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_timesinceloss.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2024-03-01_totallossalerts.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2021-01-01_wdpa.tif
+C:/Kodingan3/FFdata/preprocessed/input/00N_070W/00N_070W_2004-01-01_wetlands.tif
+An error occurred: the condition has length > 1 
+#this error is caused by the left side of "in" that has 2 values (40, 41)
+=> There shall only be one value
+> 
+
+2024-03-01
+2024-01-01
+2023-10-01
+2023-01-01
+2021-12-01
+2021-01-01
+2020-01-01
+2018-01-01
+2016-01-01
+2015-01-01
+2004-01-01
+
+>> after deleting groundtruth files from input:
+length of files in one tile 833'
+length of selected_files 68Hasrul is just screaming -2 ...
+[1] 37
+Hasrul is just screaming -1 ...
+ [1] 20 37 43 44 45 50 52 57 58 60 61 64 65 66
+[1] "Condition not met"
+Hasrul is just screaming...
