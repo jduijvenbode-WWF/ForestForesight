@@ -1,0 +1,476 @@
+> # Step 1: Set up the parameters
+> code_location <- "C:/Kodingan3/ForestForesight/"
+> ff_folder <- "C:/Kodingan3/FFdata/"
+> country_code <- "PER"
+> train_start <- "2023-06-01"
+> train_end <- "2023-12-31"
+> validation_start <- "2023-06-01"
+> validation_end <- "2023-12-01"
+> prediction_date <- "2024-01-01"
+> 
+> # Step 1.5: Make sure we are using R codes in our local, not ForestForesight package from Github
+> library("devtools")
+> load_all(code_location) # with this we are using the live R code, not the build package of ForestForesight
+ℹ Loading ForestForesight
+> 
+> 
+> # Step 2: Create date ranges for training and validation
+> train_dates <- ForestForesight::daterange(train_start, train_end)
+> validation_dates <- ForestForesight::daterange(validation_start, validation_end)
+> 
+> # Step 3: Set up file paths for saving results
+> model_save_path <- paste(ff_folder, "peru_deforestation_model.model")
+> predictions_save_path <- paste(ff_folder, "peru_deforestation_prediction.tif")
+> accuracy_csv_path <- paste(ff_folder, "peru_deforestation_accuracy.csv")
+> importance_csv_path <- paste(ff_folder, "peru_feature_importance.csv")
+> 
+> # Step 4: Run the ff_run function
+> prediction_result <- ff_run(
++   country = country_code,
++   prediction_dates = prediction_date,
++   ff_folder = ff_folder,
++   train_dates = train_dates,
++   validation_dates = validation_dates,
++   save_path = model_save_path,
++   save_path_predictions = predictions_save_path,
++   accuracy_csv = accuracy_csv_path,
++   importance_csv = importance_csv_path,
++   verbose = TRUE,
++   autoscale_sample = TRUE
++ )
+Yippikayay!
+There should be at least 6 months between training and testing/predictingTraining a model!
+Finding optimal sample size based on filter condition
+autoscaled sample size: 0.18 
+Preparing data
+looking in folder C:/Kodingan3/FFdata//preprocessed 
+selecting based on shape
+processing tiles: 00N_070W, 00N_080W, 00N_090W, 10S_070W, 10S_080W 
+searching C:/Kodingan3/FFdata//preprocessed/input for tiles 00N_070W, 00N_080W, 00N_090W, 10S_070W, 10S_080W 
+No grountruth raster will be returned because multiple tiles are processed together 
+loading tile data from 00N_070W for 2023-06-01  with extent -70 -68.6739 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_070W for 2023-07-01  with extent -70 -68.6739 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_070W for 2023-08-01  with extent -70 -68.6739 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_070W for 2023-09-01  with extent -70 -68.6739 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_070W for 2023-10-01  with extent -70 -68.6739 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_070W for 2023-11-01  with extent -70 -68.6739 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_070W for 2023-12-01  with extent -70 -68.6739 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+loading tile data from 00N_080W for 2023-06-01  with extent -80 -70 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_080W for 2023-07-01  with extent -80 -70 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_080W for 2023-08-01  with extent -80 -70 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_080W for 2023-09-01  with extent -80 -70 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_080W for 2023-10-01  with extent -80 -70 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_080W for 2023-11-01  with extent -80 -70 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_080W for 2023-12-01  with extent -80 -70 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+loading tile data from 00N_090W for 2023-06-01  with extent -81.35515 -80 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_090W for 2023-07-01  with extent -81.35515 -80 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_090W for 2023-08-01  with extent -81.35515 -80 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_090W for 2023-09-01  with extent -81.35515 -80 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_090W for 2023-10-01  with extent -81.35515 -80 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_090W for 2023-11-01  with extent -81.35515 -80 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 00N_090W for 2023-12-01  with extent -81.35515 -80 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+loading tile data from 10S_070W for 2023-06-01  with extent -70 -68.6739 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_070W for 2023-07-01  with extent -70 -68.6739 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_070W for 2023-08-01  with extent -70 -68.6739 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_070W for 2023-09-01  with extent -70 -68.6739 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_070W for 2023-10-01  with extent -70 -68.6739 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_070W for 2023-11-01  with extent -70 -68.6739 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_070W for 2023-12-01  with extent -70 -68.6739 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+loading tile data from 10S_080W for 2023-06-01  with extent -80 -70 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_080W for 2023-07-01  with extent -80 -70 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_080W for 2023-08-01  with extent -80 -70 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_080W for 2023-09-01  with extent -80 -70 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_080W for 2023-10-01  with extent -80 -70 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_080W for 2023-11-01  with extent -80 -70 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading tile data from 10S_080W for 2023-12-01  with extent -80 -70 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+adding validation matrix for dates 2023-06-01, 2023-07-01, 2023-08-01, 2023-09-01, 2023-10-01, 2023-11-01, 2023-12-01 
+selecting based on shape
+processing tiles: 00N_070W, 00N_080W, 00N_090W, 10S_070W, 10S_080W 
+searching C:/Kodingan3/FFdata//preprocessed/input for tiles 00N_070W, 00N_080W, 00N_090W, 10S_070W, 10S_080W 
+No grountruth raster will be returned because multiple tiles are processed together 
+loading tile data from 00N_070W for 2023-06-01  with extent -70 -68.6739 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+loading tile data from 00N_080W for 2023-06-01  with extent -80 -70 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+loading tile data from 00N_090W for 2023-06-01  with extent -81.35515 -80 -10 -0.03688 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+loading tile data from 10S_070W for 2023-06-01  with extent -70 -68.6739 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+loading tile data from 10S_080W for 2023-06-01  with extent -80 -70 -18.34855 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+starting training
+[1]	train-aucpr:0.609844	eval-aucpr:0.645761 
+Multiple eval metrics are present. Will use eval_aucpr for early stopping.
+Will train until eval_aucpr hasn't improved in 10 rounds.
+
+[2]	train-aucpr:0.625502	eval-aucpr:0.669441 
+[3]	train-aucpr:0.628221	eval-aucpr:0.671913 
+[4]	train-aucpr:0.633414	eval-aucpr:0.676206 
+[5]	train-aucpr:0.638385	eval-aucpr:0.681619 
+[6]	train-aucpr:0.640591	eval-aucpr:0.683251 
+[7]	train-aucpr:0.641636	eval-aucpr:0.684038 
+[8]	train-aucpr:0.642827	eval-aucpr:0.685555 
+[9]	train-aucpr:0.644403	eval-aucpr:0.686817 
+[10]	train-aucpr:0.645563	eval-aucpr:0.687642 
+[11]	train-aucpr:0.646072	eval-aucpr:0.688129 
+[12]	train-aucpr:0.647171	eval-aucpr:0.688343 
+[13]	train-aucpr:0.648465	eval-aucpr:0.689915 
+[14]	train-aucpr:0.648700	eval-aucpr:0.689573 
+[15]	train-aucpr:0.649160	eval-aucpr:0.689844 
+[16]	train-aucpr:0.649829	eval-aucpr:0.690859 
+[17]	train-aucpr:0.650284	eval-aucpr:0.690866 
+[18]	train-aucpr:0.650604	eval-aucpr:0.691226 
+[19]	train-aucpr:0.651121	eval-aucpr:0.692115 
+[20]	train-aucpr:0.651493	eval-aucpr:0.692243 
+[21]	train-aucpr:0.652000	eval-aucpr:0.692631 
+[22]	train-aucpr:0.652744	eval-aucpr:0.692863 
+[23]	train-aucpr:0.653241	eval-aucpr:0.692811 
+[24]	train-aucpr:0.653910	eval-aucpr:0.693487 
+[25]	train-aucpr:0.654573	eval-aucpr:0.693486 
+[26]	train-aucpr:0.655266	eval-aucpr:0.693651 
+[27]	train-aucpr:0.655788	eval-aucpr:0.694233 
+[28]	train-aucpr:0.656260	eval-aucpr:0.694207 
+[29]	train-aucpr:0.656686	eval-aucpr:0.694638 
+[30]	train-aucpr:0.657357	eval-aucpr:0.694947 
+[31]	train-aucpr:0.657772	eval-aucpr:0.695608 
+[32]	train-aucpr:0.658186	eval-aucpr:0.695557 
+[33]	train-aucpr:0.658644	eval-aucpr:0.695777 
+[34]	train-aucpr:0.658965	eval-aucpr:0.695938 
+[35]	train-aucpr:0.659441	eval-aucpr:0.696044 
+[36]	train-aucpr:0.659814	eval-aucpr:0.696253 
+[37]	train-aucpr:0.660141	eval-aucpr:0.696406 
+[38]	train-aucpr:0.660455	eval-aucpr:0.696603 
+[39]	train-aucpr:0.660873	eval-aucpr:0.696852 
+[40]	train-aucpr:0.661206	eval-aucpr:0.696848 
+[41]	train-aucpr:0.661464	eval-aucpr:0.697068 
+[42]	train-aucpr:0.661681	eval-aucpr:0.697203 
+[43]	train-aucpr:0.661846	eval-aucpr:0.697264 
+[44]	train-aucpr:0.662030	eval-aucpr:0.697516 
+[45]	train-aucpr:0.662291	eval-aucpr:0.697590 
+[46]	train-aucpr:0.662616	eval-aucpr:0.697742 
+[47]	train-aucpr:0.662769	eval-aucpr:0.697813 
+[48]	train-aucpr:0.663016	eval-aucpr:0.697969 
+[49]	train-aucpr:0.663226	eval-aucpr:0.698083 
+[50]	train-aucpr:0.663678	eval-aucpr:0.698437 
+[51]	train-aucpr:0.663885	eval-aucpr:0.698617 
+[52]	train-aucpr:0.664028	eval-aucpr:0.698746 
+[53]	train-aucpr:0.664305	eval-aucpr:0.698852 
+[54]	train-aucpr:0.664500	eval-aucpr:0.699165 
+[55]	train-aucpr:0.664690	eval-aucpr:0.699348 
+[56]	train-aucpr:0.664936	eval-aucpr:0.699504 
+[57]	train-aucpr:0.665177	eval-aucpr:0.699653 
+[58]	train-aucpr:0.665367	eval-aucpr:0.699820 
+[59]	train-aucpr:0.665589	eval-aucpr:0.700140 
+[60]	train-aucpr:0.665772	eval-aucpr:0.700291 
+[61]	train-aucpr:0.665928	eval-aucpr:0.700302 
+[62]	train-aucpr:0.666163	eval-aucpr:0.700579 
+[63]	train-aucpr:0.666315	eval-aucpr:0.700674 
+[64]	train-aucpr:0.666493	eval-aucpr:0.700696 
+[65]	train-aucpr:0.666684	eval-aucpr:0.700900 
+[66]	train-aucpr:0.666855	eval-aucpr:0.701095 
+[67]	train-aucpr:0.666963	eval-aucpr:0.701110 
+[68]	train-aucpr:0.667121	eval-aucpr:0.701145 
+[69]	train-aucpr:0.667302	eval-aucpr:0.701207 
+[70]	train-aucpr:0.667479	eval-aucpr:0.701470 
+[71]	train-aucpr:0.667663	eval-aucpr:0.701521 
+[72]	train-aucpr:0.667861	eval-aucpr:0.701630 
+[73]	train-aucpr:0.668001	eval-aucpr:0.701769 
+[74]	train-aucpr:0.668247	eval-aucpr:0.701916 
+[75]	train-aucpr:0.668400	eval-aucpr:0.702195 
+[76]	train-aucpr:0.668587	eval-aucpr:0.702281 
+[77]	train-aucpr:0.668753	eval-aucpr:0.702305 
+[78]	train-aucpr:0.668922	eval-aucpr:0.702389 
+[79]	train-aucpr:0.669040	eval-aucpr:0.702459 
+[80]	train-aucpr:0.669300	eval-aucpr:0.702820 
+[81]	train-aucpr:0.669396	eval-aucpr:0.702853 
+[82]	train-aucpr:0.669540	eval-aucpr:0.702944 
+[83]	train-aucpr:0.669630	eval-aucpr:0.703024 
+[84]	train-aucpr:0.669764	eval-aucpr:0.703127 
+[85]	train-aucpr:0.669958	eval-aucpr:0.703324 
+[86]	train-aucpr:0.670106	eval-aucpr:0.703409 
+[87]	train-aucpr:0.670316	eval-aucpr:0.703578 
+[88]	train-aucpr:0.670414	eval-aucpr:0.703617 
+[89]	train-aucpr:0.670511	eval-aucpr:0.703727 
+[90]	train-aucpr:0.670683	eval-aucpr:0.703930 
+[91]	train-aucpr:0.670788	eval-aucpr:0.704003 
+[92]	train-aucpr:0.670980	eval-aucpr:0.704219 
+[93]	train-aucpr:0.671185	eval-aucpr:0.704342 
+[94]	train-aucpr:0.671385	eval-aucpr:0.704563 
+[95]	train-aucpr:0.671523	eval-aucpr:0.704629 
+[96]	train-aucpr:0.671669	eval-aucpr:0.704696 
+[97]	train-aucpr:0.671753	eval-aucpr:0.704740 
+[98]	train-aucpr:0.671910	eval-aucpr:0.704785 
+[99]	train-aucpr:0.671998	eval-aucpr:0.704840 
+[100]	train-aucpr:0.672140	eval-aucpr:0.704940 
+[101]	train-aucpr:0.672246	eval-aucpr:0.705080 
+[102]	train-aucpr:0.672423	eval-aucpr:0.705249 
+[103]	train-aucpr:0.672494	eval-aucpr:0.705322 
+[104]	train-aucpr:0.672579	eval-aucpr:0.705377 
+[105]	train-aucpr:0.672738	eval-aucpr:0.705500 
+[106]	train-aucpr:0.672908	eval-aucpr:0.705686 
+[107]	train-aucpr:0.673085	eval-aucpr:0.705866 
+[108]	train-aucpr:0.673240	eval-aucpr:0.706057 
+[109]	train-aucpr:0.673338	eval-aucpr:0.706154 
+[110]	train-aucpr:0.673447	eval-aucpr:0.706233 
+[111]	train-aucpr:0.673618	eval-aucpr:0.706384 
+[112]	train-aucpr:0.673716	eval-aucpr:0.706431 
+[113]	train-aucpr:0.673798	eval-aucpr:0.706532 
+[114]	train-aucpr:0.673895	eval-aucpr:0.706636 
+[115]	train-aucpr:0.673942	eval-aucpr:0.706636 
+[116]	train-aucpr:0.674062	eval-aucpr:0.706910 
+[117]	train-aucpr:0.674167	eval-aucpr:0.706985 
+[118]	train-aucpr:0.674234	eval-aucpr:0.706994 
+[119]	train-aucpr:0.674345	eval-aucpr:0.707076 
+[120]	train-aucpr:0.674423	eval-aucpr:0.707141 
+[121]	train-aucpr:0.674515	eval-aucpr:0.707211 
+[122]	train-aucpr:0.674571	eval-aucpr:0.707299 
+[123]	train-aucpr:0.674703	eval-aucpr:0.707412 
+[124]	train-aucpr:0.674812	eval-aucpr:0.707503 
+[125]	train-aucpr:0.674863	eval-aucpr:0.707518 
+[126]	train-aucpr:0.674979	eval-aucpr:0.707691 
+[127]	train-aucpr:0.675070	eval-aucpr:0.707760 
+[128]	train-aucpr:0.675131	eval-aucpr:0.707817 
+[129]	train-aucpr:0.675204	eval-aucpr:0.707876 
+[130]	train-aucpr:0.675269	eval-aucpr:0.707934 
+[131]	train-aucpr:0.675355	eval-aucpr:0.708065 
+[132]	train-aucpr:0.675477	eval-aucpr:0.708200 
+[133]	train-aucpr:0.675532	eval-aucpr:0.708247 
+[134]	train-aucpr:0.675562	eval-aucpr:0.708278 
+[135]	train-aucpr:0.675629	eval-aucpr:0.708358 
+[136]	train-aucpr:0.675760	eval-aucpr:0.708432 
+[137]	train-aucpr:0.675833	eval-aucpr:0.708483 
+[138]	train-aucpr:0.675895	eval-aucpr:0.708562 
+[139]	train-aucpr:0.675964	eval-aucpr:0.708637 
+[140]	train-aucpr:0.676030	eval-aucpr:0.708677 
+[141]	train-aucpr:0.676095	eval-aucpr:0.708757 
+[142]	train-aucpr:0.676224	eval-aucpr:0.708822 
+[143]	train-aucpr:0.676300	eval-aucpr:0.708910 
+[144]	train-aucpr:0.676406	eval-aucpr:0.709004 
+[145]	train-aucpr:0.676474	eval-aucpr:0.709080 
+[146]	train-aucpr:0.676545	eval-aucpr:0.709144 
+[147]	train-aucpr:0.676642	eval-aucpr:0.709262 
+[148]	train-aucpr:0.676716	eval-aucpr:0.709339 
+[149]	train-aucpr:0.676759	eval-aucpr:0.709367 
+[150]	train-aucpr:0.676877	eval-aucpr:0.709490 
+[151]	train-aucpr:0.677009	eval-aucpr:0.709603 
+[152]	train-aucpr:0.677089	eval-aucpr:0.709708 
+[153]	train-aucpr:0.677207	eval-aucpr:0.709822 
+[154]	train-aucpr:0.677268	eval-aucpr:0.709875 
+[155]	train-aucpr:0.677349	eval-aucpr:0.709926 
+[156]	train-aucpr:0.677433	eval-aucpr:0.709991 
+[157]	train-aucpr:0.677512	eval-aucpr:0.710065 
+[158]	train-aucpr:0.677596	eval-aucpr:0.710127 
+[159]	train-aucpr:0.677624	eval-aucpr:0.710153 
+[160]	train-aucpr:0.677671	eval-aucpr:0.710190 
+[161]	train-aucpr:0.677775	eval-aucpr:0.710286 
+[162]	train-aucpr:0.677822	eval-aucpr:0.710278 
+[163]	train-aucpr:0.677886	eval-aucpr:0.710336 
+[164]	train-aucpr:0.677940	eval-aucpr:0.710408 
+[165]	train-aucpr:0.678033	eval-aucpr:0.710499 
+[166]	train-aucpr:0.678124	eval-aucpr:0.710544 
+[167]	train-aucpr:0.678167	eval-aucpr:0.710555 
+[168]	train-aucpr:0.678247	eval-aucpr:0.710651 
+[169]	train-aucpr:0.678322	eval-aucpr:0.710773 
+[170]	train-aucpr:0.678372	eval-aucpr:0.710817 
+[171]	train-aucpr:0.678464	eval-aucpr:0.710905 
+[172]	train-aucpr:0.678522	eval-aucpr:0.710954 
+[173]	train-aucpr:0.678610	eval-aucpr:0.710998 
+[174]	train-aucpr:0.678664	eval-aucpr:0.711056 
+[175]	train-aucpr:0.678691	eval-aucpr:0.711077 
+[176]	train-aucpr:0.678760	eval-aucpr:0.711121 
+[177]	train-aucpr:0.678800	eval-aucpr:0.711146 
+[178]	train-aucpr:0.678880	eval-aucpr:0.711220 
+[179]	train-aucpr:0.678921	eval-aucpr:0.711242 
+[180]	train-aucpr:0.678994	eval-aucpr:0.711281 
+[181]	train-aucpr:0.679048	eval-aucpr:0.711381 
+[182]	train-aucpr:0.679140	eval-aucpr:0.711480 
+[183]	train-aucpr:0.679196	eval-aucpr:0.711519 
+[184]	train-aucpr:0.679245	eval-aucpr:0.711567 
+[185]	train-aucpr:0.679321	eval-aucpr:0.711625 
+[186]	train-aucpr:0.679387	eval-aucpr:0.711641 
+[187]	train-aucpr:0.679480	eval-aucpr:0.711754 
+[188]	train-aucpr:0.679534	eval-aucpr:0.711779 
+[189]	train-aucpr:0.679589	eval-aucpr:0.711782 
+[190]	train-aucpr:0.679628	eval-aucpr:0.711813 
+[191]	train-aucpr:0.679683	eval-aucpr:0.711883 
+[192]	train-aucpr:0.679743	eval-aucpr:0.711944 
+[193]	train-aucpr:0.679781	eval-aucpr:0.711983 
+[194]	train-aucpr:0.679819	eval-aucpr:0.711992 
+[195]	train-aucpr:0.679931	eval-aucpr:0.712067 
+[196]	train-aucpr:0.680024	eval-aucpr:0.712163 
+[197]	train-aucpr:0.680086	eval-aucpr:0.712218 
+[198]	train-aucpr:0.680140	eval-aucpr:0.712284 
+[199]	train-aucpr:0.680208	eval-aucpr:0.712342 
+[200]	train-aucpr:0.680254	eval-aucpr:0.712404 
+saving model to C:/Kodingan3/FFdata/ peru_deforestation_model.model 
+searching C:/Kodingan3/FFdata//preprocessed/input for tiles 00N_070W 
+loading tile data from 00N_070W for 2024-01-01  with extent -70 -60 -10 0 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+calculating predictions
+filling raster
+CSV file did not yet exist, creating empty one
+rasters loaded
+using forest mask
+summarizing statistics
+calculating F0.5 score
+F0.5 score is: 0.510204081632653 
+adding metadata
+removing 147 empty records
+searching C:/Kodingan3/FFdata//preprocessed/input for tiles 00N_080W 
+loading tile data from 00N_080W for 2024-01-01  with extent -80 -70 -10 0 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+calculating predictions
+filling raster
+rasters loaded
+using forest mask
+summarizing statistics
+calculating F0.5 score
+F0.5 score is: 0.390709370272697 
+adding metadata
+removing 77 empty records
+appending to existing dataset
+searching C:/Kodingan3/FFdata//preprocessed/input for tiles 00N_090W 
+loading tile data from 00N_090W for 2024-01-01  with extent -90 -80 -10 0 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+calculating predictions
+filling raster
+rasters loaded
+using forest mask
+summarizing statistics
+calculating F0.5 score
+F0.5 score is: 0.0904977375565611 
+adding metadata
+removing 144 empty records
+appending to existing dataset
+searching C:/Kodingan3/FFdata//preprocessed/input for tiles 10S_070W 
+loading tile data from 10S_070W for 2024-01-01  with extent -70 -60 -20 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+calculating predictions
+filling raster
+rasters loaded
+using forest mask
+summarizing statistics
+calculating F0.5 score
+F0.5 score is: 0.398176214154349 
+adding metadata
+removing 134 empty records
+appending to existing dataset
+searching C:/Kodingan3/FFdata//preprocessed/input for tiles 10S_080W 
+loading tile data from 10S_080W for 2024-01-01  with extent -80 -70 -20 -10 
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, groundtruth6m, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+calculating predictions
+filling raster
+rasters loaded
+using forest mask
+summarizing statistics
+calculating F0.5 score
+F0.5 score is: 0.450238882258048 
+adding metadata
+removing 109 empty records
+appending to existing dataset
+date: 2024-01-01 precision: 0.371712209167128 ,recall: 0.657716765167951 ,F0.5 0.407118896481209 
+saving result to  C:/Kodingan3/FFdata/ peru_deforestation_prediction.tifWarning message:
+In ff_prep_params_combined["dates"] <- validation_dates :
+  number of items to replace is not a multiple of replacement length
+> 
+> # Step 5: Plot the prediction result
+> if (!is.na(prediction_result)) {
++   plot(prediction_result, main = "Deforestation Prediction for Peru")
++ }
+Error in if (!is.na(prediction_result)) { : 
+  argument is not interpretable as logical

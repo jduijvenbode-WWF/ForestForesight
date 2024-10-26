@@ -28,8 +28,8 @@ Downloads GFW (Global Forest Watch) Alerts data and saves it to the specified ou
 }
 \examples{
 \dontrun{
-  # Download GFW Alerts for a specific country and save in separate folders
-  download_gfw_alerts("path/to/output_directory", country = "SUR", separate_folders = TRUE, basename = "my_data")
+# Download GFW Alerts for a specific country and save in separate folders
+download_gfw_alerts("path/to/output_directory", country = "SUR", separate_folders = TRUE, basename = "my_data")
 }
 
 }

@@ -1,0 +1,303 @@
+
+R version 4.4.1 (2024-06-14 ucrt) -- "Race for Your Life"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(ForestForesight)
+Loading required package: terra
+terra 1.7.78
+Loading required package: sf
+Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.3.1; sf_use_s2() is TRUE
+Loading required package: xgboost
+Loading required package: httr
+Loading required package: lubridate
+
+Attaching package: ‘lubridate’
+
+The following objects are masked from ‘package:terra’:
+
+    intersect, union
+
+The following objects are masked from ‘package:base’:
+
+    date, intersect, setdiff, union
+
+Loading required package: smoothr
+
+Attaching package: ‘smoothr’
+
+The following object is masked from ‘package:terra’:
+
+    densify
+
+The following object is masked from ‘package:stats’:
+
+    smooth
+
+Loading required package: crayon
+Loading required package: rBayesianOptimization
+Loading required package: aws.s3
+
+Attaching package: ‘ForestForesight’
+
+The following object is masked from ‘package:xgboost’:
+
+    getinfo
+
+> library(sf)
+> 
+> data("countries")
+> ff_folder = "C:/Kodingan3/FFdata/storage"
+> proc_dates <- "2024-09-01"
+> countrynames = countries$iso3
+> 
+> # Set your download folder
+> 
+> for (proc_date in proc_dates) {
++   for (x in seq_along(countrynames)) {
++     country <- countrynames[x]
++     cat(paste("processing", country, "\n"))
++     setwd("C:/Kodingan3/FFdata/storage/predictions/")
++     if (!dir.exists(country)) { dir.create(country) }
++     setwd(country)
++     if (!file.exists(paste0(country, "_", proc_date, ".tif"))) {
++       cat(paste("processing", country, "for", proc_date, "\n"))
++       if (!(country %in% countries$iso3)) { #added this checking
++         message(paste("Country", country, "not found in countries$iso3"))
++         next
++       }
++       shape <- terra::vect(countries[countries$iso3 == country, ])
++       modelname <- countries$group[countries$iso3 == country]
++       modelpath <- file.path(ff_folder, "models", modelname, paste0(modelname, ".model"))
++       if (!file.exists(modelpath)) { stop(paste(modelpath, "does not exist")) }
++       tryCatch({
++         b <- ff_run(shape = shape,
++                     prediction_dates = proc_date,
++                     ff_folder = ff_folder,
++                     verbose = TRUE,
++                     trained_model = modelpath)
++         terra::writeRaster(b, paste0(country, "_", proc_date, ".tif"), overwrite = T)
++       }, error = function(e) {
++         message("An error occurred: ", e$message)
++       })
++     }
++   }
++ }
+processing COL 
+processing COL for 2024-09-01 
+Error: C:/Kodingan3/FFdata/storage/models/Colombia/Colombia.model does not exist
+> library(ForestForesight)
+> countries <- vect(get(data("countries")))
+> .
+Error: object '.' not found
+> countries <- vect(get(data("countries")))
+> x11(width=15,height=15)
+> 
+> plot(countries)
+> 
+> country <- click(countries, n=1)
+  iso3     name continent        region    group
+1  COL Colombia  Americas South America Colombia
+> 
+> shape <- countries[countries$iso3 == country$iso3]
+> 
+> library(ForestForesight)
+> library(sf)
+> 
+> data("countries")
+> ff_folder = "C:/Kodingan3/FFdata/storage"
+> proc_dates <- "2024-09-01"
+> countrynames = countries$iso3
+> 
+> for (proc_date in proc_dates) {
++   for (x in seq_along(countrynames)) {
++     country <- countrynames[x]
++     cat(paste("processing", country, "\n"))
++     setwd("C:/Kodingan3/FFdata/storage/predictions/")
++     if (!dir.exists(country)) { dir.create(country) }
++     setwd(country)
++     if (!file.exists(paste0(country, "_", proc_date, ".tif"))) {
++       cat(paste("processing", country, "for", proc_date, "\n"))
++       if (!(country %in% countries$iso3)) { #added this checking
++         message(paste("Country", country, "not found in countries$iso3"))
++         next
++       }
++       shape <- terra::vect(countries[countries$iso3 == country, ])
++       modelname <- countries$group[countries$iso3 == country]
++       modelpath <- file.path(ff_folder, "models", modelname, paste0(modelname, ".model"))
++       if (!file.exists(modelpath)) { stop(paste(modelpath, "does not exist")) }
++       tryCatch({
++         b <- ff_run(shape = shape,
++                     prediction_dates = proc_date,
++                     ff_folder = ff_folder,
++                     verbose = TRUE,
++                     trained_model = modelpath)
++         terra::writeRaster(b, paste0(country, "_", proc_date, ".tif"), overwrite = T)
++       }, error = function(e) {
++         message("An error occurred: ", e$message)
++       })
++     }
++   }
++ }
+processing COL 
+processing COL for 2024-09-01 
+Error: C:/Kodingan3/FFdata/storage/models/Colombia/Colombia.model does not exist
+> library(ForestForesight)
+> library(sf)
+> 
+> data("countries")
+> ff_folder = "C:/Kodingan3/FFdata"
+> proc_dates <- "2024-09-01"
+> countrynames = countries$iso3
+> 
+> for (proc_date in proc_dates) {
++   for (x in seq_along(countrynames)) {
++     country <- countrynames[x]
++     cat(paste("processing", country, "\n"))
++     setwd("C:/Kodingan3/FFdata/storage/predictions/")
++     if (!dir.exists(country)) { dir.create(country) }
++     setwd(country)
++     if (!file.exists(paste0(country, "_", proc_date, ".tif"))) {
++       cat(paste("processing", country, "for", proc_date, "\n"))
++       if (!(country %in% countries$iso3)) { #added this checking
++         message(paste("Country", country, "not found in countries$iso3"))
++         next
++       }
++       shape <- terra::vect(countries[countries$iso3 == country, ])
++       modelname <- countries$group[countries$iso3 == country]
++       modelpath <- file.path(ff_folder, "models", modelname, paste0(modelname, ".model"))
++       if (!file.exists(modelpath)) { stop(paste(modelpath, "does not exist")) }
++       tryCatch({
++         b <- ff_run(shape = shape,
++                     prediction_dates = proc_date,
++                     ff_folder = ff_folder,
++                     verbose = TRUE,
++                     trained_model = modelpath)
++         terra::writeRaster(b, paste0(country, "_", proc_date, ".tif"), overwrite = T)
++       }, error = function(e) {
++         message("An error occurred: ", e$message)
++       })
++     }
++   }
++ }
+processing COL 
+processing COL for 2024-09-01 
+pre-trained model only includes the following features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, month, monthssince2019, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, sinmonth, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands 
+searching C:/Kodingan3/FFdata/preprocessed/input for tiles 00N_070W 
+loading tile data from 00N_070W for 2024-09-01  with extent -70 -60 -10 0 
+no groundtruth raster was found, first regular raster selected as a template raster.
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+no groundtruth rasters foundcalculating predictions
+filling raster
+no analysis is done because no groundtruth is available
+pre-trained model only includes the following features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, month, monthssince2019, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, sinmonth, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands 
+searching C:/Kodingan3/FFdata/preprocessed/input for tiles 00N_080W 
+loading tile data from 00N_080W for 2024-09-01  with extent -80 -70 -10 0 
+no groundtruth raster was found, first regular raster selected as a template raster.
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+no groundtruth rasters foundcalculating predictions
+filling raster
+no analysis is done because no groundtruth is available
+pre-trained model only includes the following features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, month, monthssince2019, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, sinmonth, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands 
+searching C:/Kodingan3/FFdata/preprocessed/input for tiles 10N_070W 
+loading tile data from 10N_070W for 2024-09-01  with extent -70 -60 0 10 
+no groundtruth raster was found, first regular raster selected as a template raster.
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+no groundtruth rasters foundcalculating predictions
+filling raster
+no analysis is done because no groundtruth is available
+pre-trained model only includes the following features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, month, monthssince2019, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, sinmonth, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands 
+searching C:/Kodingan3/FFdata/preprocessed/input for tiles 10N_080W 
+loading tile data from 10N_080W for 2024-09-01  with extent -80 -70 0 10 
+no groundtruth raster was found, first regular raster selected as a template raster.
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+no groundtruth rasters foundcalculating predictions
+filling raster
+no analysis is done because no groundtruth is available
+pre-trained model only includes the following features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, month, monthssince2019, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, sinmonth, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands 
+searching C:/Kodingan3/FFdata/preprocessed/input for tiles 20N_080W 
+loading tile data from 20N_080W for 2024-09-01  with extent -80 -70 10 20 
+no groundtruth raster was found, first regular raster selected as a template raster.
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+no groundtruth rasters foundcalculating predictions
+filling raster
+no analysis is done because no groundtruth is available
+pre-trained model only includes the following features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, month, monthssince2019, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, sinmonth, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands 
+searching C:/Kodingan3/FFdata/preprocessed/input for tiles 20N_090W 
+loading tile data from 20N_090W for 2024-09-01  with extent -90 -80 10 20 
+no groundtruth raster was found, first regular raster selected as a template raster.
+filtering features
+filtering feature initialforestcover on >0 
+loading finished, features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands, sinmonth, month, monthssince2019 
+no groundtruth rasters foundcalculating predictions
+filling raster
+no analysis is done because no groundtruth is available
+processing LAO 
+processing LAO for 2024-09-01 
+Error: C:/Kodingan3/FFdata/models/Laos/Laos.model does not exist
+> library(ForestForesight)
+> library(sf)
+> 
+> data("countries")
+> ff_folder = "C:/Kodingan3/FFdata"
+> proc_dates <- "2024-09-01"
+> countrynames = countries$iso3
+> 
+> for (proc_date in proc_dates) {
++   for (x in seq_along(countrynames)) {
++     if (country == "COL") {
++       country <- countrynames[x]
++       cat(paste("processing", country, "\n"))
++       setwd("C:/Kodingan3/FFdata/storage/predictions/")
++       if (!dir.exists(country)) { dir.create(country) }
++       setwd(country)
++       if (!file.exists(paste0(country, "_", proc_date, ".tif"))) {
++         cat(paste("processing", country, "for", proc_date, "\n"))
++         if (!(country %in% countries$iso3)) { #added this checking
++           message(paste("Country", country, "not found in countries$iso3"))
++           next
++         }
++         shape <- terra::vect(countries[countries$iso3 == country, ])
++         modelname <- countries$group[countries$iso3 == country]
++         modelpath <- file.path(ff_folder, "models", modelname, paste0(modelname, ".model"))
++         if (!file.exists(modelpath)) { stop(paste(modelpath, "does not exist")) }
++         tryCatch({
++           b <- ff_run(shape = shape,
++                       prediction_dates = proc_date,
++                       ff_folder = ff_folder,
++                       verbose = TRUE,
++                       trained_model = modelpath)
++           terra::writeRaster(b, paste0(country, "_", proc_date, ".tif"), overwrite = T)
++         }, error = function(e) {
++           message("An error occurred: ", e$message)
++         })
++       }
++     }
++   }
++ }
+> 
+> 
