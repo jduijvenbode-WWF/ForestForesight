@@ -7,18 +7,20 @@
 #'
 #' @examples
 #' \dontrun{
-#'   result <- package_dependencies(c("numpy", "scipy", "rasterio", "argparse"))
-#'   print(result)
+#' result <- package_dependencies(c("numpy", "scipy", "rasterio", "argparse"))
+#' print(result)
 #' }
 #'
 #' @export
-ff_pythoncheck=function(packages=c("numpy","scipy","rasterio","argparse")){
-  version=system("python -V",intern=T)
-  packageresult=c()
-  for(package in packages){
-    res=suppressWarnings(system(paste0('python -c "import ',package,';print(',package,'.__version__)"'),intern=T))
-    if(length(grep("ModuleNotFoundError",res))>0){res="not found"}
-    packageresult=c(packageresult,res)
+ff_pythoncheck <- function(packages = c("numpy", "scipy", "rasterio", "argparse")) {
+  version <- system("python -V", intern = T)
+  packageresult <- c()
+  for (package in packages) {
+    res <- suppressWarnings(system(paste0('python -c "import ', package, ";print(", package, '.__version__)"'), intern = T))
+    if (length(grep("ModuleNotFoundError", res)) > 0) {
+      res <- "not found"
+    }
+    packageresult <- c(packageresult, res)
   }
-  return(list("python-version"=version,"package-versions"=data.frame("packages"=packages,"versions"=packageresult),"passed"=!any(packageresult=="not found")))
+  return(list("python-version" = version, "package-versions" = data.frame("packages" = packages, "versions" = packageresult), "passed" = !any(packageresult == "not found")))
 }

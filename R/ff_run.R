@@ -57,7 +57,6 @@
 #'
 #' @keywords machine-learning prediction forestry raster
 
-config <- config_load()
 
 ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
                    ff_folder,
@@ -144,7 +143,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
         datafolder = prep_folder, shape = shape, dates = train_dates,
         fltr_condition = fltr_condition, fltr_features = fltr_features,
         sample_size = 1, shrink = "extract",
-        groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, label_threshold = 1
+        groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), label_threshold = 1
       )
       ff_prep_params_combined <- merge_lists(default = ff_prep_params_original, user = ff_prep_params)
       ff_prep_params_combined <- merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
@@ -172,7 +171,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       datafolder = prep_folder, shape = shape, dates = train_dates,
       fltr_condition = fltr_condition, fltr_features = fltr_features,
       sample_size = sample_size, verbose = verbose, shrink = "extract",
-      groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, label_threshold = 1
+      groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), label_threshold = 1
     )
     if (validation) {
       ff_prep_params_original <- c(ff_prep_params_original, list("validation_sample" = 0.25))
@@ -235,7 +234,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       ff_prep_params_original <- list(
         datafolder = prep_folder, tiles = tile, dates = prediction_date,
         verbose = verbose, fltr_features = fltr_features,
-        fltr_condition = fltr_condition, groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, sample_size = 1, label_threshold = 1, shrink = "crop"
+        fltr_condition = fltr_condition, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), sample_size = 1, label_threshold = 1, shrink = "crop"
       )
       ff_prep_params_combined <- merge_lists(ff_prep_params_original, ff_prep_params)
       if (class(trained_model) == "character") {

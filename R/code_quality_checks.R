@@ -43,4 +43,3 @@ run_lintr_for_file <- function(file_string) {
   num_lints <- length(lint_result)
   cat("Number of style violations: ", num_lints, "\n")
 }
-

@@ -73,19 +73,22 @@
 #' @export
 ff_optimizer <- function(ff_folder, shape = NULL, country = NULL,
                          train_dates, val_dates = NULL,
-                         bounds = list(eta = c(0.01, 0.8),
-                                       nrounds = c(10, 500),
-                                       max_depth = c(2, 15),
-                                       subsample = c(0.1, 0.6),
-                                       gamma = c(0.01,1),
-                                       min_child_weight = c(1,10)),
+                         bounds = list(
+                           eta = c(0.01, 0.8),
+                           nrounds = c(10, 500),
+                           max_depth = c(2, 15),
+                           subsample = c(0.1, 0.6),
+                           gamma = c(0.01, 1),
+                           min_child_weight = c(1, 10)
+                         ),
                          init_points = 5, n_iter = 25, acq = "ucb", kappa = 2.576,
                          ff_prep_params = list(), ff_train_params = list(),
                          verbose = TRUE, validation_sample = 0.25) {
-
   # Prepare data using ff_prep
-  prep_params <- c(list(datafolder = ff_folder, shape = shape, country = country,
-                        dates = train_dates), ff_prep_params)
+  prep_params <- c(list(
+    datafolder = ff_folder, shape = shape, country = country,
+    dates = train_dates
+  ), ff_prep_params)
   train_data <- do.call(ff_prep, prep_params)
 
   # Prepare validation data
@@ -105,23 +108,27 @@ ff_optimizer <- function(ff_folder, shape = NULL, country = NULL,
     train_data$data_matrix$features <- train_data$data_matrix$features[-sample_indices, ]
     train_data$data_matrix$label <- train_data$data_matrix$label[-sample_indices]
   } else {
-    val_params <- c(list(datafolder = ff_folder, shape = shape, country = country,
-                         dates = val_dates), ff_prep_params)
+    val_params <- c(list(
+      datafolder = ff_folder, shape = shape, country = country,
+      dates = val_dates
+    ), ff_prep_params)
     val_data <- do.call(ff_prep, val_params)
   }
 
   # Objective function for Bayesian optimization
   xgb_cv_bayes <- function(eta, nrounds, max_depth, subsample, gamma, min_child_weight) {
     # Prepare the parameter list for ff_train
-    train_params <- c(list(train_matrix = train_data$data_matrix,
-                           validation_matrix = val_data$data_matrix,
-                           nrounds = as.integer(round(nrounds)),
-                           eta = eta,
-                           max_depth = as.integer(round(max_depth)),
-                           subsample = subsample,
-                           gamma = gamma,
-                           min_child_weight = min_child_weight,
-                           verbose = FALSE), ff_train_params)
+    train_params <- c(list(
+      train_matrix = train_data$data_matrix,
+      validation_matrix = val_data$data_matrix,
+      nrounds = as.integer(round(nrounds)),
+      eta = eta,
+      max_depth = as.integer(round(max_depth)),
+      subsample = subsample,
+      gamma = gamma,
+      min_child_weight = min_child_weight,
+      verbose = FALSE
+    ), ff_train_params)
 
     # Train the model using ff_train
     model <- do.call(ff_train, train_params)
@@ -134,12 +141,13 @@ ff_optimizer <- function(ff_folder, shape = NULL, country = NULL,
 
   # Run Bayesian optimization
   opt_result <- BayesianOptimization(xgb_cv_bayes,
-                                     bounds = bounds,
-                                     init_points = init_points,
-                                     n_iter = n_iter,
-                                     acq = acq,
-                                     kappa = kappa,
-                                     verbose = verbose)
+    bounds = bounds,
+    init_points = init_points,
+    n_iter = n_iter,
+    acq = acq,
+    kappa = kappa,
+    verbose = verbose
+  )
 
   # Extract best parameters
   best_params <- list(
@@ -152,13 +160,19 @@ ff_optimizer <- function(ff_folder, shape = NULL, country = NULL,
   )
 
   # Train final model with best parameters
-  final_train_params <- c(list(train_matrix = train_data$data_matrix,
-                               validation_matrix = val_data$data_matrix),
-                          best_params,
-                          ff_train_params)
+  final_train_params <- c(
+    list(
+      train_matrix = train_data$data_matrix,
+      validation_matrix = val_data$data_matrix
+    ),
+    best_params,
+    ff_train_params
+  )
   final_model <- do.call(ff_train, final_train_params)
 
-  return(list(best_params = best_params,
-              final_model = final_model,
-              optimization_result = opt_result))
+  return(list(
+    best_params = best_params,
+    final_model = final_model,
+    optimization_result = opt_result
+  ))
 }
