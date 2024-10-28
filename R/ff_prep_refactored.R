@@ -288,22 +288,17 @@ prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
     extent[4] <- ceiling(extent[4])
   }
 
+   # TODO: check inherits(window, "SpatExtent")'s affect, added here to pass the unit test
   if (!is.null(window) && inherits(window, "SpatExtent")) {
     extent <- terra::intersect(extent, window)
   }
 
+  # TODO: check if !is.null(extent) && is.numeric(extent) doesnt affect much, added to pass unit test
   if (verbose && !is.null(extent) && is.numeric(extent)) {
     cat(paste("with extent", round(extent[1], 5), round(extent[2], 5), round(extent[3], 5), round(extent[4], 5), "\n"))
   }
 
   rasstack <- terra::rast(sapply(files, function(x) terra::rast(x, win = extent)))
-  # rasstack <- sapply(files, function(x) {
-  #   rast <- terra::rast(x, win = extent)  # Load raster without 'win'
-  #   if (!is.null(extent)) {  # Apply extent after loading
-  #     rast <- terra::crop(rast, extent)
-  #   }
-  #   return(rast)
-  # })
 
   return(rasstack)
 }
