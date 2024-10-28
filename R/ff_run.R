@@ -57,7 +57,6 @@
 #'
 #' @keywords machine-learning prediction forestry raster
 
-config <- config_load()
 
 ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
                    ff_folder,

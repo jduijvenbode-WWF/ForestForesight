@@ -1,8 +1,7 @@
 test_that("refactored ff_prep has the same output as the original", {
-  download_folder <- "C:/Kodingan3/FFdata"
-  # config <- config_load()
+  download_folder <- Sys.getenv("TEST_DATA_FOLDER")
 
-  identifier <- "GAB" # Example: Gabon
+  identifier <- Sys.getenv("TEST_DATA_FOLDER") # Example: Gabon
 
   features <- c("temperature", "lastmonth", "confidence", "totallossalerts")
 

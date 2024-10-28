@@ -1,5 +1,3 @@
-config_load()
-
 get_feature_metadata <- function() {
   library(utils)
 
