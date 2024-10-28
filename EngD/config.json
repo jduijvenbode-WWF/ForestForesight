@@ -1,9 +1,0 @@
-{
-    "URL_MARKDOWN": "https://raw.githubusercontent.com/jduijvenbode-WWF/ForestForesight/main/README.md",
-    "AWS_BUCKET": "forestforesight-public",
-    "AWS_BUCKET_REGION": "eu-west-1",
-    "EARLIEST_DATA_DATE": "2021-01-01",
-    "DEFAULT_GROUNDTRUTH": "groundtruth6m",
-
-    "TEST_PREP_DATA": "C:/Kodingan3/FFdata/preprocessed"
-}
