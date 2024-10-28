@@ -1,0 +1,4 @@
+"identifier_or_tiles","sample_size","included_features","hash","date"
+"00N_000E, 00N_010E",1,"temperature, lastmonth, confidence, totallossalerts","4360dd1a2029b3039da4ffb77449098a",2024-10-25
+"GAB",1,"temperature, lastmonth, confidence, totallossalerts","65daed0e12f22bc23f5eedab7760136f",2024-10-25
+"shape_of_GAB",1,"temperature, lastmonth, confidence, totallossalerts","65daed0e12f22bc23f5eedab7760136f",2024-10-25
