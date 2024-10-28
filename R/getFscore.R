@@ -10,10 +10,10 @@
 #' @return F-score value.
 #' @export
 getFscore <- function(gt, pred, threshold = 0.5, beta = 0.5, pr = F) {
-  gt[is.na(gt)] = 0
-  pred[is.na(pred)] = 0
+  gt[is.na(gt)] <- 0
+  pred[is.na(pred)] <- 0
   # Convert predictions to binary
-  pred <- as.numeric(pred >= threshold) + gt*2
+  pred <- as.numeric(pred >= threshold) + gt * 2
 
   # Calculate true positives, false positives, and false negatives
   tp <- sum(pred == 3)
@@ -26,6 +26,8 @@ getFscore <- function(gt, pred, threshold = 0.5, beta = 0.5, pr = F) {
 
   # Calculate F-score
   f_score <- (1 + beta^2) * (precision * recall) / ((beta^2 * precision) + recall)
-  if(!pr){return(f_score)}
-  return(list("F05"=f_score,"precision"=precision,"recall"=recall))
+  if (!pr) {
+    return(f_score)
+  }
+  return(list("F05" = f_score, "precision" = precision, "recall" = recall))
 }

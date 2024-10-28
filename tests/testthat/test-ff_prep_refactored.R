@@ -1,9 +1,9 @@
 library(here)
 library(digest)
 test_that("refactored ff_prep has the same output as the original", {
-  download_folder <- here("test_data")
+  download_folder <- Sys.getenv("TEST_DATA_FOLDER") # modify this value in tests/testthat/config.yml
 
-  identifier <- "GAB"  # Gabon has its data present in the test_data folder
+  identifier <- Sys.getenv("TEST_FF_PREP_COUNTRY") 
 
   features <- c("temperature", "lastmonth", "confidence", "totallossalerts")
 
@@ -83,5 +83,3 @@ test_that("refactored ff_prep has the same output as the original", {
 
   expect_equal(df_original, df_refactored)
 })
-
-

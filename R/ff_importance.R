@@ -54,8 +54,8 @@ ff_importance <- function(model_path, output_csv, append = TRUE) {
 
   importance_matrix <- xgboost::xgb.importance(model = model)
 
-  importance_matrix$fnum = as.numeric(gsub("f","",importance_matrix$Feature)) + 1
-  importance_matrix$Feature = feature_names[importance_matrix$fnum]
+  importance_matrix$fnum <- as.numeric(gsub("f", "", importance_matrix$Feature)) + 1
+  importance_matrix$Feature <- feature_names[importance_matrix$fnum]
   # Create dataframe
   df <- data.frame(
     model_name = rep(sub("\\.model$", "", basename(model_path)), nrow(importance_matrix)),
@@ -65,9 +65,13 @@ ff_importance <- function(model_path, output_csv, append = TRUE) {
   )
 
   # Write to CSV
-  if (!file.exists(output_csv)) {append = FALSE}
-  write.table(df, file = output_csv, sep = ",", row.names = FALSE,
-              col.names = !append, append = append)
+  if (!file.exists(output_csv)) {
+    append <- FALSE
+  }
+  write.table(df,
+    file = output_csv, sep = ",", row.names = FALSE,
+    col.names = !append, append = append
+  )
 
   # Return dataframe invisibly
   invisible(df)

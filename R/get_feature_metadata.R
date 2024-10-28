@@ -1,10 +1,8 @@
-config <- config_load()
-
-get_feature_metadata=function(){
+get_feature_metadata <- function() {
   library(utils)
 
   # URL of the Markdown file
-  url <- config$URL_MARKDOWN
+  url <- Sys.getenv("URL_MARKDOWN")
 
   # Read the Markdown file
   markdown_text <- readLines(url)
@@ -16,7 +14,7 @@ get_feature_metadata=function(){
 
   # Read the table into a data frame
   df <- read.table(text = table_text, header = TRUE, sep = "|", fill = TRUE, stringsAsFactors = FALSE)
-  df$source <- gsub("%23","#",df$source)
+  df$source <- gsub("%23", "#", df$source)
 
   # Clean up column names
   colnames(df) <- trimws(gsub("\\|", "", colnames(df)))
