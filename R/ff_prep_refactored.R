@@ -62,11 +62,11 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
-config <- config_load()
-
-ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = config$DEFAULT_GROUNDTRUTH, dates = "2023-01-01",
+ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), dates = "2023-01-01",
                                inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
                                adddate = TRUE, verbose = TRUE, shrink = "none", window = NA, label_threshold = 1, addxy = FALSE) {
+
+
   ######## quality check########
   quality_result <- quality_check(dates, country, shape, tiles, datafolder, shrink)
 
@@ -148,8 +148,8 @@ quality_check <- function(dates, country, shape, tiles, datafolder, shrink) {
     stop("No dates were given")
   }
 
-  if (as.Date(min(dates)) < as.Date(config$EARLIEST_DATA_DATE)) {
-    stop(paste0("The earliest date available is ", config$EARLIEST_DATA_DATE))
+  if (as.Date(min(dates)) < as.Date(Sys.getenv("EARLIEST_DATA_DATE"))) {
+    stop(paste0("The earliest date available is ", Sys.getenv("EARLIEST_DATA_DATE")))
   }
 
   if (!hasvalue(country) & !hasvalue(shape)) {
