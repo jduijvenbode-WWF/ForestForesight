@@ -1,11 +1,11 @@
 #library(ForestForesight)
-# config <- config_load()
+config_load()
 
 code_location <- "C:/Kodingan3/ForestForesight/"
 library("devtools")
 load_all(code_location) # with this we are using the live R code, not the build package of ForestForesight
 
-download_folder <- "C:/Kodingan3/FFdata/" #adjust this
+download_folder <- Sys.getenv("DATA_FOLDER") #adjust this
 # Choose an identifier (country code, tile ID, or SpatVector)
 # identifier <- "PER"  # does this work?
 
