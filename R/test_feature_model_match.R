@@ -22,17 +22,17 @@
 #' }
 #'
 #' @export
-test_feature_model_match = function(model, feature_names = NULL) {
+test_feature_model_match <- function(model, feature_names = NULL) {
   if (class(model) == "character") {
     if (!file.exists(model)) {
       stop("model file does not exist")
     }
-    modelfile = model
+    modelfile <- model
     if (!file.exists(gsub("\\.model", "\\.rda", model))) {
       stop("feature names were not found as RDA file in same folder as the model")
     } else {
-      model = xgboost::xgb.load(model)
-      feature_names = get(load(gsub("\\.model", "\\.rda", modelfile)))
+      model <- xgboost::xgb.load(model)
+      feature_names <- get(load(gsub("\\.model", "\\.rda", modelfile)))
     }
   } else {
     if (is.null(feature_names)) {
@@ -40,13 +40,16 @@ test_feature_model_match = function(model, feature_names = NULL) {
     }
   }
 
-  result = tryCatch({
-    importance_matrix = xgb.importance(feature_names = feature_names, model = model)
-    return(TRUE)
-  }, error = function(e) {
-    # Print the error message
-    return(FALSE)
-  })
+  result <- tryCatch(
+    {
+      importance_matrix <- xgb.importance(feature_names = feature_names, model = model)
+      return(TRUE)
+    },
+    error = function(e) {
+      # Print the error message
+      return(FALSE)
+    }
+  )
 
   return(result)
 }

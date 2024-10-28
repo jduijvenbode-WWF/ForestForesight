@@ -28,12 +28,8 @@
 #'
 #' @export
 
-# source(system.file("R", "load_config.R", package = "ForestForesight"))
-config <- config_load()
-
 ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE, download_predictions = FALSE, download_groundtruth = TRUE,
-                    bucket = config$AWS_BUCKET_NAME, region = config$AWS_BUCKET_REGION, verbose = TRUE, sync_verbose = FALSE) {
-
+                    bucket = Sys.getenv("AWS_BUCKET_NAME"), region = Sys.getenv("AWS_BUCKET_REGION"), verbose = TRUE, sync_verbose = FALSE) {
   # Create ff_folder if it doesn't exist
   if (!dir.exists(ff_folder)) {
     dir.create(ff_folder, recursive = TRUE)
@@ -73,7 +69,8 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
 
   # Sync input and ground truth data for each tile
   if (download_data | download_groundtruth) {
-    cat("Downloading input and ground truth data\n")
+    download_message <- paste0("Downloading input and ground truth data from ", bucket, "\n")
+    cat(download_message)
     for (tile in tiles) {
       # Create input sub-folder
       if (download_data) {
