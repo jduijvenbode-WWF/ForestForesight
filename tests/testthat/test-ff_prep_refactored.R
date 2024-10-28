@@ -1,12 +1,14 @@
+library(here)
+library(digest)
 test_that("refactored ff_prep has the same output as the original", {
-  download_folder <- "C:/Kodingan3/FFdata"
-  
-  identifier <- "GAB"  # Example: Gabon
+  download_folder <- here("test_data")
+
+  identifier <- "GAB"  # Gabon has its data present in the test_data folder
 
   features <- c("temperature", "lastmonth", "confidence", "totallossalerts")
 
   # Change to your own data_folder because we can't store it locally
-  data_folder <- "C:/Kodingan3/FFdata/preprocessed"
+  data_folder <- paste(download_folder, "preprocessed", sep = "/")
 
   # sample_size=1 in order to remove randomness
   # running on tiles
@@ -46,7 +48,7 @@ test_that("refactored ff_prep has the same output as the original", {
   combined_features <- paste(features, collapse = ", ")
 
   # change this to wherever you want to save it
-  hash_folder <- "D:/WWF/hashes/"
+  hash_folder <- paste(download_folder, "hashes/", sep = "/")
   date <- Sys.Date()
   hash_matrix <- data.frame(
     identifier_or_tiles = c(combined_tiles, identifier, "shape_of_GAB"),
@@ -65,8 +67,8 @@ test_that("refactored ff_prep has the same output as the original", {
   )
 
 
-  file_name_original <- paste("hash_matrix_", ".csv", sep = "")
-  file_name_refactored <- paste("hash_matrix_refactored_", ".csv", sep = "")
+  file_name_original <- paste("hash_matrix", ".csv", sep = "")
+  file_name_refactored <- paste("hash_matrix_refactored", ".csv", sep = "")
   file_location_original <- paste(hash_folder, file_name_original, sep = "")
   file_location_refactored <- paste(hash_folder, file_name_refactored, sep = "")
 
