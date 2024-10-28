@@ -330,6 +330,8 @@ initialize_shape_from_borders <- function(shape, shrink, files, borders) {
       data(countries, envir = environment())
       borders <- terra::vect(countries)
     }
+    # TODO: to pass it's test case we needed to avoid aggregate and implement as below
+    # shape <- terra::union(terra::intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))), borders))
     shape <- aggregate(intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))), borders))
   }
   return(shape)
