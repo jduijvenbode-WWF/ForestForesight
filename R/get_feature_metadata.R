@@ -1,10 +1,10 @@
-config <- config_load()
+config_load()
 
 get_feature_metadata <- function() {
   library(utils)
 
   # URL of the Markdown file
-  url <- config$URL_MARKDOWN
+  url <- Sys.getenv("URL_MARKDOWN")
 
   # Read the Markdown file
   markdown_text <- readLines(url)

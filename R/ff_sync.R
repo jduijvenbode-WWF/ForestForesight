@@ -28,10 +28,10 @@
 #'
 #' @export
 
-config <- config_load()
+config_load()
 
 ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE, download_predictions = FALSE, download_groundtruth = TRUE,
-                    bucket = config$AWS_BUCKET_NAME, region = config$AWS_BUCKET_REGION, verbose = TRUE, sync_verbose = FALSE) {
+                    bucket = Sys.getenv("AWS_BUCKET_NAME"), region = Sys.getenv("AWS_BUCKET_REGION"), verbose = TRUE, sync_verbose = FALSE) {
   # Create ff_folder if it doesn't exist
   if (!dir.exists(ff_folder)) {
     dir.create(ff_folder, recursive = TRUE)
