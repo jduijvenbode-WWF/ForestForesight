@@ -165,6 +165,7 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
       rm(extent)
     }
     files <- allfiles[grep(tile, allfiles)]
+    # initialize_shape_from_borders
     if (!hasvalue(shape) & (shrink == "extract")) {
       if (!exists("countries", inherits = F)) {
         data(countries, envir = environment())
@@ -172,6 +173,9 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
       }
       shape <- aggregate(intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))), borders))
     }
+    # end-of initialize_shape_from_borders
+
+    # process_tile_dates (process_a_tile_in_dates)
     for (i in dates) {
       if (exists("dts", inherits = F)) {
         rm(dts)
@@ -179,11 +183,16 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
       if (verbose) {
         cat(paste("loading tile data from", tile, "for", i, " "))
       }
+
+      # filter_files_by_date_and_groundtruth
       selected_files <- select_files_date(i, files)
       # remove groundtruth if it is not of the same month
       if (!(grep(groundtruth_pattern, selected_files) %in% grep(i, selected_files))) {
         selected_files <- selected_files[-grep(groundtruth_pattern, selected_files)]
       }
+      # end-of filter_files_by_date_and_groundtruth
+
+      # prepare_raster_data_by_tile
       for (file in selected_files) {
         if (!exists("extent")) {
           extent <- terra::ext(terra::rast(file))
@@ -211,9 +220,12 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
         cat(paste("with extent", round(extent[1], 5), round(extent[2], 5), round(extent[3], 5), round(extent[4], 5), "\n"))
       }
       rasstack <- terra::rast(sapply(selected_files, function(x) terra::rast(x, win = extent)))
+      # end-of prepare_raster_data_by_tile
+
       if (length(tiles) > 1) {
         groundtruth_raster <- NA
       } else {
+        # load_groundtruth_raster
         if (first) {
           if (length(grep(groundtruth_pattern, selected_files)) > 0) {
             hasgroundtruth <- T
@@ -227,7 +239,10 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
             groundtruth_raster[] <- 0
           }
         }
+        # kind-of end-of load_groundtruth_raster
       }
+
+      # transform_raster_to_data_matrix
       if (shrink == "extract") {
         dts <- terra::extract(rasstack, shape, raw = T, ID = F, xy = addxy)
       } else {
@@ -237,6 +252,8 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
           dts <- cbind(dts, coords)
         }
       }
+      # end-of transform_raster_to_data_matrix
+
 
       if (adddate) {
         dts <- cbind(

@@ -299,8 +299,8 @@ prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
   }
 
   rasstack <- terra::rast(sapply(files, function(x) terra::rast(x, win = extent)))
-
-  return(rasstack)
+  # Return both extent and rasstack as a list
+  return(list(extent = extent, rasstack = rasstack))
 }
 
 load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, hasgroundtruth) {
@@ -510,7 +510,10 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
     }
 
     selected_files <- filter_files_by_date_and_groundtruth(date, files, groundtruth_pattern)
-    rasstack <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
+    # rasstack <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
+    result <- prepare_raster_data_by_tile(files, shape, shrink, window, verbose)
+    extent <- result$extent
+    rasstack <- result$rasstack
 
     if (length(tiles) > 1) {
       groundtruth_raster <- NA
