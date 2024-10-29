@@ -303,7 +303,7 @@ prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
   return(list(extent = extent, rasstack = rasstack))
 }
 
-load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, hasgroundtruth) {
+load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth) {
   #   groundtruth_raster <- NULL
   #   hasgroundtruth <- FALSE
   cat("====== load_groundtruth_raster running ======\n")
@@ -311,6 +311,7 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
   cat(paste0("gt_pattern: ", groundtruth_pattern, "\n"))
   cat(paste0("first: ", first, "\n"))
   cat(paste0("verbose: ", verbose, "\n"))
+  cat(paste0("extent: ", extent, "\n"))
   cat(paste0("hasgroundtruth: ", hasgroundtruth, "\n"))
   if (first) {
     if (length(grep(groundtruth_pattern, selected_files)) > 0) {
