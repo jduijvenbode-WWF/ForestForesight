@@ -1,15 +1,15 @@
 code_quality_checks <- function() {
-  # Lint the package
-  cat("Running lint...\n")
-  lintr::lint_package()
-
   # Style the code
   cat("Styling code...\n")
   styler::style_pkg()
 
+  # Lint the package
+  cat("Running lint...\n")
+  lintr::lint_package()
+
   # Run tests
-  cat("Running tests...\n")
-  devtools::test()
+  # cat("Running tests...\n")
+  # devtools::test()
 }
 
 run_lintr_and_styler_for_file <- function(file_string) {

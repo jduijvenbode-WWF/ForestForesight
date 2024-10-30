@@ -65,8 +65,6 @@
 ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), dates = "2023-01-01",
                                inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
                                adddate = TRUE, verbose = TRUE, shrink = "none", window = NA, label_threshold = 1, addxy = FALSE) {
-
-
   ######## quality check########
   quality_result <- quality_check(dates, country, shape, tiles, datafolder, shrink)
 
@@ -288,7 +286,7 @@ prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
     extent[4] <- ceiling(extent[4])
   }
 
-   # TODO: check inherits(window, "SpatExtent")'s affect, added here to pass the unit test
+  # TODO: check inherits(window, "SpatExtent")'s affect, added here to pass the unit test
   if (!is.null(window) && inherits(window, "SpatExtent")) {
     extent <- terra::intersect(extent, window)
   }
@@ -325,14 +323,13 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
       groundtruth_raster[] <- 0
     }
   }
-  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first=first)
+  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first = first)
   cat("======> return of load_gt_raster =======>\n")
   print(paste0("groundtruth_raster: ", groundtruth_raster))
   print(paste0("hasgroundtruth: ", hasgroundtruth))
   print(paste0("first: ", first))
 
   return(list_gt_raster)
-
 }
 
 initialize_shape_from_borders <- function(shape, shrink, files, borders) {
@@ -533,7 +530,7 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
       hasgroundtruth <- groundtruth_result$hasgroundtruth
       first <- groundtruth_result$first
     }
-    gc()  # garbabe collection: to free up memory usage
+    gc() # garbabe collection: to free up memory usage
     cat("\n========= b4 entering transform_raster_to_data_matrix\n")
     # Process raster data
     dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, dts)

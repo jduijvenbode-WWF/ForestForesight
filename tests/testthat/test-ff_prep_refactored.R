@@ -3,7 +3,7 @@ library(digest)
 test_that("refactored ff_prep has the same output as the original", {
   download_folder <- Sys.getenv("TEST_DATA_FOLDER") # modify this value in tests/testthat/config.yml
 
-  identifier <- Sys.getenv("TEST_FF_PREP_COUNTRY") 
+  identifier <- Sys.getenv("TEST_FF_PREP_COUNTRY")
 
   features <- c("temperature", "lastmonth", "confidence", "totallossalerts")
 

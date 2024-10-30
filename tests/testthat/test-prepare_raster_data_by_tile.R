@@ -1,4 +1,3 @@
-
 test_that("prepare_raster_data_by_tile works without shrink or window", {
   # Create mock files and raster data
   temp_file1 <- tempfile(fileext = ".tif")
