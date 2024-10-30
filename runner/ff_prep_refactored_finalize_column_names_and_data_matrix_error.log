@@ -1,0 +1,16 @@
+========= finalize_column_names_and_data_matrix
+finalize_column_names_and_data_matrix 1
+dts:  num [1:6250000, 1:319] 0 0 0 0 0 0 0 0 0 0 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : NULL
+  ..$ : chr [1:319] "C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2021-01-01_confidence.tif" "C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2021-02-01_confidence.tif" "C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2021-03-01_confidence.tif" "C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2021-04-01_confidence.tif" ...
+[1] "finalize_column_names_and_data_matrix newcolnames:confidence"        
+[2] "finalize_column_names_and_data_matrix newcolnames:lastmonth"         
+[3] "finalize_column_names_and_data_matrix newcolnames:patchdensity"      
+[4] "finalize_column_names_and_data_matrix newcolnames:previoussameseason"
+[5] "finalize_column_names_and_data_matrix newcolnames:smoothedtotal"     
+[6] "finalize_column_names_and_data_matrix newcolnames:timesinceloss"     
+[7] "finalize_column_names_and_data_matrix newcolnames:sinmonth"          
+[8] "finalize_column_names_and_data_matrix newcolnames:month"             
+[9] "finalize_column_names_and_data_matrix newcolnames:monthssince2019"   
+An error occurred: length of 'dimnames' [2] not equal to array extent

@@ -1,6 +1,6 @@
 # library(ForestForesight)
 code_location <- "C:/Kodingan3/ForestForesight"
-ff_folder <- "C:/Kodingan3/ForestForesight/test_data"
+data_folder <- "C:/Kodingan3/ForestForesight/test_data"
 library("devtools")
 load_all(code_location) # with this we are using the live R code, not the build package of ForestForesight
 library(sf)
@@ -31,7 +31,7 @@ for (proc_date in proc_dates) {
         }
         shape <- terra::vect(countries[countries$iso3 == country, ])
         modelname <- countries$group[countries$iso3 == country]
-        modelpath <- file.path(ff_folder, "models", modelname, paste0(modelname, ".model"))
+        modelpath <- file.path(data_folder, "models", modelname, paste0(modelname, ".model"))
         # if (!file.exists(modelpath)) {
         #  stop(paste(modelpath, "model does not exist"))
         # }
@@ -41,7 +41,7 @@ for (proc_date in proc_dates) {
             b <- ff_run(
               shape = shape,
               prediction_dates = proc_date,
-              ff_folder = ff_folder,
+              ff_folder = data_folder,
               verbose = TRUE,
               # save_path = model_folder
               trained_model = modelpath

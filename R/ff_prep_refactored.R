@@ -319,6 +319,7 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
       if (verbose) {
         cat("no groundtruth raster was found, first regular raster selected as a template raster.\n")
       }
+      cat(paste("selected_files[1]: ", selected_files[1],"\n"))
       groundtruth_raster <- terra::rast(selected_files[1], win = extent)
       groundtruth_raster[] <- 0
     }
@@ -356,13 +357,14 @@ filter_files_by_date_and_groundtruth <- function(date, files, groundtruth_patter
 }
 
 transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts) {
+  cat("\n========= transform_raster_to_data_matrix\n")
   if (shrink == "extract") {
     cat("transform_raster_to_data_matrix extract\n")
     dts <- terra::extract(rasstack, shape, raw = TRUE, ID = FALSE, xy = addxy)
   } else {
     dts <- as.matrix(rasstack)
     cat("transform_raster_to_data_matrix else\n")
-    print(paste0("addxy: ", addxy))
+    print(paste0("transform_raster_to_data_matrix addxy: ", addxy))
     if (addxy) {
       cat("transform_raster_to_data_matrix addxy\n")
       coords <- terra::xyFromCell(rasstack, seq(ncol(rasstack) * nrow(rasstack)))
@@ -371,34 +373,41 @@ transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts)
       cat("transform_raster_to_data_matrix after after cbind\n")
     }
   }
-  print(paste0("dts: ", dts))
+  cat("transform_raster_to_data_matrix EXITING......\n")
   return(dts)
 }
 
 append_date_based_features <- function(dts, date) {
+  cat("========= append_date_based_features\n")
   dts <- cbind(
     dts, rep(sin((2 * pi * as.numeric(format(as.Date(date), "%m"))) / 12), nrow(dts)),
     rep(as.numeric(format(as.Date(date), "%m")), nrow(dts)),
     # add the months since 2019
     rep(round(as.numeric(lubridate::as.period(as.Date(date) - as.Date("2019-01-01"), "months"), "months")), nrow(dts))
   )
+  cat("append_date_based_features: returning dts\n")
   return(dts)
 }
 
 finalize_column_names_and_data_matrix <- function(dts, selected_files, addxy, adddate) {
+  cat("========= finalize_column_names_and_data_matrix\n")
+
   dts[is.na(dts)] <- 0
   newcolnames <- gsub(".tif", "", sapply(basename(selected_files), function(x) strsplit(x, "_")[[1]][4]))
-
   if (addxy) {
     newcolnames <- c(newcolnames, "x", "y")
   }
+  cat("finalize_column_names_and_data_matrix 1\n")
   if (adddate) {
     newcolnames <- c(newcolnames, "sinmonth", "month", "monthssince2019")
   }
-
-  colnames(dts) <- newcolnames
+  cat("dts: ")      
+  str(dts)
+  print(paste0("finalize_column_names_and_data_matrix newcolnames:", newcolnames))
+  colnames(dts) <- newcolnames # ERROR:An error occurred: length of 'dimnames' [2] not equal to array extent
+  cat("finalize_column_names_and_data_matrix 2\n")
   dts <- dts[, order(colnames(dts))]
-
+  cat("finalize_column_names_and_data_matrix: returning\n")
   return(list(dts = dts, newcolnames = newcolnames))
 }
 
@@ -530,11 +539,10 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
       hasgroundtruth <- groundtruth_result$hasgroundtruth
       first <- groundtruth_result$first
     }
-    gc() # garbabe collection: to free up memory usage
-    cat("\n========= b4 entering transform_raster_to_data_matrix\n")
     # Process raster data
     dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, dts)
 
+    gc() # garbabe collection: to free up memory usage
     # Add date features if necessary
     if (adddate) {
       dts <- append_date_based_features(dts, date)
