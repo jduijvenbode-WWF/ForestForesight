@@ -254,16 +254,19 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
       }
       # end-of transform_raster_to_data_matrix
 
-
       if (adddate) {
+        # append_date_based_features
         dts <- cbind(
           dts, rep(sin((2 * pi * as.numeric(format(as.Date(i), "%m"))) / 12), nrow(dts)),
           rep(as.numeric(format(as.Date(i), "%m")), nrow(dts)),
           # add the months since 2019
           rep(round(as.numeric(lubridate::as.period(as.Date(i) - as.Date("2019-01-01"), "months"), "months")), nrow(dts))
         )
+        # end-of append_date_based_features
       }
 
+      # finalize_column_names_and_data_matrix
+      cat("========= finalize_column_names_and_data_matrix\n")
 
       dts[is.na(dts)] <- 0
       newcolnames <- c(gsub(".tif", "", c(sapply(basename(selected_files), function(x) strsplit(x, "_")[[1]][4]))))
@@ -273,12 +276,18 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
       if (adddate) {
         newcolnames <- c(newcolnames, "sinmonth", "month", "monthssince2019")
       }
+      cat("dts: ")      
+      str(dts)
+      print(paste0("finalize_column_names_and_data_matrix newcolnames:", newcolnames))
       colnames(dts) <- newcolnames
       dts <- dts[, order(colnames(dts))]
+      # end-of finalize_column_names_and_data_matrix
 
       # filter on filter conditions
       filterresult <- filter_by_feature(fltr_features, fltr_condition, dts, verbose = verbose)
       dts <- filterresult$filtered_matrix
+      cat("just b4 sf_indices extraction: ")
+      print(filterresult)
       sf_indices <- filterresult$filtered_indices
       # take a random sample if that was applied
 
