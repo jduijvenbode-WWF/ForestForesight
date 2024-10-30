@@ -1,6 +1,6 @@
 # library(ForestForesight)
 code_location <- "C:/Kodingan3/ForestForesight"
-ff_folder <- "C:/Kodingan3/FFdata"
+ff_folder <- "C:/Kodingan3/ForestForesight/test_data"
 library("devtools")
 load_all(code_location) # with this we are using the live R code, not the build package of ForestForesight
 library(sf)
@@ -37,7 +37,7 @@ for (proc_date in proc_dates) {
         # }
         tryCatch(
           {
-            cat("just b4 ff_run")
+            cat("just b4 ff_run prediction only")
             b <- ff_run(
               shape = shape,
               prediction_dates = proc_date,
