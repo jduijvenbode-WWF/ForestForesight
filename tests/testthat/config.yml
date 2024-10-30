@@ -5,6 +5,6 @@ EARLIEST_DATA_DATE: "2021-01-01"
 DEFAULT_GROUNDTRUTH: "groundtruth6m"
 CODE_LOCATION: "C:/Kodingan3/ForestForesight"
 TEST:
-  DATA_FOLDER: "C:/Kodingan3/ForestForesight/tests/testthat/test_data"
+  DATA_FOLDER: "C:/Kodingan3/ForestForesight/tests/test_data"
   FF_PREP_QC_DATE: "2023-01-01"
   FF_PREP_COUNTRY: "GAB"
