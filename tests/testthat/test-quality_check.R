@@ -4,8 +4,8 @@ library(testthat)
 dates <- Sys.getenv("TEST_FF_PREP_QC_DATE")
 country <- Sys.getenv("TEST_FF_PREP_COUNTRY")
 datafolder <- Sys.getenv("TEST_DATA_FOLDER")
-#cat("From test-QC: the country is ")
-#cat(country)
+# cat("From test-QC: the country is ")
+# cat(country)
 shape <- NULL
 tiles <- NULL
 shrink <- "none"

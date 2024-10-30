@@ -3,7 +3,7 @@ config_load <- function() {
   library(yaml)
 
   # Put your config.yml in your working directory
-  config_file <- file.path("config.yml") #To avoid conflict, make sure VARs in config.yml are different from Sys_Vars
+  config_file <- file.path("config.yml") # To avoid conflict, make sure VARs in config.yml are different from Sys_Vars
 
   # Check if the config file exists
   if (file.exists(config_file)) {
@@ -32,5 +32,4 @@ config_load <- function() {
     # Handle the case where the config file does not exist
     warning("The config file does not exist. Please check the file path.")
   }
-
 }
