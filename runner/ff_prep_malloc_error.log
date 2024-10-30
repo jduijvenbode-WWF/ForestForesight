@@ -1,0 +1,87 @@
+> # library(ForestForesight)
+> code_location <- "C:/Kodingan3/ForestForesight"
+> ff_folder <- "C:/Kodingan3/ForestForesight/test_data"
+> library("devtools")
+> load_all(code_location) # with this we are using the live R code, not the build package of ForestForesight
+ℹ Loading ForestForesight
+[1] "helper_config.R has been executed"
+TEST_FF_PREP_COUNTRY is GAB> library(sf)
+> 
+> data("countries")
+> proc_dates <- "2024-09-01"
+> start_date <- as.Date("2024-09-01")
+> end_date <- as.Date("2024-09-04")
+> step_size <- "1 day"
+> dates <- seq.Date(start_date, end_date, by = step_size)
+> countrynames <- countries$iso3
+> 
+> for (proc_date in proc_dates) {
++   for (x in seq_along(countrynames)) {
++     country <- countrynames[x]
++     if (country == "GAB") {
++       cat(paste("processing", country, "\n"))
++       setwd("C:/Kodingan3/FFdata/storage/predictions/")
++       if (!dir.exists(country)) {
++         dir.create(country)
++       }
++       setwd(country)
++       if (!file.exists(paste0(country, "_", proc_date, ".tif"))) {
++         cat(paste("processing", country, "for", proc_date, "\n"))
++         if (!(country %in% countries$iso3)) { # added this checking
++           message(paste("Country", country, "not found in countries$iso3"))
++           next
++         }
++         shape <- terra::vect(countries[countries$iso3 == country, ])
++         modelname <- countries$group[countries$iso3 == country]
++         modelpath <- file.path(ff_folder, "models", modelname, paste0(modelname, ".model"))
++         # if (!file.exists(modelpath)) {
++         #  stop(paste(modelpath, "model does not exist"))
++         # }
++         tryCatch(
++           {
++             cat("just b4 ff_run prediction only")
++             b <- ff_run(
++               shape = shape,
++               prediction_dates = proc_date,
++               ff_folder = ff_folder,
++               verbose = TRUE,
++               # save_path = model_folder
++               trained_model = modelpath
++             )
++             terra::writeRaster(b, paste0(country, "_", proc_date, ".tif"), overwrite = T)
++           },
++           error = function(e) {
++             message("An error occurred: ", e$message)
++           }
++         )
++       } else {
++         cat("cannot run prediction: ", paste0(country, "_", proc_date, ".tif"), " already exists!")
++       }
++     }
++   }
++ }
+processing GAB 
+processing GAB for 2024-09-01 
+just b4 ff_run prediction onlypre-trained model only includes the following features: aridityannual, ariditydriestquarter, catexcap, cattlesmoothed, closenesstocattleabove10000, closenesstocattleabove2000, closenesstococoa, closenesstocoffee, closenesstocropland, closenesstofiber, closenesstoforestedge, closenesstomennonites, closenesstomining, closenesstooilpalm, closenesstorice, closenesstoroads, closenesstorubber, closenesstosoybean, closenesstowaterways, confidence, croplandcapacity100p, croplandcapacitybelow50p, croplandcapacityover50p, diminishinghotspot, dpicoal, dpiconvgas, dpiconvoil, dpihydro, dpimetallicmining, dpinonmetallicmining, dpiunconvgas, elevation, firealerts, forestedgedensity, forestheight, fwi, historicloss, initialforestcount, initialforestcover, intensifyinghotspot, landpercentage, lastmonth, lastsixmonths, lastthreemonths, losslastyear, mennonitessmoothed, miningsmoothed, month, monthssince2019, newhotspot, nightlights, palmoilmills, patchdensity, peatlands, persistanthotspot, populationcurrent, populationincrease, precipitation, previoussameseason, sinmonth, slope, smoothedsixmonths, smoothedtotal, soybeansmoothed, sporadichotspot, temperature, timesinceloss, totallossalerts, wdpa, wetlands 
+Searching C:/Kodingan3/ForestForesight/test_data/preprocessed/input for tiles 00N_000E 
+loading tile data from 00N_000E for 2024-09-01  
+====== load_groundtruth_raster running ======
+[1] "selected_files: C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2024-09-01_confidence.tif"        
+[2] "selected_files: C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2024-09-01_lastmonth.tif"         
+[3] "selected_files: C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2024-09-01_patchdensity.tif"      
+[4] "selected_files: C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2024-09-01_previoussameseason.tif"
+[5] "selected_files: C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2024-09-01_smoothedtotal.tif"     
+[6] "selected_files: C:/Kodingan3/ForestForesight/test_data/preprocessed/input/00N_000E/00N_000E_2024-09-01_timesinceloss.tif"     
+[1] "gt_pattern: groundtruth6m\n"
+[1] "first: TRUE\n"
+[1] "verbose: TRUE\n"
+[1] "extent: ext(0, 10, -10, 0)\n"
+[1] "hasgroundtruth: FALSE\n"
+no groundtruth raster was found, first regular raster selected as a template raster.
+======> return of load_gt_raster =======>
+[1] "groundtruth_raster: rast(ncols=2500, nrows=2500, nlyrs=1, xmin=0, xmax=10, ymin=-10, ymax=0, names=c('00N_000E_2024-09-01_confidence'), crs='EPSG:4326')"
+[1] "hasgroundtruth: FALSE"
+[1] "first: TRUE"
+
+========= b4 entering transform_raster_to_data_matrix
+An error occurred: std::bad_alloc
