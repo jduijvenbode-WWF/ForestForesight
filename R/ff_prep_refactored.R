@@ -287,7 +287,6 @@ prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, v
   }
 
   # TODO: check inherits(window, "SpatExtent")'s affect, added here to pass the unit test
-  # TODO: check inherits(window, "SpatExtent")'s affect, added here to pass the unit test
   if (!is.null(window) && inherits(window, "SpatExtent")) {
     extent <- terra::intersect(extent, window)
   }
