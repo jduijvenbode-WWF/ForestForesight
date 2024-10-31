@@ -123,13 +123,10 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   data(gfw_tiles, envir = environment())
   tiles <- terra::vect(gfw_tiles)[shape, ]$tile_id
 
-
   prep_folder <- file.path(ff_folder, "preprocessed")
   if (!dir.exists(prep_folder)) {
     stop(paste(prep_folder, "does not exist"))
   }
-
-
 
   # Train model if not provided
   if (is.null(trained_model)) {
@@ -160,8 +157,6 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
         ff_cat("autoscaled sample size:", round(sample_size, 2), "\n", color = "green")
       }
     }
-
-
 
     if (verbose) {
       ff_cat("Preparing data\n", color = "green")
