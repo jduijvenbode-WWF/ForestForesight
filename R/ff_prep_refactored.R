@@ -305,13 +305,6 @@ prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
 }
 
 load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth) {
-  cat("\n====== load_groundtruth_raster running ======\n")
-  print(paste0("selected_files: ", selected_files))
-  print(paste0("gt_pattern: ", groundtruth_pattern, "\n"))
-  print(paste0("first: ", first, "\n"))
-  print(paste0("verbose: ", verbose, "\n"))
-  print(paste0("extent: ", extent, "\n"))
-  print(paste0("hasgroundtruth: ", hasgroundtruth, "\n"))
   if (first) {
     if (length(grep(groundtruth_pattern, selected_files)) > 0) {
       hasgroundtruth <- TRUE
@@ -326,11 +319,6 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
     }
   }
   list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first=first)
-  cat("======> return of load_gt_raster =======>\n")
-  print(paste0("groundtruth_raster: ", groundtruth_raster))
-  print(paste0("hasgroundtruth: ", hasgroundtruth))
-  print(paste0("first: ", first))
-
   return(list_gt_raster)
 
 }
@@ -360,18 +348,13 @@ filter_files_by_date_and_groundtruth <- function(date, files, groundtruth_patter
 
 transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts) {
   if (shrink == "extract") {
-    cat("transform_raster_to_data_matrix extract\n")
     dts <- terra::extract(rasstack, shape, raw = TRUE, ID = FALSE, xy = addxy)
   } else {
     dts <- as.matrix(rasstack)
-    cat("transform_raster_to_data_matrix else\n")
     print(paste0("addxy: ", addxy))
     if (addxy) {
-      cat("transform_raster_to_data_matrix addxy\n")
       coords <- terra::xyFromCell(rasstack, seq(ncol(rasstack) * nrow(rasstack)))
-      cat("transform_raster_to_data_matrix after coords\n")
       dts <- cbind(dts, coords)
-      cat("transform_raster_to_data_matrix after after cbind\n")
     }
   }
   print(paste0("dts: ", dts))
@@ -534,7 +517,6 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
       first <- groundtruth_result$first
     }
     gc()  # garbabe collection: to free up memory usage
-    cat("\n========= b4 entering transform_raster_to_data_matrix\n")
     # Process raster data
     dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, dts)
 
