@@ -267,8 +267,8 @@ filter_files_by_features <- function(allfiles, exc_features, inc_features, groun
   return(allfiles)
 }
 
-prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
-  for (file in files) {
+prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, verbose) {
+  for (file in selected_files) {
     if (!exists("extent")) {
       extent <- terra::ext(terra::rast(file))
     } else {
@@ -288,7 +288,7 @@ prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
     extent[4] <- ceiling(extent[4])
   }
 
-   # TODO: check inherits(window, "SpatExtent")'s affect, added here to pass the unit test
+  # TODO: check inherits(window, "SpatExtent")'s affect, added here to pass the unit test
   if (!is.null(window) && inherits(window, "SpatExtent")) {
     extent <- terra::intersect(extent, window)
   }
@@ -298,15 +298,11 @@ prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
     cat(paste("with extent", round(extent[1], 5), round(extent[2], 5), round(extent[3], 5), round(extent[4], 5), "\n"))
   }
 
-  rasstack <- terra::rast(sapply(files, function(x) terra::rast(x, win = extent)))
-
-  return(rasstack)
+  rasstack <- terra::rast(sapply(selected_files, function(x) terra::rast(x, win = extent)))
+  return(list(extent = extent, rasstack = rasstack))
 }
 
-load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, hasgroundtruth) {
-  #   groundtruth_raster <- NULL
-  #   hasgroundtruth <- FALSE
-
+load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth) {
   if (first) {
     if (length(grep(groundtruth_pattern, selected_files)) > 0) {
       hasgroundtruth <- TRUE
@@ -320,8 +316,9 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
       groundtruth_raster[] <- 0
     }
   }
+  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first=first)
+  return(list_gt_raster)
 
-  return(list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth))
 }
 
 initialize_shape_from_borders <- function(shape, shrink, files, borders) {
@@ -347,11 +344,12 @@ filter_files_by_date_and_groundtruth <- function(date, files, groundtruth_patter
   return(selected_files)
 }
 
-transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts, coords) {
+transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts) {
   if (shrink == "extract") {
     dts <- terra::extract(rasstack, shape, raw = TRUE, ID = FALSE, xy = addxy)
   } else {
     dts <- as.matrix(rasstack)
+    print(paste0("addxy: ", addxy))
     if (addxy) {
       coords <- terra::xyFromCell(rasstack, seq(ncol(rasstack) * nrow(rasstack)))
       dts <- cbind(dts, coords)
@@ -502,7 +500,9 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
     }
 
     selected_files <- filter_files_by_date_and_groundtruth(date, files, groundtruth_pattern)
-    rasstack <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
+    result <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
+    extent <- result$extent
+    rasstack <- result$rasstack
 
     if (length(tiles) > 1) {
       groundtruth_raster <- NA
@@ -510,10 +510,11 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
       groundtruth_result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
       groundtruth_raster <- groundtruth_result$groundtruth_raster
       hasgroundtruth <- groundtruth_result$hasgroundtruth
+      first <- groundtruth_result$first
     }
-
+    gc()  # garbabe collection: to free up memory usage
     # Process raster data
-    dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, dts, coords)
+    dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, dts)
 
     # Add date features if necessary
     if (adddate) {

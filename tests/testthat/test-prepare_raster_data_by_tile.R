@@ -18,7 +18,9 @@ test_that("prepare_raster_data_by_tile works without shrink or window", {
   verbose <- TRUE
 
   # Run the function without shrink or window
-  rasstack <- prepare_raster_data_by_tile(files, shape, shrink = "none", window = NA, verbose = verbose)
+  result <- prepare_raster_data_by_tile(files, shape, shrink = "none", window = NA, verbose = verbose)
+  extent <- result$extent
+  rasstack <- result$rasstack
 
   # Check output
   expect_true(inherits(rasstack, "SpatRaster"))
@@ -48,8 +50,9 @@ test_that("prepare_raster_data_by_tile works with shrink set to 'crop'", {
   verbose <- TRUE
 
   # Run the function with shrink set to "crop"
-  rasstack_crop <- prepare_raster_data_by_tile(files, shape, shrink = "crop", window = window, verbose = verbose)
-
+  result <- prepare_raster_data_by_tile(files, shape, shrink = "crop", window = window, verbose = verbose)
+  extent <- result$extent
+  rasstack_crop <- result$rasstack
   # Check output
   expect_true(inherits(rasstack_crop, "SpatRaster"))
   expect_true(ext(rasstack_crop) <= common_extent)

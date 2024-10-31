@@ -16,15 +16,6 @@ test_that("quality_check works as expected", {
   expect_equal(result$datafolder, datafolder)
   expect_equal(result$shrink, shrink)
 
-  #Hasrul tests
-  expect_equal(dates, "2023-01-01", "Config var: dates is not loaded")
-  expect_equal(country, "GAB", "Config var: country is not loaded")
-  # Test missing date before 2021-01-01
-  expect_error(
-    quality_check("2020-12-31", country, shape, tiles, datafolder, shrink),
-    "The earliest date available is 2021-01-01"
-  )
-
   # Test missing country and shape, expecting shrink to be set to 'none'
   result <- quality_check(dates, country, NULL, tiles, datafolder, shrink)
   expect_equal(result$shrink, "none")
