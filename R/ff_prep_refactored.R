@@ -347,7 +347,6 @@ transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts)
     dts <- terra::extract(rasstack, shape, raw = TRUE, ID = FALSE, xy = addxy)
   } else {
     dts <- as.matrix(rasstack)
-    print(paste0("addxy: ", addxy))
     if (addxy) {
       coords <- terra::xyFromCell(rasstack, seq(ncol(rasstack) * nrow(rasstack)))
       dts <- cbind(dts, coords)
