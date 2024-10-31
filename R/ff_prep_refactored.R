@@ -288,7 +288,7 @@ prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, v
     extent[4] <- ceiling(extent[4])
   }
 
-   # TODO: check inherits(window, "SpatExtent")'s affect, added here to pass the unit test
+  # TODO: check inherits(window, "SpatExtent")'s affect, added here to pass the unit test
   if (!is.null(window) && inherits(window, "SpatExtent")) {
     extent <- terra::intersect(extent, window)
   }
@@ -299,8 +299,6 @@ prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, v
   }
 
   rasstack <- terra::rast(sapply(selected_files, function(x) terra::rast(x, win = extent)))
-  # return (rasstack) # Amin's version doesn't return extent variable
-  # Return both extent and rasstack as a list
   return(list(extent = extent, rasstack = rasstack))
 }
 
