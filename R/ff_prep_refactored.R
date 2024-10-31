@@ -265,8 +265,8 @@ filter_files_by_features <- function(allfiles, exc_features, inc_features, groun
   return(allfiles)
 }
 
-prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
-  for (file in files) {
+prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, verbose) {
+  for (file in selected_files) {
     if (!exists("extent")) {
       extent <- terra::ext(terra::rast(file))
     } else {
@@ -296,7 +296,7 @@ prepare_raster_data_by_tile <- function(files, shape, shrink, window, verbose) {
     cat(paste("with extent", round(extent[1], 5), round(extent[2], 5), round(extent[3], 5), round(extent[4], 5), "\n"))
   }
 
-  rasstack <- terra::rast(sapply(files, function(x) terra::rast(x, win = extent)))
+  rasstack <- terra::rast(sapply(selected_files, function(x) terra::rast(x, win = extent)))
   # return (rasstack) # Amin's version doesn't return extent variable
   # Return both extent and rasstack as a list
   return(list(extent = extent, rasstack = rasstack))
@@ -500,8 +500,7 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
     }
 
     selected_files <- filter_files_by_date_and_groundtruth(date, files, groundtruth_pattern)
-    # rasstack <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
-    result <- prepare_raster_data_by_tile(files, shape, shrink, window, verbose)
+    result <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
     extent <- result$extent
     rasstack <- result$rasstack
 
