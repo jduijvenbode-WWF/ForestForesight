@@ -297,7 +297,6 @@ prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, v
   }
 
   rasstack <- terra::rast(sapply(selected_files, function(x) terra::rast(x, win = extent)))
-  # return (rasstack) # Amin's version doesn't return extent variable
   # Return both extent and rasstack as a list
   return(list(extent = extent, rasstack = rasstack))
 }
@@ -312,7 +311,6 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
       if (verbose) {
         cat("no groundtruth raster was found, first regular raster selected as a template raster.\n")
       }
-      # cat(paste("selected_files[1]: ", selected_files[1],"\n"))
       groundtruth_raster <- terra::rast(selected_files[1], win = extent)
       groundtruth_raster[] <- 0
     }
