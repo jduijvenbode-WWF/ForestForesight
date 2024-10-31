@@ -123,13 +123,10 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   data(gfw_tiles, envir = environment())
   tiles <- terra::vect(gfw_tiles)[shape, ]$tile_id
 
-
   prep_folder <- file.path(ff_folder, "preprocessed")
   if (!dir.exists(prep_folder)) {
     stop(paste(prep_folder, "does not exist"))
   }
-
-
 
   # Train model if not provided
   if (is.null(trained_model)) {
@@ -147,7 +144,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       )
       ff_prep_params_combined <- merge_lists(default = ff_prep_params_original, user = ff_prep_params)
       ff_prep_params_combined <- merge_lists(default = ff_prep_params_combined, user = list("inc_features" = fltr_features, "adddate" = F, "addxy" = F, "verbose" = F))
-      traindata <- do.call(ff_prep_refactored, ff_prep_params_combined)
+      traindata <- do.call(ff_prep, ff_prep_params_combined)
       if (validation) {
         sample_size <- min(1, 1.33 * fixed_sample_size / length(traindata$data_matrix$features))
         if (verbose) {
@@ -160,8 +157,6 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
         ff_cat("autoscaled sample size:", round(sample_size, 2), "\n", color = "green")
       }
     }
-
-
 
     if (verbose) {
       ff_cat("Preparing data\n", color = "green")
@@ -178,14 +173,14 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     }
     ff_prep_params_combined <- merge_lists(ff_prep_params_original, ff_prep_params)
 
-    traindata <- do.call(ff_prep_refactored, ff_prep_params_combined)
+    traindata <- do.call(ff_prep, ff_prep_params_combined)
     if (hasvalue(validation_dates)) {
       if (verbose) {
         ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n", color = "green")
       }
       ff_prep_params_combined["dates"] <- validation_dates
       ff_prep_params_combined["sample_size"] <- 1 / 3 * sample_size
-      valdata <- do.call(ff_prep_refactored, ff_prep_params_combined)
+      valdata <- do.call(ff_prep, ff_prep_params_combined)
 
 
       if (min(train_dates) < min(validation_dates)) {
@@ -246,7 +241,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
           ff_prep_params_combined <- merge_lists(default = model_features, user = ff_prep_params_combined)
         }
       }
-      predset <- do.call(ff_prep_refactored, ff_prep_params_combined)
+      predset <- do.call(ff_prep, ff_prep_params_combined)
 
       prediction <- ff_predict(
         model = trained_model, test_matrix = predset$data_matrix,
