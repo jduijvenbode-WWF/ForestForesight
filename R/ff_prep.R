@@ -276,9 +276,6 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
       if (adddate) {
         newcolnames <- c(newcolnames, "sinmonth", "month", "monthssince2019")
       }
-      cat("dts: ")      
-      str(dts)
-      print(paste0("finalize_column_names_and_data_matrix newcolnames:", newcolnames))
       colnames(dts) <- newcolnames
       dts <- dts[, order(colnames(dts))]
       # end-of finalize_column_names_and_data_matrix
