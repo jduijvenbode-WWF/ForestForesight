@@ -312,7 +312,7 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
       if (verbose) {
         cat("no groundtruth raster was found, first regular raster selected as a template raster.\n")
       }
-      cat(paste("selected_files[1]: ", selected_files[1],"\n"))
+      # cat(paste("selected_files[1]: ", selected_files[1],"\n"))
       groundtruth_raster <- terra::rast(selected_files[1], win = extent)
       groundtruth_raster[] <- 0
     }
@@ -379,9 +379,9 @@ finalize_column_names_and_data_matrix <- function(dts, selected_files, addxy, ad
   }
   
   colnames(dts) <- newcolnames # ERROR:An error occurred: length of 'dimnames' [2] not equal to array extent
-  cat("finalize_column_names_and_data_matrix 2\n")
+  # cat("finalize_column_names_and_data_matrix 2\n")
   dts <- dts[, order(colnames(dts))]
-  cat("finalize_column_names_and_data_matrix: returning\n")
+  # cat("finalize_column_names_and_data_matrix: returning\n")
   return(list(dts = dts, newcolnames = newcolnames))
 }
 

@@ -44,10 +44,11 @@ test_that("load_groundtruth_raster handles no groundtruth file correctly", {
   checker_raster[] <- 0
   # Run the function
   result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
+
   # Check the results
-  message("hasgroundtruth is not false?\n")
+  # message("hasgroundtruth is not false?\n")
   expect_false(result$hasgroundtruth)
-  message("checker_raster is not equal?\n")
+  # message("checker_raster is not equal?\n")
   expect_equal(dim(result$groundtruth_raster), dim(checker_raster))
   expect_equal(str(result$groundtruth_raster), str(checker_raster))
 })
