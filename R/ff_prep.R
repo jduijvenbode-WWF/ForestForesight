@@ -65,7 +65,7 @@
 ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = "groundtruth6m", dates = "2023-01-01",
                     inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
                     adddate = T, verbose = T, shrink = "none", window = NA, label_threshold = 1, addxy = F) {
-  ######## quality check########
+  ######## quality_check ########
   if (as.Date(min(dates)) < as.Date("2021-01-01")) {
     stop("the earliest date available is 2021-01-01")
   }
@@ -87,12 +87,15 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
   if (datafolder == "") {
     stop("No environment variable for ff_datafolder and no datafolder parameter set")
   }
+  # end-of quality_check
+
   inputdatafolder <- file.path(datafolder, "input")
   groundtruthdatafolder <- file.path(datafolder, "groundtruth")
   hasgroundtruth <- F
   ######## preprocess for by-country processing########
   data(gfw_tiles, envir = environment())
   tilesvect <- terra::vect(gfw_tiles)
+  # preprocess_by_shape_or_country
   if (hasvalue(country)) {
     if (verbose) {
       cat("selecting based on country\n")
@@ -119,8 +122,10 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
       }
     }
   }
+  # end-of preprocess_by_shape_or_country
 
   ########## list files and exclude features######
+  # list_and_filter_file_tiles
   if (verbose) {
     cat("searching", inputdatafolder, "for tiles", paste(tiles, collapse = ", "), "\n")
   }
@@ -131,8 +136,10 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
   if (length(allfiles) == 0) {
     stop(paste("no folders with tif-files found that correspond to the given tile id's:", paste(tiles, collapse = ",")))
   }
+  # end-of list_and_filter_file_tiles
 
   # remove features that are not wanted
+  # filter_files_by_features
   if (!is.na(exc_features[1])) {
     if (verbose) {
       cat("excluding features\n")
@@ -158,6 +165,9 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
       cat("No grountruth raster will be returned because multiple tiles are processed together \n")
     }
   }
+  # end-of filter_files_by_features
+
+  # process_tile_data
   first <- T
   ####### load raster data as matrix#########
   for (tile in tiles) {
@@ -239,7 +249,7 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
             groundtruth_raster[] <- 0
           }
         }
-        # kind-of end-of load_groundtruth_raster
+        # end-of load_groundtruth_raster
       }
 
       # transform_raster_to_data_matrix
@@ -288,6 +298,7 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
       sf_indices <- filterresult$filtered_indices
       # take a random sample if that was applied
 
+      # sample_and_combine_data
       if (sample_size < 1) {
         sample_indices <- sample(seq(nrow(dts)), max(round(nrow(dts) * sample_size), 1))
         dts <- dts[sample_indices, ]
@@ -312,16 +323,20 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
         fdts <- fdts[, order(colnames(fdts))]
         first <- F
       }
+      # end-of sample_and_combine_data
     }
+    # end-of process_tile_dates
     if (verbose) {
       cat(paste("loading finished, features:", paste(newcolnames, collapse = ", "), "\n"))
     }
   }
+  # end-of process_tile_data
+  
   ###### filter data based on features#######
   # filter training data on features that have been declared
 
   ####### create groundtruth data#######
-  # split data into feature data and label data
+  # split_feature_and_label_data (split data into feature data and label data)
   groundtruth_index <- which(colnames(fdts) == groundtruth_pattern)
   if (length(groundtruth_index) == 1) {
     data_label <- fdts[, groundtruth_index]
@@ -339,9 +354,11 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
     }
     data_label <- NA
   }
+  # end-of split_feature_and_label_data
 
   # make sure that label data is binary
   ########## create validation sample#######
+  # create_validation_sample
   if (validation_sample > 0) {
     sample_indices <- sample(seq(nrow(fdts)), round(validation_sample * nrow(fdts)))
     data_matrix <- list(features = fdts[-sample_indices, ], label = data_label[-sample_indices])
@@ -350,6 +367,7 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
     data_matrix <- list(features = fdts, label = data_label)
     validation_matrix <- NA
   }
+  # end-of create_validation_sample
 
   ########## output data####
   if (hasvalue(data_matrix$label)) {
