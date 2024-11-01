@@ -65,8 +65,6 @@
 ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), dates = "2023-01-01",
                                inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
                                adddate = TRUE, verbose = TRUE, shrink = "none", window = NA, label_threshold = 1, addxy = FALSE) {
-
-
   ######## quality check########
   quality_result <- quality_check(dates, country, shape, tiles, datafolder, shrink)
 
@@ -318,7 +316,6 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
   }
   list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first=first)
   return(list_gt_raster)
-
 }
 
 initialize_shape_from_borders <- function(shape, shrink, files, borders) {
@@ -349,7 +346,6 @@ transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts)
     dts <- terra::extract(rasstack, shape, raw = TRUE, ID = FALSE, xy = addxy)
   } else {
     dts <- as.matrix(rasstack)
-    print(paste0("addxy: ", addxy))
     if (addxy) {
       coords <- terra::xyFromCell(rasstack, seq(ncol(rasstack) * nrow(rasstack)))
       dts <- cbind(dts, coords)
@@ -371,17 +367,15 @@ append_date_based_features <- function(dts, date) {
 finalize_column_names_and_data_matrix <- function(dts, selected_files, addxy, adddate) {
   dts[is.na(dts)] <- 0
   newcolnames <- gsub(".tif", "", sapply(basename(selected_files), function(x) strsplit(x, "_")[[1]][4]))
-
   if (addxy) {
     newcolnames <- c(newcolnames, "x", "y")
   }
   if (adddate) {
     newcolnames <- c(newcolnames, "sinmonth", "month", "monthssince2019")
   }
-
-  colnames(dts) <- newcolnames
+  
+  colnames(dts) <- newcolnames 
   dts <- dts[, order(colnames(dts))]
-
   return(list(dts = dts, newcolnames = newcolnames))
 }
 
@@ -512,10 +506,10 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
       hasgroundtruth <- groundtruth_result$hasgroundtruth
       first <- groundtruth_result$first
     }
-    gc()  # garbabe collection: to free up memory usage
     # Process raster data
-    dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, dts)
+    dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, dts) # the most memory consumptive function
 
+    gc() # garbabe collection: to free up memory usage
     # Add date features if necessary
     if (adddate) {
       dts <- append_date_based_features(dts, date)

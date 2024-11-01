@@ -1,10 +1,8 @@
-
 test_that("transform_raster_to_data_matrix works as expected", {
-
   # Create a sample SpatRaster object
   r <- rast(nrows = 10, ncols = 10, xmin = 0, xmax = 10, ymin = 0, ymax = 10)
   values(r) <- matrix(1:100, nrow = 10, ncol = 10)
-  rasstack <- r  # No need to stack, it's already a SpatRaster
+  rasstack <- r # No need to stack, it's already a SpatRaster
 
   # Define a polygon shape for the extract case
   shape <- vect(matrix(c(2, 2, 8, 2, 8, 8, 2, 8, 2, 2), ncol = 2, byrow = TRUE), type = "polygons")
@@ -13,9 +11,9 @@ test_that("transform_raster_to_data_matrix works as expected", {
   shrink <- "extract"
   addxy <- TRUE
   dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, NULL, NULL)
-  expect_true(is.data.frame(dts) || is.matrix(dts))  # Check output is matrix or data frame
-  expect_true(ncol(dts) >= 2)                       # Check for extracted data columns
-  expect_true("x" %in% colnames(dts) && "y" %in% colnames(dts))  # Check x, y coords
+  expect_true(is.data.frame(dts) || is.matrix(dts)) # Check output is matrix or data frame
+  expect_true(ncol(dts) >= 2) # Check for extracted data columns
+  expect_true("x" %in% colnames(dts) && "y" %in% colnames(dts)) # Check x, y coords
 
   # # Case 4: empty raster input (edge case)
   # empty_raster <- rast(nrows = 0, ncols = 0)
@@ -24,7 +22,6 @@ test_that("transform_raster_to_data_matrix works as expected", {
 })
 
 test_that("transform_raster_to_data_matrix works with 'no shrink' and addxy = FALSE", {
-
   # Create a sample SpatRaster object
   r <- rast(nrows = 10, ncols = 10, xmin = 0, xmax = 10, ymin = 0, ymax = 10)
   values(r) <- matrix(1:100, nrow = 10, ncol = 10)
@@ -38,12 +35,11 @@ test_that("transform_raster_to_data_matrix works with 'no shrink' and addxy = FA
   addxy <- FALSE
   dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, NULL, NULL)
   rasstack <- as.matrix(rasstack)
-  expect_true(is.matrix(dts))                       # Check output is matrix
+  expect_true(is.matrix(dts)) # Check output is matrix
   expect_equal(ncol(dts), ncol(rasstack))
 })
 
 test_that("transform_raster_to_data_matrix works with 'no shrink' and addxy = TRUE", {
-
   # Create a sample SpatRaster object
   r <- rast(nrows = 10, ncols = 10, xmin = 0, xmax = 10, ymin = 0, ymax = 10)
   values(r) <- matrix(1:100, nrow = 10, ncol = 10)
@@ -70,10 +66,9 @@ test_that("transform_raster_to_data_matrix works with 'no shrink' and addxy = TR
 })
 
 test_that("transform_raster_to_data_matrix works with an empty raster input", {
-
   # Create an empty raster (or alternatively, use an empty matrix)
   small_raster <- rast(nrows = 1, ncols = 1, xmin = 0, xmax = 1, ymin = 0, ymax = 1)
-  values(small_raster) <- NA  # Set value to NA, simulating "empty" data
+  values(small_raster) <- NA # Set value to NA, simulating "empty" data
 
   # Define a simple shape for compatibility
   shape <- vect(matrix(c(0, 0, 1, 1), ncol = 2), type = "polygons")
