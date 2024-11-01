@@ -1,7 +1,7 @@
 test_that("initialize_shape_from_borders works with real data and extract shrink", {
   # Load actual countries data
   data("countries", package = "ForestForesight") # Replace with the actual package name
-  borders <- vect(countries)  # Assuming countries data is a spatial object
+  borders <- vect(countries) # Assuming countries data is a spatial object
 
   # Define a test raster
   test_raster <- rast(nrows = 10, ncols = 10, xmin = 0, xmax = 10, ymin = 0, ymax = 10)
@@ -24,7 +24,7 @@ test_that("initialize_shape_from_borders works with real data and extract shrink
 #
 test_that("initialize_shape_from_borders does not alter shape when shrink is 'none'", {
   # Load actual countries data
-  data("countries", package = "ForestForesight")  # Replace with the actual package name
+  data("countries", package = "ForestForesight") # Replace with the actual package name
   borders <- vect(countries)
 
   # Provided shape should not change when shrink is 'none'
