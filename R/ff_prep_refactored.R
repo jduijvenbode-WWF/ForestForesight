@@ -374,10 +374,8 @@ finalize_column_names_and_data_matrix <- function(dts, selected_files, addxy, ad
     newcolnames <- c(newcolnames, "sinmonth", "month", "monthssince2019")
   }
   
-  colnames(dts) <- newcolnames # ERROR:An error occurred: length of 'dimnames' [2] not equal to array extent
-  # cat("finalize_column_names_and_data_matrix 2\n")
+  colnames(dts) <- newcolnames 
   dts <- dts[, order(colnames(dts))]
-  # cat("finalize_column_names_and_data_matrix: returning\n")
   return(list(dts = dts, newcolnames = newcolnames))
 }
 

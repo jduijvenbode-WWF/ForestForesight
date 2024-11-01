@@ -28,18 +28,11 @@ filter_by_feature <- function(fltr_features, fltr_condition, matrix, verbose = T
       operator <- gsub("[[:alnum:]]", "", fltr_condition[i])
       value <- gsub("[^0-9]", "", fltr_condition[i])
       filtercolumn <- which(colnames(matrix) == fltr_features[i])
-      if (verbose) {
-        cat(paste("filtering features: before if (length(filtercolumn) == 0)\n"))
-      }
       if (length(filtercolumn) == 0) {
-        ff_cat("The feature", fltr_features[i], "was not found, skipping filtering for this feature\n", color = "yellow")
+        ff_cat("The feature", fltr_features[i], "was not found, skipping filtering for this feature", color = "yellow")
       } else {
         if (verbose) {
           cat(paste("filtering feature", fltr_features[i], "on", fltr_condition[i], "\n"))
-        }
-        
-        if (verbose) {
-          cat(paste("operator: ", operator,"\n"))
         }
         if (operator == ">") {
           sf_indices <- which(matrix[, filtercolumn] > value)
@@ -60,17 +53,11 @@ filter_by_feature <- function(fltr_features, fltr_condition, matrix, verbose = T
           sf_indices <- which(matrix[, filtercolumn] <= value)
         }
       }
-      if (verbose) {
-        print(paste("length sfa_indices:", length(sfa_indices),"\n", sfa_indices))
-      }
       if (length(sfa_indices) == 0) {
         sfa_indices <- c(sfa_indices, sf_indices)
       } else {
         sfa_indices <- intersect(sfa_indices, sf_indices)
       }
-    }
-    if (verbose) {
-      cat(paste("b4 sf_indices <- unique(sfa_indices)\n"))
     }
     sf_indices <- unique(sfa_indices)
   } else {

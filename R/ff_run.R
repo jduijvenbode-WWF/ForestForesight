@@ -173,14 +173,14 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     }
     ff_prep_params_combined <- merge_lists(ff_prep_params_original, ff_prep_params)
 
-    traindata <- do.call(ff_prep_refactored, ff_prep_params_combined)
+    traindata <- do.call(ff_prep, ff_prep_params_combined)
     if (hasvalue(validation_dates)) {
       if (verbose) {
         ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n", color = "green")
       }
       ff_prep_params_combined["dates"] <- validation_dates
       ff_prep_params_combined["sample_size"] <- 1 / 3 * sample_size
-      valdata <- do.call(ff_prep_refactored, ff_prep_params_combined)
+      valdata <- do.call(ff_prep, ff_prep_params_combined)
 
 
       if (min(train_dates) < min(validation_dates)) {
@@ -241,7 +241,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
           ff_prep_params_combined <- merge_lists(default = model_features, user = ff_prep_params_combined)
         }
       }
-      predset <- do.call(ff_prep_refactored, ff_prep_params_combined)
+      predset <- do.call(ff_prep, ff_prep_params_combined)
 
       prediction <- ff_predict(
         model = trained_model, test_matrix = predset$data_matrix,
