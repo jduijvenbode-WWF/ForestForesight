@@ -222,8 +222,8 @@ ff_prep <- function(datafolder=NA, country=NA, shape=NA, tiles=NULL, groundtruth
   if (length(groundtruth_index) == 1) {
     data_label <- fdts[,groundtruth_index]
     if (hasvalue(label_threshold)) {
-      data_label <- as.numeric(data_label > label_threshold)
-      if (inherits(groundtruth_raster, "SpatRaster")) {groundtruth_raster <- as.numeric(groundtruth_raster > label_threshold)}}
+      data_label <- as.numeric(data_label >= label_threshold)
+      if (inherits(groundtruth_raster, "SpatRaster")) {groundtruth_raster <- as.numeric(groundtruth_raster >= label_threshold)}}
 
     fdts <- fdts[,-groundtruth_index]
   }else{
