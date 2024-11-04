@@ -12,17 +12,31 @@
 #' @export
 #'
 #'
- ff_dqc_file=function(raster,return_values=T){
-loadras=rast(raster)
-return(list("npixel"=ncell(loadras),
-            "xmin"=xmin(loadras),
-            "xmax"=xmax(loadras),
-            "ymin"=ymin(loadras),
-            "ymax"=ymax(loadras)
-            ,"resolution"=res(loadras)[1],
-            "crsname"=crs(loadras, describe=T)$name,
-            "crscode"=crs(loadras, describe=T)$code,
-            "mean"=if(return_values){as.numeric(round(global(loadras,"mean",na.rm=T),2))}else{NA},
-            "max"=if(return_values){as.numeric(round(global(loadras,"max",na.rm=T),2))}else{NA},
-            "hasNA"=if(return_values){(length(summary(loadras,warn=F))==7)}else{NA}))
+ff_dqc_file <- function(raster, return_values = T) {
+  loadras <- rast(raster)
+  return(list(
+    "npixel" = ncell(loadras),
+    "xmin" = xmin(loadras),
+    "xmax" = xmax(loadras),
+    "ymin" = ymin(loadras),
+    "ymax" = ymax(loadras),
+    "resolution" = res(loadras)[1],
+    "crsname" = crs(loadras, describe = T)$name,
+    "crscode" = crs(loadras, describe = T)$code,
+    "mean" = if (return_values) {
+      as.numeric(round(global(loadras, "mean", na.rm = T), 2))
+    } else {
+      NA
+    },
+    "max" = if (return_values) {
+      as.numeric(round(global(loadras, "max", na.rm = T), 2))
+    } else {
+      NA
+    },
+    "hasNA" = if (return_values) {
+      (length(summary(loadras, warn = F)) == 7)
+    } else {
+      NA
+    }
+  ))
 }
