@@ -38,7 +38,7 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
   country_codes <- ""
 
   # Determine if identifier is a tile, country code, or SpatVector
-  if (class(identifier) == "character" && nchar(identifier) == 7 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
+  if (class(identifier) == "character" && nchar(identifier) == 8 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
     tiles <- identifier
   } else if (inherits(identifier, "SpatVector")) {
     identifier <- terra::buffer(identifier, width = -1)

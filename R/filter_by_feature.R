@@ -10,14 +10,11 @@
 #' @return A list containing the filtered matrix and the indices of the filtered rows.
 #'
 #' @examples
-#' filter_by_feature(
-#'   fltr_features = c("landpercentage", "forestmask"),
-#'   fltr_condition = c(">100", ">0"),
-#'   matrix = my_matrix
-#' )
+#' filter_by_feature(fltr_features = c("landpercentage", "forestmask"),
+#'                   fltr_condition = c(">100", ">0"),
+#'                   matrix = my_matrix)
 #'
 #' @export
-
 filter_by_feature <- function(fltr_features, fltr_condition, matrix, verbose = T) {
   sfa_indices <- c()
   if (length(fltr_features) > 0) {
@@ -26,10 +23,11 @@ filter_by_feature <- function(fltr_features, fltr_condition, matrix, verbose = T
     }
     for (i in seq(length(fltr_features))) {
       operator <- gsub("[[:alnum:]]", "", fltr_condition[i])
-      value <- gsub("[^0-9]", "", fltr_condition[i])
+      value <- as.numeric(gsub("[^0-9]", "", fltr_condition[i]))
       filtercolumn <- which(colnames(matrix) == fltr_features[i])
       if (length(filtercolumn) == 0) {
         ff_cat("The feature", fltr_features[i], "was not found, skipping filtering for this feature", color = "yellow")
+        sf_indices <- seq(dim(matrix)[1])
       } else {
         if (verbose) {
           cat(paste("filtering feature", fltr_features[i], "on", fltr_condition[i], "\n"))
