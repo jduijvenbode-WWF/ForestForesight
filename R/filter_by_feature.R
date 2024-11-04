@@ -10,9 +10,11 @@
 #' @return A list containing the filtered matrix and the indices of the filtered rows.
 #'
 #' @examples
-#' filter_by_feature(fltr_features = c("landpercentage", "forestmask"),
-#'                   fltr_condition = c(">100", ">0"),
-#'                   matrix = my_matrix)
+#' filter_by_feature(
+#'   fltr_features = c("landpercentage", "forestmask"),
+#'   fltr_condition = c(">100", ">0"),
+#'   matrix = my_matrix
+#' )
 #'
 #' @export
 filter_by_feature <- function(fltr_features, fltr_condition, matrix, verbose = T) {
