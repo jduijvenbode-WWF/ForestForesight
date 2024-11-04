@@ -28,8 +28,7 @@
 #' @examples
 #' \dontrun{
 #' ff_polygonize("path/to/raster.tif", "output_polygons.shp",
-#'   min_pixel = 5, threshold = 0.5, window_size = 7
-#' )
+#'               min_pixel = 5, threshold = 0.5, window_size = 7)
 #' }
 #'
 #' @references
@@ -47,46 +46,35 @@ ff_polygonize <- function(raster,
                           calc_max = F,
                           contain_polygons = NA) {
   if (calc_max & !hasvalue(contain_polygons)) {
-    ff_cat("since no container polygons were given the calc_max option might give weird results, with higher risk areas popping up where no medium risk areas are found.\n", color = "yellow")
+    ff_cat("since no container polygons were given the calc_max option might give weird results, with higher risk areas popping up where no medium risk areas are found.\n",color = "yellow")
   }
   # Load raster
-  pixel_size <- 2e5
-  if (class(raster) == "character") {
-    raster <- terra::rast(raster)
-  }
+  pixel_size = 2e5
+  if (class(raster) == "character") {raster <- terra::rast(raster)}
   # Set options and initialize variables
+  meanras <- as.numeric(terra::global(raster < 0.5, fun = "mean",na.rm=T))
+  high_thresh = as.numeric(terra::global(raster < quantile(raster[raster > 0.5], 0.5), fun = "mean",na.rm=T))
+  highest_thresh = as.numeric(terra::global(raster < quantile(raster[raster > 0.5], 0.75), fun = "mean",na.rm=T))
 
   if (class(threshold) == "character") {
-    if (calc_max) {
-      perc_covered <- as.numeric(terra::global(!is.na(raster), "mean"))
-    }
-    raster[raster < 0.5] <- NA
-    if (terra::global(!is.na(raster), fun = "sum") == 0) {
-      ff_cat("no values in this raster above 0.5 were found,
+  if (meanras==0)  {
+    ff_cat("no values in this raster above 0.5 were found,
            which is the minimum threshold of predictions FF provides when using auto-thresholding.
-           Use a value as threshold if you still want polygons\n", color = "yellow")
-      return(NULL)
-    }
+           Use a value as threshold if you still want polygons\n",color = "yellow")
+    return(NULL)
+  }
   }
   pixel_min <- 5 * pixel_size
   # Apply focal mean and threshold
-  br <- terra::focal(raster, w = window_size, fun = "mean", na.policy = "omit", na.rm = T)
+  br <- terra::focal(raster, w = window_size, fun = "mean",na.policy = "omit",na.rm = T)
+  highthresh= meanras+(1 - meanras)*0.5
+  highthresh= meanras+(1 - meanras)*0.5
   if (is.character(threshold)) {
-    if (threshold == "medium") {
-      newthreshold <- quantile(as.matrix(br), probs = 0, na.rm = T)
-    }
-    if (threshold == "high") {
-      newthreshold <- quantile(as.matrix(br), probs = 0.5, na.rm = T)
-    }
-    if (threshold == "very high") {
-      newthreshold <- quantile(as.matrix(br), probs = 0.75, na.rm = T)
-    }
-    if (!exists("newthreshold")) {
-      stop("the given character is not one of the possibilities medium, high or very high")
-    }
-    if (verbose) {
-      ff_cat("new threshold is", newthreshold, "\n")
-    }
+    if (threshold == "medium") {newthreshold <- quantile(as.matrix(br), probs = meanras,na.rm = T)}
+    if (threshold == "high") {newthreshold <- quantile(as.matrix(br), probs = high_thresh,na.rm = T)}
+    if (threshold == "very high") {newthreshold <- quantile(as.matrix(br), probs = highest_thresh,na.rm = T)}
+    if (!exists("newthreshold")) {stop("the given character is not one of the possibilities medium, high or very high")}
+    if (verbose) {ff_cat("new threshold is",newthreshold,"\n")}
     threshold <- newthreshold
   }
   br <- br > threshold
@@ -102,48 +90,35 @@ ff_polygonize <- function(raster,
   pols <- terra::disagg(pols)
   sorted_pols <- pols[order(terra::expanse(pols), decreasing = TRUE)]
   if (calc_max) {
-    if (hasvalue(contain_polygons)) {
-      sorted_pols <- sorted_pols[contain_polygons, ]
-    }
-    # Take all polygons larger than pixel_min, or at least the 25 largest
-    if (!exists("perc_covered")) {
-      perc_covered <- as.numeric(terra::global(!is.na(raster), "mean"))
-    }
+    if (hasvalue(contain_polygons)) {sorted_pols <- sorted_pols[contain_polygons,]}
+  # Take all polygons larger than pixel_min, or at least the 25 largest
+  if (!exists("perc_covered")) {perc_covered <- as.numeric(terra::global(!is.na(raster),"mean"))}
 
 
-    sqmras <- as.numeric(terra::expanse(raster)[2])
+  sqmras <- as.numeric(terra::expanse(raster)[2])
 
-    ceiling_pols <- ceiling(sqrt(sqmras / 1e3) * perc_covered)
-    if (verbose) {
-      cat(
-        "based on area of raster (hectares:",
-        round(sqmras / 1e5),
-        ", actual coverage:", round(perc_covered * 100), "percent), at maximum", ceiling_pols, " polygons are generated\n"
-      )
-    }
-    pols <- sorted_pols[1:max(1, min(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min)))]
-  }
+  ceiling_pols <- ceiling(sqrt(sqmras/1e3)*perc_covered)
+  if (verbose) {cat("based on area of raster (hectares:"
+                    ,round(sqmras/1e5),
+                    ", actual coverage:",round(perc_covered*100),"percent), at maximum",ceiling_pols," polygons are generated\n")}
+  pols <- sorted_pols[1:max(1,min(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min)))]
+}
   # Select top polygons by size
 
 
   # Fill holes and smooth
 
-  if (length(pols) == 0) {
-    ff_cat("Based on the chosen threshold no polygons were generated. Lower the threshold to get polygons for this area\n", color = "yellow")
+  if (length(pols) == 0) {ff_cat("Based on the chosen threshold no polygons were generated. Lower the threshold to get polygons for this area\n",color = "yellow")
     return(NULL)
   }
   # Extract average values from original raster
-  pols$risk <- round(terra::extract(raster, pols, fun = "mean", ID = FALSE), 2)
-  pols$size <- round(terra::expanse(pols) / 10000)
+  pols$risk <- round(terra::extract(raster, pols, fun = "mean", ID = FALSE),2)
+  pols$size <- round(terra::expanse(pols)/10000)
   pols$sumrisk <- round(pols$size * pols$risk)
   pols$threshold <- threshold
-  pols$date <- as.character(as.Date(Sys.time()))
-  if (verbose) {
-    ff_cat("writing", length(pols), "polygons to", output_file, "\n")
-  }
+  pols$date = as.character(as.Date(Sys.time()))
+  if (verbose) {ff_cat("writing",length(pols),"polygons to",output_file,"\n")}
   # Save result
-  if (!is.na(output_file)) {
-    terra::writeVector(x = pols, filename = output_file, overwrite = TRUE)
-  }
+  if (!is.na(output_file)) {terra::writeVector(x = pols, filename = output_file, overwrite = TRUE)}
   return(pols)
 }
