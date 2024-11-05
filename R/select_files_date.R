@@ -31,8 +31,11 @@
 #' @export
 select_files_date <- function(given_date, listed_files) {
   matching_indices <- grep(".*_\\d{4}-\\d{2}-\\d{2}_([^_]+).*", listed_files)
-  if (length(listed_files) != length(matching_indices))
-    {ff_cat("Listed_files contains files with incorrect name. The correct file name should be in the format: tile_YYYY-MM-DD_feature.tif. Incorect files will be excluded and not processed",color="yellow")}
+  if (length(listed_files) != length(matching_indices)) {
+    ff_cat("Listed_files contains files with incorrect name.
+           The correct file name should be in the format: tile_YYYY-MM-DD_feature.tif.
+           Incorect files will be excluded and not processed", color = "yellow")
+  }
   matching_files <- listed_files[matching_indices]
   unique_names <- unique(gsub(".*_\\d{4}-\\d{2}-\\d{2}_([^_]+).*", "\\1", matching_files))
   selected_files <- character(0)
@@ -43,9 +46,9 @@ select_files_date <- function(given_date, listed_files) {
     date_vector <- lubridate::ymd(dates_only)
     indices <- which(date_vector <= lubridate::ymd(given_date))
     if (length(indices) > 0) {
-    closest_previous_date <- date_vector[which.min(abs(date_vector[indices] - lubridate::ymd(given_date)))]
-    selected_file <- grep(paste0(closest_previous_date,"_", feature),matching_files_feature, value = TRUE)
-    selected_files <- c(selected_files, selected_file)
+      closest_previous_date <- date_vector[which.min(abs(date_vector[indices] - lubridate::ymd(given_date)))]
+      selected_file <- grep(paste0(closest_previous_date, "_", feature), matching_files_feature, value = TRUE)
+      selected_files <- c(selected_files, selected_file)
     }
   }
   return(selected_files)

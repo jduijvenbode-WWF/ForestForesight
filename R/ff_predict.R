@@ -3,7 +3,8 @@
 #' This function trains an XGBoost model with optimized default parameters derived from worldwide data analysis.
 #'
 #' @param train_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for training.
-#' @param validation_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for validation. Default is NA.
+#' @param validation_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for validation.
+#' Default is NA.
 #' @param nrounds Number of boosting rounds. Default is 200.
 #' @param eta Learning rate. Default is 0.1.
 #' @param max_depth Maximum tree depth. Default is 5.
@@ -15,7 +16,8 @@
 #' @param maximize Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.
 #' @param min_child_weight Minimum sum of instance weight needed in a child. Default is 1.
 #' @param verbose Boolean indicating whether to display training progress. Default is FALSE.
-#' @param xgb_model Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.
+#' @param xgb_model Previously trained model to continue training from.
+#' Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.
 #' @param modelfilename String specifying where to save the model. Should end with ".model" extension.
 #' @param features Vector of feature names used in the training dataset. Required when modelfilename is provided.
 #' @param objective Learning objective. Default is "binary:logistic".
@@ -25,16 +27,20 @@
 #' @examples
 #' \dontrun{
 #' # Prepare your data
-#' train_data <- list(features = matrix(runif(1000), ncol = 10),
-#'                    label = sample(0:1, 100, replace = TRUE))
+#' train_data <- list(
+#'   features = matrix(runif(1000), ncol = 10),
+#'   label = sample(0:1, 100, replace = TRUE)
+#' )
 #'
 #' # Train the model
-#' model <- ff_train(train_matrix = train_data,
-#'                   nrounds = 100,
-#'                   eta = 0.05,
-#'                   max_depth = 6,
-#'                   modelfilename = "forest_model.model",
-#'                   features = colnames(train_data$features))
+#' model <- ff_train(
+#'   train_matrix = train_data,
+#'   nrounds = 100,
+#'   eta = 0.05,
+#'   max_depth = 6,
+#'   modelfilename = "forest_model.model",
+#'   features = colnames(train_data$features)
+#' )
 #' }
 #'
 #' @import xgboost
@@ -51,64 +57,101 @@
 #' @keywords machine-learning xgboost forestry
 
 
-ff_predict <- function(model, test_matrix, threshold=0.5, groundtruth=NA, indices=NA, templateraster=NA, verbose=F, certainty=F){
+ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, indices = NA,
+                       templateraster = NA, verbose = FALSE, certainty = FALSE) {
   # Get the features
   if (class(model) == "character") {
-    modelfilename=model
+    modelfilename <- model
     if (file.exists(model)) {
-      if(!test_feature_model_match(model)){stop("number of features in model and corresponding feature names RDA file do not match")}
-      model=xgboost::xgb.load(model)
-      if (file.exists(gsub("\\.model","\\.rda",modelfilename))) {
-        model_features <- get(load(gsub("\\.model","\\.rda",modelfilename)))
-        attr(model,"feature_names") <- model_features
+      if (!test_feature_model_match(model)) {
+        stop("number of features in model and corresponding feature names RDA file do not match")
+      }
+      model <- xgboost::xgb.load(model)
+      if (file.exists(gsub("\\.model", "\\.rda", modelfilename))) {
+        model_features <- get(load(gsub("\\.model", "\\.rda", modelfilename)))
+        attr(model, "feature_names") <- model_features
       }
     }
-  }else{
-  model_features <- model$feature_names}
+  } else {
+    model_features <- model$feature_names
+  }
   if (!is.null(model_features)) {
     test_features <- colnames(test_matrix$features)
     # Check for features in the test matrix not present in the model
     extra_features <- setdiff(test_features, model_features)
     # If there are extra features, remove them from the test matrix
     if (length(extra_features) > 0) {
-      ff_cat(paste("Removing extra features from the test matrix:", paste(extra_features, collapse = ", ")),color="yellow")
+      ff_cat(paste(
+        "Removing extra features from the test matrix:",
+        paste(extra_features, collapse = ", ")
+      ), color = "yellow")
       test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
     }
   }
   # Convert the matrix to a "DMatrix object
-  if (!is.na(test_matrix$label[1])) {test_matrix = xgboost::xgb.DMatrix(test_matrix$features, label = test_matrix$label)}else
-  {test_matrix = xgboost::xgb.DMatrix(test_matrix$features)}
-  if (verbose) {cat("calculating predictions\n")}
+  if (!is.na(test_matrix$label[1])) {
+    test_matrix <- xgboost::xgb.DMatrix(test_matrix$features, label = test_matrix$label)
+  } else {
+    test_matrix <- xgboost::xgb.DMatrix(test_matrix$features)
+  }
+  if (verbose) {
+    cat("calculating predictions\n")
+  }
   predictions <- predict(model, test_matrix)
   if (!is.na(groundtruth[1])) {
-    if (class(groundtruth) == "SpatRaster") {groundtruth <- as.numeric(as.matrix(groundtruth))}
-    if (verbose) {cat("calculationg scores\n")}
+    if (class(groundtruth) == "SpatRaster") {
+      groundtruth <- as.numeric(as.matrix(groundtruth))
+    }
+    if (verbose) {
+      cat("calculationg scores\n")
+    }
     precision <- c()
     recall <- c()
-    F05 <- c()
+    f05 <- c()
     for (thresh in threshold) {
-      res <- table(2*(predictions > thresh) + groundtruth)
+      res <- table(2 * (predictions > thresh) + groundtruth)
       prec <- as.numeric(res[4] / (res[4] + res[3]))
       rec <- as.numeric(res[4] / (res[4] + res[2]))
-      precision <- c(precision,prec)
-      recall <- c(recall,rec)
-      F05 <- c(F05,1.25*prec*rec/(0.25*prec + rec))
+      precision <- c(precision, prec)
+      recall <- c(recall, rec)
+      f05 <- c(f05, 1.25 * prec * rec / (0.25 * prec + rec))
     }
-  }else{
-    precision <- recall <- F05 <-  NA
+  } else {
+    precision <- recall <- f05 <- NA
   }
   if (class(templateraster) == "SpatRaster") {
     templateraster[] <- 0
     if (length(indices) > 1) {
-      if (verbose) {cat("filling raster\n")}
-      if (!certainty) {templateraster[indices] <- predictions > threshold}else{templateraster[indices] <- predictions}
-    }else{
+      if (verbose) {
+        cat("filling raster\n")
+      }
+      if (!certainty) {
+        templateraster[indices] <- predictions > threshold
+      } else {
+        templateraster[indices] <- predictions
+      }
+    } else {
       if (terra::ncell(templateraster) == length(predictions)) {
-        if (verbose) {cat("filling raster\n")}
-        if (!certainty) {templateraster[] <- predictions > threshold}else{templateraster[] <- predictions}
-      }else{templateraster <- NA}
+        if (verbose) {
+          cat("filling raster\n")
+        }
+        if (!certainty) {
+          templateraster[] <- predictions > threshold
+        } else {
+          templateraster[] <- predictions
+        }
+      } else {
+        templateraster <- NA
+      }
     }
-  }else{templateraster <- NA}
-  if (verbose & !is.na(F05)) {cat(paste("F0.5:",F05,"precision:",precision,"recall:",recall,"\n"))}
-  return(list(threshold = threshold,"precision" = precision,"recall" = recall,"F0.5" = F05,"predicted_raster" = templateraster,"predictions" = predictions))
+  } else {
+    templateraster <- NA
+  }
+  if (verbose && !is.na(f05)) {
+    cat(paste("F0.5:", f05, "precision:", precision, "recall:", recall, "\n"))
+  }
+  return(list(
+    threshold = threshold, "precision" = precision, "recall" = recall, "F0.5" = f05,
+    "predicted_raster" = templateraster, "predictions" = predictions
+  ))
 }
