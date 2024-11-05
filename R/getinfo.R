@@ -58,7 +58,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
   }
 
   # Load countries data
-  countries <- terra::vect(get(data("countries",envir = environment())))
+  countries <- terra::vect(get(data("countries", envir = environment())))
 
   # Check if input is ISO code or SpatVector
   if (is.character(shape_or_iso) && nchar(shape_or_iso) == 3) {
@@ -70,7 +70,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
     country_groups <- unique(shape$group)
   } else if (inherits(shape_or_iso, "SpatVector")) {
     shape <- shape_or_iso
-    overlapping <- terra::relate(countries, terra::buffer(shape,-1), "intersects")
+    overlapping <- terra::relate(countries, terra::buffer(shape, -1), "intersects")
     overlapping_countries <- countries$name[overlapping]
     country_groups <- unique(countries$group[overlapping])
   } else {
@@ -78,7 +78,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
   }
 
   # Load gfw_tiles data
-  gfw_tiles <- terra::vect(get(data("gfw_tiles",envir = environment())))
+  gfw_tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))
 
   # Find intersecting tiles
   intersecting_tiles <- terra::relate(gfw_tiles, shape, "intersects")
@@ -89,7 +89,9 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
 
   # Check available features
   if (!is.null(ff_dir)) {
-    available_features <- unlist(sapply(tile_ids, function(x) list.files(file.path(ff_dir, "preprocessed/input", x), full.names = FALSE)))
+    available_features <- unlist(sapply(tile_ids, function(x) {
+      list.files(file.path(ff_dir, "preprocessed/input", x), full.names = FALSE)
+    }))
     available_features <- sort(unique(sapply(available_features, function(x) extract_feature_name(x))))
   } else {
     available_features <- NULL
@@ -121,7 +123,7 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
       cat("Available features:", paste(results$available_features, collapse = ", "), "\n")
     }
     cat("Area:", format(results$area, scientific = FALSE), "hectares\n")
-    cat("Bounding box (xmin, xmax, ymin, ymax):", paste(round(results$bbox,5), collapse = ", "), "\n")
+    cat("Bounding box (xmin, xmax, ymin, ymax):", paste(round(results$bbox, 5), collapse = ", "), "\n")
     if (exists("overlapping_countries")) {
       cat("Overlapping countries:", paste(results$overlapping_countries, collapse = ", "), "\n")
     } else {
