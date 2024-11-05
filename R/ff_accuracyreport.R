@@ -29,7 +29,7 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths=NULL, output_path
     if (i == accuracy_paths[1]) { results <- read.csv(i)}else{results <- rbind(results,read.csv(i))}
   }
 
-  pols <- terra::vect(get(data("degree_polygons")))
+  pols <- terra::vect(get(data("degree_polygons",envir=environment())))
 
   # Prepare data
   results$UUID <- paste0(results$iso3, "_", results$coordname)
@@ -75,6 +75,7 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths=NULL, output_path
   maxf05=max(spatialdata$F05, na.rm = TRUE)+0.05
   minf05=min(spatialdata$F05, na.rm = TRUE)-0.05
   breaks <- seq(minf05, maxf05, length.out = 10)
+
   plot(spatialdata, "F05",
        main = "F0.5 Score Distribution",
        col = col_palette,
@@ -156,18 +157,45 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths=NULL, output_path
   }
    par(mar = c(5, 20, 4, 2))  # Adjust margins (bottom, left, top, right)
    importance_results <- importance_results[nrow(importance_results):1, ]
-   barplot(importance_results$importance,
-           horiz = TRUE,
-           names.arg = importance_results$feature,
-           las = 1,  # Make y-axis labels horizontal
-           cex.names = 0.7,  # Adjust size of feature names
-           cex.axis = 0.8,  # Adjust size of x-axis labels
-           col = "lightgreen",
-           xlab = "Importance",
-           cex.lab = 1.2,  # Increase size of x-axis label
-           main = importance_results$model_name[1],  # Use the first model name as title
-           cex.main = 1.5,  # Increase size of title
-           xlim = c(0, max(importance_results$importance) * 1.05))  # Extend x-axis slightly
+   # First, calculate percentages
+   importance_results$percentage <- importance_results$importance * 100
+
+   # Set up the plot
+   par(mar = c(5, 15, 4, 2))  # Adjust margins (bottom, left, top, right)
+
+   # Create the plot with logarithmic scale
+   plot(importance_results$importance,
+        1:nrow(importance_results),
+        type = "n",  # "n" means no plotting
+        log = "x",   # logarithmic x-axis
+        xlim = c(min(importance_results$importance)/2, max(importance_results$importance)*1.2),
+        ylim = c(0, nrow(importance_results) + 1),
+        xlab = "Importance (log scale)",
+        ylab = "",
+        yaxt = "n",  # remove y-axis
+        main = importance_results$model_name[1],
+        cex.main = 1.5,
+        cex.lab = 1.2)
+
+   # Add bars
+   barplot_height <- 0.8
+   for(i in 1:nrow(importance_results)) {
+     rect(min(importance_results$importance)/2, i - barplot_height/2,
+          importance_results$importance[i], i + barplot_height/2,
+          col = "lightgreen", border = NA)
+   }
+
+   # Add feature names
+   text(min(importance_results$importance)/2, 1:nrow(importance_results),
+        labels = importance_results$feature, pos = 2, xpd = TRUE, cex = 0.7)
+
+   # Add percentage text to bars
+   text(importance_results$importance, 1:nrow(importance_results),
+        labels = sprintf("%.2f%%", importance_results$percentage),
+        pos = 4, cex = 0.7)
+
+   # Add gridlines
+   grid(nx = NULL, ny = NA, lty = 2, col = "gray")  # Extend x-axis slightly
 
  }
   # Close PDF device
