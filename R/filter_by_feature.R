@@ -17,13 +17,13 @@
 #' )
 #'
 #' @export
-filter_by_feature <- function(fltr_features, fltr_condition, matrix, verbose = T) {
+filter_by_feature <- function(fltr_features, fltr_condition, matrix, verbose = TRUE) {
   sfa_indices <- c()
   if (length(fltr_features) > 0) {
     if (verbose) {
       cat(paste("filtering features\n"))
     }
-    for (i in seq(length(fltr_features))) {
+    for (i in seq_along(fltr_features)) {
       operator <- gsub("[[:alnum:]]", "", fltr_condition[i])
       value <- as.numeric(gsub("[^0-9]", "", fltr_condition[i]))
       filtercolumn <- which(colnames(matrix) == fltr_features[i])

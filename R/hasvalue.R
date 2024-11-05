@@ -17,7 +17,7 @@ hasvalue <- function(x) {
     return(FALSE)
   }
   if (class(x) == "logical") {
-    if ((length(x) == 1) & is.na(x)[1]) {
+    if ((length(x) == 1) && is.na(x)[1]) {
       return(FALSE)
     }
   }

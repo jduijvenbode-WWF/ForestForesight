@@ -4,7 +4,8 @@
 #' and simplifies them based on various parameters.
 #'
 #' @param raster Character or SpatRaster. Path to the input raster file or a SpatRaster.
-#' @param output_file Character. File path to save shapefiles. Default is NA and means the polygons are returned and not written.
+#' @param output_file Character. File path to save shapefiles.
+#' Default is NA and means the polygons are returned and not written.
 #' @param min_pixel Numeric. Base pixel count to filter on. Default is 5
 #' @param threshold Numeric or Character. Threshold to apply to the raster. Default is 0.5.
 #' Options are:
@@ -17,8 +18,10 @@
 #' @param window_size Numeric. Window size for focal calculation. Default is 7.
 #' @param smoothness Numeric. Smoothness parameter for ksmooth method. Default is 2
 #' @param verbose Logical. Whether the automatically detected threshold should be plotted
-#' @param calc_max Logical. If this is set to True a reasonable amount of polygons will be outputted depending on the area size
-#' @param contain_polygons Logical. If calc_max is enabled, only polygons will be created that lie within the SpatVector contain_polygons
+#' @param calc_max Logical.
+#' If this is set to True a reasonable amount of polygons will be outputted depending on the area size
+#' @param contain_polygons Logical.
+#' If calc_max is enabled, only polygons will be created that lie within the SpatVector contain_polygons
 #'
 #' @return A SpatVector object containing the processed and simplified polygons.
 #'
@@ -43,11 +46,12 @@ ff_polygonize <- function(raster,
                           threshold = 0.5,
                           window_size = 7,
                           smoothness = 2,
-                          verbose = F,
-                          calc_max = F,
+                          verbose = FALSE,
+                          calc_max = FALSE,
                           contain_polygons = NA) {
-  if (calc_max & !hasvalue(contain_polygons)) {
-    ff_cat("since no container polygons were given the calc_max option might give weird results, with higher risk areas popping up where no medium risk areas are found.\n", color = "yellow")
+  if (calc_max && !hasvalue(contain_polygons)) {
+    ff_cat("since no container polygons were given the calc_max option might give weird results,
+           with higher risk areas popping up where no medium risk areas are found.\n", color = "yellow")
   }
   # Load raster
   pixel_size <- 2e5
@@ -55,9 +59,9 @@ ff_polygonize <- function(raster,
     raster <- terra::rast(raster)
   }
   # Set options and initialize variables
-  meanras <- as.numeric(terra::global(raster < 0.5, fun = "mean", na.rm = T))
-  high_thresh <- as.numeric(terra::global(raster < quantile(raster[raster > 0.5], 0.5), fun = "mean", na.rm = T))
-  highest_thresh <- as.numeric(terra::global(raster < quantile(raster[raster > 0.5], 0.75), fun = "mean", na.rm = T))
+  meanras <- as.numeric(terra::global(raster < 0.5, fun = "mean", na.rm = TRUE))
+  high_thresh <- as.numeric(terra::global(raster < quantile(raster[raster > 0.5], 0.5), fun = "mean", na.rm = TRUE))
+  highest_thresh <- as.numeric(terra::global(raster < quantile(raster[raster > 0.5], 0.75), fun = "mean", na.rm = TRUE))
 
   if (class(threshold) == "character") {
     if (meanras == 0) {
@@ -69,18 +73,16 @@ ff_polygonize <- function(raster,
   }
   pixel_min <- 5 * pixel_size
   # Apply focal mean and threshold
-  br <- terra::focal(raster, w = window_size, fun = "mean", na.policy = "omit", na.rm = T)
-  highthresh <- meanras + (1 - meanras) * 0.5
-  highthresh <- meanras + (1 - meanras) * 0.5
+  br <- terra::focal(raster, w = window_size, fun = "mean", na.policy = "omit", na.rm = TRUE)
   if (is.character(threshold)) {
     if (threshold == "medium") {
-      newthreshold <- quantile(as.matrix(br), probs = meanras, na.rm = T)
+      newthreshold <- quantile(as.matrix(br), probs = meanras, na.rm = TRUE)
     }
     if (threshold == "high") {
-      newthreshold <- quantile(as.matrix(br), probs = high_thresh, na.rm = T)
+      newthreshold <- quantile(as.matrix(br), probs = high_thresh, na.rm = TRUE)
     }
     if (threshold == "very high") {
-      newthreshold <- quantile(as.matrix(br), probs = highest_thresh, na.rm = T)
+      newthreshold <- quantile(as.matrix(br), probs = highest_thresh, na.rm = TRUE)
     }
     if (!exists("newthreshold")) {
       stop("the given character is not one of the possibilities medium, high or very high")
@@ -117,9 +119,8 @@ ff_polygonize <- function(raster,
     ceiling_pols <- ceiling(sqrt(sqmras / 1e3) * perc_covered)
     if (verbose) {
       cat(
-        "based on area of raster (hectares:",
-        round(sqmras / 1e5),
-        ", actual coverage:", round(perc_covered * 100), "percent), at maximum", ceiling_pols, " polygons are generated\n"
+        "based on area of raster (hectares:", round(sqmras / 1e5), ", actual coverage:",
+        round(perc_covered * 100), "percent), at maximum", ceiling_pols, " polygons are generated\n"
       )
     }
     pols <- sorted_pols[1:max(1, min(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min)))]
@@ -130,7 +131,8 @@ ff_polygonize <- function(raster,
   # Fill holes and smooth
 
   if (length(pols) == 0) {
-    ff_cat("Based on the chosen threshold no polygons were generated. Lower the threshold to get polygons for this area\n", color = "yellow")
+    ff_cat("Based on the chosen threshold no polygons were generated.
+           Lower the threshold to get polygons for this area\n", color = "yellow")
     return(NULL)
   }
   # Extract average values from original raster

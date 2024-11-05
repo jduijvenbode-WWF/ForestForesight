@@ -12,7 +12,7 @@
 #' @export
 #'
 #'
-ff_dqc_file <- function(raster, return_values = T) {
+ff_dqc_file <- function(raster, return_values = TRUE) {
   loadras <- rast(raster)
   return(list(
     "npixel" = ncell(loadras),
@@ -21,20 +21,20 @@ ff_dqc_file <- function(raster, return_values = T) {
     "ymin" = ymin(loadras),
     "ymax" = ymax(loadras),
     "resolution" = res(loadras)[1],
-    "crsname" = crs(loadras, describe = T)$name,
-    "crscode" = crs(loadras, describe = T)$code,
+    "crsname" = crs(loadras, describe = TRUE)$name,
+    "crscode" = crs(loadras, describe = TRUE)$code,
     "mean" = if (return_values) {
-      as.numeric(round(global(loadras, "mean", na.rm = T), 2))
+      as.numeric(round(global(loadras, "mean", na.rm = TRUE), 2))
     } else {
       NA
     },
     "max" = if (return_values) {
-      as.numeric(round(global(loadras, "max", na.rm = T), 2))
+      as.numeric(round(global(loadras, "max", na.rm = TRUE), 2))
     } else {
       NA
     },
     "hasNA" = if (return_values) {
-      (length(summary(loadras, warn = F)) == 7)
+      (length(summary(loadras, warn = FALSE)) == 7)
     } else {
       NA
     }
