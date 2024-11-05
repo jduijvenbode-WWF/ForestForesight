@@ -1,4 +1,5 @@
-ff_accuracyreport <- function(accuracy_paths, importance_paths = NULL, output_path, title = "Accuracy Analysis: Forest Foresight") {
+ff_accuracyreport <- function(accuracy_paths, importance_paths = NULL, output_path,
+                              title = "Accuracy Analysis: Forest Foresight") {
   # Load required data
   for (i in accuracy_paths) {
     if (i == accuracy_paths[1]) {
@@ -16,28 +17,36 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths = NULL, output_pa
   pols$UUID <- paste0(pols$iso3, "_", pols$coordname)
 
   # Helper function to calculate metrics
-  calculate_metrics <- function(TP, FP, TN, FN) {
-    precision <- TP / (TP + FP)
-    recall <- TP / (TP + FN)
-    F0.5 <- (1.25 * precision * recall) / (0.25 * precision + recall)
-    events <- TP + FN
-    return(c(precision = precision, recall = recall, F0.5 = F0.5, events = events))
+  calculate_metrics <- function(true_positives, false_positives, true_negatives, false_negatives) {
+    precision <- true_positives / (true_positives + false_positives)
+    recall <- true_positives / (true_positives + false_negatives)
+    f0_5_score <- (1.25 * precision * recall) / (0.25 * precision + recall)
+    events <- true_positives + false_negatives
+    return(c(precision = precision, recall = recall, F0.5 = f0_5_score, events = events))
   }
 
   # Aggregate by date
-  results_by_date <- aggregate(cbind(TP, FP, TN, FN) ~ date, data = results, FUN = sum)
-  metrics_by_date <- as.data.frame(t(apply(results_by_date[, c("TP", "FP", "TN", "FN")], 1, function(row) calculate_metrics(row[1], row[2], row[3], row[4]))))
+  results_by_date <- aggregate(cbind(true_positives, false_positives, true_negatives, false_negatives)
+                               ~ date, data = results, FUN = sum)
+  metrics_by_date <- as.data.frame(t(apply(
+    results_by_date[, c("TP", "FP", "TN", "FN")], 1,
+    function(row) calculate_metrics(row[1], row[2], row[3], row[4])
+  )))
   names(metrics_by_date) <- sapply(names(metrics_by_date), function(x) gsub(".TP", "", x)[[1]][1])
   results_by_date <- cbind(results_by_date, metrics_by_date)
   results_by_date$date <- as.Date(results_by_date$date)
 
   # Aggregate by UUID
-  results_by_UUID <- aggregate(cbind(TP, FP, TN, FN) ~ UUID, data = results, FUN = sum)
-  metrics_by_UUID <- t(apply(results_by_UUID[, c("TP", "FP", "TN", "FN")], 1, function(row) calculate_metrics(row[1], row[2], row[3], row[4])))
-  results_by_UUID <- cbind(results_by_UUID, metrics_by_UUID)
+  results_by_uuid <- aggregate(cbind(true_positives, false_positives, true_negatives, false_negatives)
+                               ~ UUID, data = results, FUN = sum)
+  metrics_by_uuid <- t(apply(
+    results_by_uuid[, c("TP", "FP", "TN", "FN")], 1,
+    function(row) calculate_metrics(row[1], row[2], row[3], row[4])
+  ))
+  results_by_uuid <- cbind(results_by_uuid, metrics_by_uuid)
 
   # Merge spatial data
-  spatialdata <- merge(pols, results_by_UUID, by = "UUID")
+  spatialdata <- merge(pols, results_by_uuid, by = "UUID")
   names(spatialdata) <- c(names(spatialdata)[1:11], "precision", "recall", "F05", "events")
   spatialdata$F05 <- as.numeric(spatialdata$F05)
   spatialdata <- spatialdata[!is.nan(spatialdata$F05), ]
@@ -137,10 +146,13 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths = NULL, output_pa
       avg_importance <- aggregate(importance ~ feature, data = importance_results, FUN = mean)
       avg_importance$rank <- rank(-avg_importance$importance, ties.method = "first")
       avg_importance <- avg_importance[order(avg_importance$rank), ]
-      importance_results <- data.frame(model_name = model_names, feature = avg_importance$feature, rank = avg_importance$rank, importance = avg_importance$importance)
+      importance_results <- data.frame(
+        model_name = model_names, feature = avg_importance$feature,
+        rank = avg_importance$rank, importance = avg_importance$importance
+      )
     }
     par(mar = c(5, 20, 4, 2)) # Adjust margins (bottom, left, top, right)
-    importance_results <- importance_results[nrow(importance_results):1, ]
+    importance_results <- importance_results[rev(seq_len(nrow(importance_results))), ]
     barplot(importance_results$importance,
       horiz = TRUE,
       names.arg = importance_results$feature,

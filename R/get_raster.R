@@ -2,7 +2,8 @@
 #'
 #' This function retrieves raster files from a specified data folder based on the given date, feature, and tile pattern.
 #'
-#' @param datafolder A character string specifying the path to the data folder where raster files are stored.This should be in the preprocessed folder of Forest Foresight.
+#' @param datafolder A character string specifying the path to the data folder where raster files are stored.
+#' This should be in the preprocessed folder of Forest Foresight.
 #' @param date A Date object representing the date for which raster files are to be retrieved.
 #' @param feature A character string specifying the feature of interest to filter raster files.
 #' @param tile A character string specifying the pattern to filter specific tiles of raster files.
@@ -20,7 +21,7 @@
 #' tile <- "00N_070W"
 #' get_raster(datafolder, date, feature, tile)
 #' # Returns: Vector of file paths to selected raster files.
-get_raster <- function(datafolder, date, feature, tile = NULL, shape = NULL, return_raster = F, verbose = F) {
+get_raster <- function(datafolder, date, feature, tile = NULL, shape = NULL, return_raster = FALSE, verbose = FALSE) {
   if ((hasvalue(tile) + hasvalue(shape)) != 1) {
     stop("either a tile or a shape should be given")
   }

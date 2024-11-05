@@ -5,11 +5,15 @@
 #' and optionally model data.
 #'
 #' @param ff_folder Character. Local folder to sync data to.
-#' @param identifier Character or SpatVector. When a character it should be either a tile ID (e.g., "00N_000E") or a country ISO3 code.
-#' @param download_model Logical. Whether to download the corresponding model. Only works when downloading for entire countries. Default is FALSE.
+#' @param identifier Character or SpatVector.
+#' When a character it should be either a tile ID (e.g., "00N_000E") or a country ISO3 code.
+#' @param download_model Logical. Whether to download the corresponding model.
+#'  Only works when downloading for entire countries. Default is FALSE.
 #' @param download_data Logical. Whether to download the preprocessed input data. Default is TRUE.
-#' @param download_groundtruth Logical. Whether to download the groundtruth data as well. This should be turned off when you want to use your own data as groundtruth. Default is TRUE.
-#' @param download_predictions Logical. Whether to download the prediction data.Only works when downloading for entire countries. Default is FALSE.
+#' @param download_groundtruth Logical. Whether to download the groundtruth data as well.
+#' This should be turned off when you want to use your own data as groundtruth. Default is TRUE.
+#' @param download_predictions Logical. Whether to download the prediction data.
+#' Only works when downloading for entire countries. Default is FALSE.
 #' @param bucket Character. Name of the S3 bucket. Default is "forestforesight-public".
 #' @param region Character. AWS region of the bucket. Default is "eu-west-1".
 #' @param verbose Logical. Whether the function should be verbose.
@@ -27,8 +31,10 @@
 #' }
 #'
 #' @export
-ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE, download_predictions = FALSE, download_groundtruth = TRUE,
-                    bucket = "forestforesight-public", region = "eu-west-1", verbose = TRUE, sync_verbose = FALSE) {
+ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data = TRUE,
+                    download_predictions = FALSE, download_groundtruth = TRUE,
+                    bucket = "forestforesight-public", region = "eu-west-1",
+                    verbose = TRUE, sync_verbose = FALSE) {
   # Create ff_folder if it doesn't exist
   if (!dir.exists(ff_folder)) {
     dir.create(ff_folder, recursive = TRUE)
@@ -63,7 +69,7 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
   }
 
   # Sync input and ground truth data for each tile
-  if (download_data | download_groundtruth) {
+  if (download_data || download_groundtruth) {
     cat("Downloading input and ground truth data\n")
     for (tile in tiles) {
       # Create input sub-folder
@@ -101,7 +107,8 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
         prefix = paste0("models/", group), verbose = sync_verbose
       )
     } else {
-      warning("Model download is only available when specifying a single country code or a SpatVector that intersects with a single country.")
+      warning("Model download is only available when specifying a single country code or
+              a SpatVector that intersects with a single country.")
     }
   }
 
@@ -116,7 +123,8 @@ ff_sync <- function(ff_folder, identifier, download_model = FALSE, download_data
         prefix = paste0("predictions/", country_codes), verbose = sync_verbose
       )
     } else {
-      warning("Predictions download is only available when specifying a single country code or a SpatVector that intersects with a single country.")
+      warning("Predictions download is only available when specifying a single country code or
+              a SpatVector that intersects with a single country.")
     }
   }
 
