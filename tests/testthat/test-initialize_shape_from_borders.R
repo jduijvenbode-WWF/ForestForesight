@@ -21,7 +21,7 @@ test_that("initialize_shape_from_borders works with real data and extract shrink
   expect_true(inherits(result_shape, "SpatVector"))
   expect_false(is.null(result_shape))
 })
-#
+
 test_that("initialize_shape_from_borders does not alter shape when shrink is 'none'", {
   # Load actual countries data
   data("countries", package = "ForestForesight") # Replace with the actual package name
