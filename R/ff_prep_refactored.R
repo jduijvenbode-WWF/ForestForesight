@@ -244,7 +244,7 @@ filter_files_by_features <- function(allfiles, exc_features, inc_features, groun
     if (verbose) {
       cat("Excluding features\n")
     }
-    exc_indices <- unique(unlist(sapply(exc_features, function(x) { #CRF quite a complex line, could use a comment: Find indices of files that end with a feature in exc_features" for instance
+    exc_indices <- unique(unlist(sapply(exc_features, function(x) { #CRF quite a complex line, could use a comment: "Find indices of files that end with a feature in exc_features" for instance
       which(endsWith(gsub(".tif", "", basename(allfiles)), x))
     })))
     if (length(exc_indices) > 0) {
@@ -394,7 +394,7 @@ sample_and_combine_data <- function(date, dts, fdts, sf_indices, sample_size, fi
   if (hasvalue(dim(dts))) { #CRF This whole function is kinda confusing to me
     if (first) {
       fdts <- dts #CRF what does it mean? feature or first dataset?
-      allindices <- sf_indicesn
+      allindices <- sf_indices
     } else {
       allindices <- c(allindices, sf_indices + length(allindices))
       common_cols <- intersect(colnames(dts), colnames(fdts))
