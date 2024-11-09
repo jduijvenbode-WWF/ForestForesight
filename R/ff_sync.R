@@ -244,7 +244,7 @@ model_downloader <- function(ff_folder,country_codes,bucket,region,verbose,sync_
     for (file in s3_files) {
       ff_cat(file,"\n")
       aws.s3::save_object(file, bucket = bucket, region = region,
-                          file = file.path(ff_folder, file),verbose = verbose)
+                          file = file.path(ff_folder, file),verbose = F)
     }
   }
 }
@@ -280,10 +280,11 @@ data_downloader <- function(ff_folder,tile,feature_list,dates_to_check,bucket,re
 
     # Sync matched files
     for (file in matching_files) {
-      ff_cat(file,"\n")
+
       if(!file.exists(file.path(ff_folder, file))){
+        ff_cat(file,"\n")
         aws.s3::save_object(file, bucket = bucket, region = region,
-                            file = file.path(ff_folder, file), verbose = verbose)
+                            file = file.path(ff_folder, file), verbose = F)
       }
     }
   }
@@ -296,12 +297,11 @@ prediction_downloader <- function(ff_folder,country_codes,dates_to_check,bucket,
     if (!dir.exists(pred_folder)) dir.create(pred_folder, recursive = TRUE)
     prefix = file.path("predictions",country_code)
     s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region,max = Inf)
-    s3_files=sapply(s3_files,function(x) x$Key)
-
+    s3_files=as.character(sapply(s3_files,function(x) x$Key))
     if (!is.null(dates_to_check)) {
       # Filter by dates
       date_matches <- sapply(s3_files, function(f) {
-        file_date <- sub(paste0(".*_([0-9]{4}-[0-9]{2}-[0-9]{2})_.*"), "\\1", f)
+        file_date <- sub(paste0(".*_([0-9]{4}-[0-9]{2}-[0-9]{2}).*"), "\\1", f)
         file_date %in% dates_to_check
       })
 
@@ -314,10 +314,11 @@ prediction_downloader <- function(ff_folder,country_codes,dates_to_check,bucket,
       }
     }
     for (file in s3_files) {
-      ff_cat(file,"\n")
+
       if (!file.exists(file.path(ff_folder, file))){
+        ff_cat(file,"\n")
         aws.s3::save_object(file, bucket = bucket, region = region,
-                            file = file.path(ff_folder, file), verbose = verbose)
+                            file = file.path(ff_folder, file), verbose = F)
       }
     }
   }
