@@ -72,11 +72,11 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths = NULL, output_pa
   breaks <- seq(minf05, maxf05, length.out = 10)
 
   plot(spatialdata, "F05",
-    main = "F0.5 Score Distribution",
-    col = col_palette,
-    border = "#00000000",
-    breaks = breaks,
-    legend = TRUE
+       main = "F0.5 Score Distribution",
+       col = col_palette,
+       border = "#00000000",
+       breaks = breaks,
+       legend = TRUE
   )
 
   # Plot 2: Metrics Over Time
@@ -88,11 +88,11 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths = NULL, output_pa
 
   # Plot events bars
   plot(results_by_date$date, results_by_date$events,
-    type = "h", col = "lightgrey", lwd = 10,
-    xlab = "", ylab = "",
-    main = "Precision, Recall, and F0.5 Over Time",
-    ylim = c(0, max(y_breaks)),
-    axes = FALSE
+       type = "h", col = "lightgrey", lwd = 10,
+       xlab = "", ylab = "",
+       main = "Precision, Recall, and F0.5 Over Time",
+       ylim = c(0, max(y_breaks)),
+       axes = FALSE
   )
 
   # Add axes and labels
@@ -127,10 +127,10 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths = NULL, output_pa
 
   # Add legend
   legend("topright",
-    legend = c("Precision", "Recall", "F0.5", "Events"),
-    col = c("blue", "red", "green", "lightgrey"),
-    lty = c(1, 1, 1, 1), lwd = c(2, 2, 2, 10),
-    pch = c(16, 16, 16, NA)
+         legend = c("Precision", "Recall", "F0.5", "Events"),
+         col = c("blue", "red", "green", "lightgrey"),
+         lty = c(1, 1, 1, 1), lwd = c(2, 2, 2, 10),
+         pch = c(16, 16, 16, NA)
   )
 
   # Plot 3: Model Importance (if importance_paths is provided)
@@ -155,17 +155,17 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths = NULL, output_pa
     par(mar = c(5, 20, 4, 2)) # Adjust margins (bottom, left, top, right)
     importance_results <- importance_results[rev(seq_len(nrow(importance_results))), ]
     barplot(importance_results$importance,
-      horiz = TRUE,
-      names.arg = importance_results$feature,
-      las = 1, # Make y-axis labels horizontal
-      cex.names = 0.7, # Adjust size of feature names
-      cex.axis = 0.8, # Adjust size of x-axis labels
-      col = "lightgreen",
-      xlab = "Importance",
-      cex.lab = 1.2, # Increase size of x-axis label
-      main = importance_results$model_name[1], # Use the first model name as title
-      cex.main = 1.5, # Increase size of title
-      xlim = c(0, max(importance_results$importance) * 1.05)
+            horiz = TRUE,
+            names.arg = importance_results$feature,
+            las = 1, # Make y-axis labels horizontal
+            cex.names = 0.7, # Adjust size of feature names
+            cex.axis = 0.8, # Adjust size of x-axis labels
+            col = "lightgreen",
+            xlab = "Importance",
+            cex.lab = 1.2, # Increase size of x-axis label
+            main = importance_results$model_name[1], # Use the first model name as title
+            cex.main = 1.5, # Increase size of title
+            xlim = c(0, max(importance_results$importance) * 1.05)
     ) # Extend x-axis slightly
   }
 
@@ -174,63 +174,63 @@ ff_accuracyreport <- function(accuracy_paths, importance_paths = NULL, output_pa
 
 
 
-    # Assuming your data frame is called 'df'
-    # Group by feature and calculate mean importance
-    model_names =  paste(unique(importance_results$model_name),collapse = ", ")
-    avg_importance <- aggregate(importance ~ feature, data = importance_results, FUN = mean)
+  # Assuming your data frame is called 'df'
+  # Group by feature and calculate mean importance
+  model_names =  paste(unique(importance_results$model_name),collapse = ", ")
+  avg_importance <- aggregate(importance ~ feature, data = importance_results, FUN = mean)
 
-    # Add rank
-    avg_importance$rank <- rank(-avg_importance$importance, ties.method = "first")
+  # Add rank
+  avg_importance$rank <- rank(-avg_importance$importance, ties.method = "first")
 
-    # Sort by rank
-    avg_importance <- avg_importance[order(avg_importance$rank), ]
+  # Sort by rank
+  avg_importance <- avg_importance[order(avg_importance$rank), ]
 
-    # If you need to keep the model_name column:
-    importance_results = data.frame(model_name=model_names,feature=avg_importance$feature,rank=avg_importance$rank,importance=avg_importance$importance)
+  # If you need to keep the model_name column:
+  importance_results = data.frame(model_name=model_names,feature=avg_importance$feature,rank=avg_importance$rank,importance=avg_importance$importance)
+
+  par(mar = c(5, 20, 4, 2))  # Adjust margins (bottom, left, top, right)
+  importance_results <- importance_results[nrow(importance_results):1, ]
+  # First, calculate percentages
+  importance_results$percentage <- importance_results$importance * 100
+
+  # Set up the plot
+  par(mar = c(5, 15, 4, 2))  # Adjust margins (bottom, left, top, right)
+
+  # Create the plot with logarithmic scale
+  plot(importance_results$importance,
+       1:nrow(importance_results),
+       type = "n",  # "n" means no plotting
+       log = "x",   # logarithmic x-axis
+       xlim = c(min(importance_results$importance)/2, max(importance_results$importance)*1.2),
+       ylim = c(0, nrow(importance_results) + 1),
+       xlab = "Importance (log scale)",
+       ylab = "",
+       yaxt = "n",  # remove y-axis
+       main = importance_results$model_name[1],
+       cex.main = 1.5,
+       cex.lab = 1.2)
+
+  # Add bars
+  barplot_height <- 0.8
+  for(i in 1:nrow(importance_results)) {
+    rect(min(importance_results$importance)/2, i - barplot_height/2,
+         importance_results$importance[i], i + barplot_height/2,
+         col = "lightgreen", border = NA)
   }
-   par(mar = c(5, 20, 4, 2))  # Adjust margins (bottom, left, top, right)
-   importance_results <- importance_results[nrow(importance_results):1, ]
-   # First, calculate percentages
-   importance_results$percentage <- importance_results$importance * 100
 
-   # Set up the plot
-   par(mar = c(5, 15, 4, 2))  # Adjust margins (bottom, left, top, right)
+  # Add feature names
+  text(min(importance_results$importance)/2, 1:nrow(importance_results),
+       labels = importance_results$feature, pos = 2, xpd = TRUE, cex = 0.7)
 
-   # Create the plot with logarithmic scale
-   plot(importance_results$importance,
-        1:nrow(importance_results),
-        type = "n",  # "n" means no plotting
-        log = "x",   # logarithmic x-axis
-        xlim = c(min(importance_results$importance)/2, max(importance_results$importance)*1.2),
-        ylim = c(0, nrow(importance_results) + 1),
-        xlab = "Importance (log scale)",
-        ylab = "",
-        yaxt = "n",  # remove y-axis
-        main = importance_results$model_name[1],
-        cex.main = 1.5,
-        cex.lab = 1.2)
+  # Add percentage text to bars
+  text(importance_results$importance, 1:nrow(importance_results),
+       labels = sprintf("%.2f%%", importance_results$percentage),
+       pos = 4, cex = 0.7)
 
-   # Add bars
-   barplot_height <- 0.8
-   for(i in 1:nrow(importance_results)) {
-     rect(min(importance_results$importance)/2, i - barplot_height/2,
-          importance_results$importance[i], i + barplot_height/2,
-          col = "lightgreen", border = NA)
-   }
+  # Add gridlines
+  grid(nx = NULL, ny = NA, lty = 2, col = "gray")  # Extend x-axis slightly
 
-   # Add feature names
-   text(min(importance_results$importance)/2, 1:nrow(importance_results),
-        labels = importance_results$feature, pos = 2, xpd = TRUE, cex = 0.7)
 
-   # Add percentage text to bars
-   text(importance_results$importance, 1:nrow(importance_results),
-        labels = sprintf("%.2f%%", importance_results$percentage),
-        pos = 4, cex = 0.7)
-
-   # Add gridlines
-   grid(nx = NULL, ny = NA, lty = 2, col = "gray")  # Extend x-axis slightly
-
- }
 
   dev.off()
 }
