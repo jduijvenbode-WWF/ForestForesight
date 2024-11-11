@@ -81,10 +81,10 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
     extra_features <- setdiff(test_features, model_features)
     # If there are extra features, remove them from the test matrix
     if (length(extra_features) > 0) {
-      ff_cat(paste(
+      ff_cat(
         "Removing extra features from the test matrix:",
         paste(extra_features, collapse = ", ")
-      ), color = "yellow")
+      , color = "yellow")
       test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
     }
   }
@@ -94,17 +94,17 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
   } else {
     test_matrix <- xgboost::xgb.DMatrix(test_matrix$features)
   }
-  if (verbose) {
-    cat("calculating predictions\n")
-  }
+
+    ff_cat("calculating predictions", verbose = verbose)
+
   predictions <- predict(model, test_matrix)
   if (!is.na(groundtruth[1])) {
     if (class(groundtruth) == "SpatRaster") {
       groundtruth <- as.numeric(as.matrix(groundtruth))
     }
-    if (verbose) {
-      cat("calculationg scores\n")
-    }
+
+      cat("calculationg scores", verbose = verbose)
+
     precision <- c()
     recall <- c()
     f05 <- c()
@@ -122,9 +122,9 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
   if (class(templateraster) == "SpatRaster") {
     templateraster[] <- 0
     if (length(indices) > 1) {
-      if (verbose) {
-        cat("filling raster\n")
-      }
+
+        ff_cat("filling raster", verbose = verbose)
+
       if (!certainty) {
         templateraster[indices] <- predictions > threshold
       } else {
@@ -132,9 +132,9 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
       }
     } else {
       if (terra::ncell(templateraster) == length(predictions)) {
-        if (verbose) {
-          cat("filling raster\n")
-        }
+
+          cat("filling raster", verbose = verbose)
+
         if (!certainty) {
           templateraster[] <- predictions > threshold
         } else {
@@ -147,8 +147,8 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
   } else {
     templateraster <- NA
   }
-  if (verbose && !is.na(f05)) {
-    cat(paste("F0.5:", f05, "precision:", precision, "recall:", recall, "\n"))
+  if (!is.na(f05)) {
+    ff_cat("F0.5:", f05, "precision:", precision, "recall:", recall, verbose = verbose)
   }
   return(list(
     threshold = threshold, "precision" = precision, "recall" = recall, "F0.5" = f05,
