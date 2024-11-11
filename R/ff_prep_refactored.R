@@ -37,7 +37,7 @@
 #'   \item{testindices}{Indices of the filtered samples}
 #'   \item{groundtruthraster}{A SpatRaster of the ground truth}
 #'   \item{features}{A vector of feature names}
-#'   \item{hasgroundtruth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
+#'   \item{has_ground_truth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
 #'
 #' @export
 #'
@@ -62,27 +62,21 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
-ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), dates = "2023-01-01",
+ff_prep_refactored <- function(datafolder = Sys.getenv("DATA_FOLDER"), country = NA, shape = NA, tiles = NULL,
+                               groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), dates = "2023-01-01",
                                inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
                                adddate = TRUE, verbose = TRUE, shrink = "none", window = NA, label_threshold = 1, addxy = FALSE) {
 
-  ######## quality check########
-  quality_result <- quality_check(dates, country, shape, tiles, datafolder, shrink) #CRF It's weird that this returns values, Also It's more of a pre-condition check, not quality
+  ######## pre-conditions check########
+  check_pre_conditions(dates, country, shape, tiles, shrink)
+  has_ground_truth <- FALSE
 
-  datafolder <- quality_result$datafolder #CRF These inits should be done elsewhere probably
-  shrink <- quality_result$shrink
-
-  hasgroundtruth <- FALSE #CRF Not following snakecase
-
-  ######## preprocess for by-country processing########
+  ######## Get tiles and shape based on country or custom geometry ########
   data(gfw_tiles, envir = environment()) #CRF unclear comments
   tilesvect <- terra::vect(gfw_tiles)
-
-  result <- preprocess_by_shape_or_country(country, shape, tilesvect, tiles, verbose) #CRF generic result name
-
-  #CRF is there a nicer way to unpack this? <- nope, after a quick google search, but might be worth looking into further
-  shape <- result$shape
-  tiles <- result$tiles
+  tile_and_shape <- get_tiles_and_shape(country, shape, tilesvect, tiles, verbose)
+  shape <- tile_and_shape$shape
+  tiles <- tile_and_shape$tiles
 
   ########## list files and exclude features######
   allfiles <- list_and_filter_tile_files(datafolder = datafolder, tiles, groundtruth_pattern, verbose) #CRF generic result name, also doesn't follow snakecase
@@ -99,14 +93,14 @@ ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles 
   # Process tiles and dates <- CRF why is this comment here?
   ####### load raster data as matrix#########
   process_result <- process_tile_data(  #CRF which process?
-    tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
+    tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, has_ground_truth, addxy, adddate,
     fdts, sample_size, allindices, fltr_features, fltr_condition
   )
 
   fdts <- process_result$fdts
   allindices <- process_result$allindices
   groundtruth_raster <- process_result$groundtruth_raster
-  hasgroundtruth <- process_result$hasgroundtruth
+  has_ground_truth <- process_result$has_ground_truth
 
   ###### filter data based on features#######
   # filter training data on features that have been declared
@@ -140,43 +134,32 @@ ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles 
     "testindices" = allindices,
     "groundtruthraster" = groundtruth_raster,
     "features" = colnames(fdts), #CRF Why use fdts again here instead of data_matrix?
-    "hasgroundtruth" = hasgroundtruth
+    "has_ground_truth" = has_ground_truth
   ))
 }
 
-quality_check <- function(dates, country, shape, tiles, datafolder, shrink) {
+check_pre_conditions <- function(dates, country, shape, tiles, shrink) {
+  # Check date validity
   if (!hasvalue(dates) || any(is.na(dates)) || dates == "") {
     stop("No dates were given")
   }
-
   if (as.Date(min(dates)) < as.Date(Sys.getenv("EARLIEST_DATA_DATE"))) {
     stop(paste0("The earliest date available is ", Sys.getenv("EARLIEST_DATA_DATE")))
   }
 
-  if (!hasvalue(country) & !hasvalue(shape)) { #CRF is not a quality check just initialization
-    shrink <- "none"
-  }
-
+  # Check input parameters validity
   if (!hasvalue(tiles) & !hasvalue(country) & !hasvalue(shape)) {
     stop("Unknown what to process since no tiles, country, or shape were given")
   }
-
   if (hasvalue(shape) & !inherits(shape, "SpatVector")) {
     stop("Shape should be of class SpatVector")
   }
-
-  if (!hasvalue(datafolder)) { #CRF is not a quality check just initialization
-    datafolder <- Sys.getenv("ff_datafolder")
+  if (!hasvalue(country) & !hasvalue(shape) & shrink != "none") {
+    stop("Shrink parameter must be 'none' when neither country nor shape are provided")
   }
-
-  if (datafolder == "") {
-    stop("No environment variable for ff_datafolder and no datafolder parameter set")
-  }
-
-  return(list(datafolder = datafolder, shrink = shrink))
 }
 
-preprocess_by_shape_or_country <- function(country, shape, tilesvect, tiles, verbose) { #CRF Seems to just return a list of tiles and the shape, so name is not descriptive
+get_tiles_and_shape <- function(country, shape, tilesvect, tiles, verbose) {
   if (hasvalue(country)) {
     if (verbose) {
       cat("Selecting based on country\n")
@@ -188,7 +171,7 @@ preprocess_by_shape_or_country <- function(country, shape, tilesvect, tiles, ver
     if (is.null(tiles)) {
       tiles <- tilesvect
     }
-    cat(paste("Country contains the following tiles that will be processed:", paste(tiles, collapse = ", "), "\n")) #CRF Strange that this cat is different from the next
+    cat("Processing tiles:", paste(tiles, collapse = ", "), "\n")
   } else if (hasvalue(shape)) {
     if (!terra::is.lonlat(shape)) {
       shape <- terra::project(shape, "epsg:4326")
@@ -201,7 +184,6 @@ preprocess_by_shape_or_country <- function(country, shape, tilesvect, tiles, ver
       cat("Processing tiles:", paste(tiles, collapse = ", "), "\n")
     }
   }
-  #CRF if neither country or shape but just tiles it just returns the same thing right? Perhaps move that out of the function
   return(list(shape = shape, tiles = tiles))
 }
 
@@ -303,10 +285,10 @@ prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, v
   return(list(extent = extent, rasstack = rasstack))
 }
 
-load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth) { #CRF what is the use of the hasgroundtruth param here?
+load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, extent, has_ground_truth) { #CRF what is the use of the has_ground_truth param here?
   if (first) { #CRF why only when first? and what does first mean?
     if (length(grep(groundtruth_pattern, selected_files)) > 0) {
-      hasgroundtruth <- TRUE #CRF snake_case problem
+      has_ground_truth <- TRUE #CRF snake_case problem
       gtfile <- selected_files[grep(groundtruth_pattern, selected_files)]
       groundtruth_raster <- terra::rast(gtfile, win = extent)
     } else {
@@ -317,7 +299,7 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
       groundtruth_raster[] <- 0
     }
   }
-  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first=first) #CRF Use full groundtruth name for clarity
+  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, has_ground_truth = has_ground_truth, first=first) #CRF Use full groundtruth name for clarity
   return(list_gt_raster)
 }
 
@@ -454,7 +436,7 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
   return(list(fdts = fdts, data_label = data_label, groundtruth_raster = groundtruth_raster))
 }
 
-process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate, fdts,
+process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, has_ground_truth, addxy, adddate, fdts,
                               sample_size, allindices, fltr_features, fltr_condition) { # CRF snake_case problems
   first <- TRUE #CRF could use a comment because at first you have no clue what it's for
   ####### load raster data as matrix#########
@@ -468,7 +450,7 @@ process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, v
 
     result <- process_tile_dates( #CRF vague return param name
       tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size,
-      allindices, hasgroundtruth, fltr_features, fltr_condition
+      allindices, has_ground_truth, fltr_features, fltr_condition
     )
 
     fdts <- result$fdts
@@ -476,17 +458,17 @@ process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, v
     first <- result$first
     groundtruth_raster <- result$groundtruth_raster
     newcolnames <- result$newcolnames
-    hasgroundtruth <- result$hasgroundtruth
+    has_ground_truth <- result$has_ground_truth
 
     if (verbose) {
       cat(paste("loading finished, features:", paste(newcolnames, collapse = ", "), "\n"))
     }
   }
-  return(list(fdts = fdts, allindices = allindices, groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth))
+  return(list(fdts = fdts, allindices = allindices, groundtruth_raster = groundtruth_raster, has_ground_truth = has_ground_truth))
 }
 
 process_tile_dates <- function(tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size,
-                               allindices, hasgroundtruth, fltr_features, fltr_condition) {
+                               allindices, has_ground_truth, fltr_features, fltr_condition) {
   for (date in dates) {
     if (exists("dts", inherits = FALSE)) { #CRF Is this just to clear up the environment after every iteration of the loop?
       rm(dts)
@@ -504,9 +486,9 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
     if (length(tiles) > 1) {
       groundtruth_raster <- NA
     } else {
-      groundtruth_result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
+      groundtruth_result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, has_ground_truth)
       groundtruth_raster <- groundtruth_result$groundtruth_raster
-      hasgroundtruth <- groundtruth_result$hasgroundtruth
+      has_ground_truth <- groundtruth_result$has_ground_truth
       first <- groundtruth_result$first
     }
     # Process raster data CRF <- change dts to dataset for clarity?
@@ -539,6 +521,6 @@ process_tile_dates <- function(tiles, tile, files, shape, shrink, window, ground
   }
   return(list( #CRF Does this have to return "first"?
     fdts = fdts, allindices = allindices, first = first, groundtruth_raster = groundtruth_raster, newcolnames = newcolnames,
-    hasgroundtruth = hasgroundtruth
+    has_ground_truth = has_ground_truth
   ))
 }
