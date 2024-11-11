@@ -97,7 +97,7 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
   }
   # Sync input and ground truth data for each tile
   if (download_data || download_groundtruth) {
-    cat("Downloading input and ground truth data\n")
+    ff_cat("Downloading input and ground truth data", verbose = verbose)
     for (tile in tiles) {
       # Handle input data
       if (download_data) {
@@ -228,7 +228,7 @@ get_tiles <- function(identifier){
     tiles <- terra::intersect(gfw_tiles, country_shape)
     tiles <- tiles$tile_id
   }
-  return(list(tiles=tiles,country_codes = country_codes))
+  return(list(tiles = tiles,country_codes = country_codes))
 }
 
 model_downloader <- function(ff_folder,country_codes,bucket,region,verbose,sync_verbose){
@@ -237,12 +237,12 @@ model_downloader <- function(ff_folder,country_codes,bucket,region,verbose,sync_
   for (group in groups) {
     prefix = file.path("models",group)
     s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region,max = Inf)
-    s3_files=sapply(s3_files,function(x) x$Key)
+    s3_files <- sapply(s3_files,function(x) x$Key)
     model_folder <- file.path(ff_folder, "models", group)
-    if (verbose) cat("Downloading model to", model_folder, "\n")
+    ff_cat("Downloading model to", model_folder, verbose = verbose)
     if (!dir.exists(model_folder)) dir.create(model_folder, recursive = TRUE)
     for (file in s3_files) {
-      ff_cat(file,"\n")
+      ff_cat(file, verbose = verbose)
       aws.s3::save_object(file, bucket = bucket, region = region,
                           file = file.path(ff_folder, file),verbose = F)
     }
@@ -282,7 +282,7 @@ data_downloader <- function(ff_folder,tile,feature_list,dates_to_check,bucket,re
     for (file in matching_files) {
 
       if(!file.exists(file.path(ff_folder, file))){
-        ff_cat(file,"\n")
+        ff_cat(file, verbose = verbose)
         aws.s3::save_object(file, bucket = bucket, region = region,
                             file = file.path(ff_folder, file), verbose = F)
       }
@@ -293,11 +293,11 @@ data_downloader <- function(ff_folder,tile,feature_list,dates_to_check,bucket,re
 prediction_downloader <- function(ff_folder,country_codes,dates_to_check,bucket,region,verbose,sync_verbose){
   for (country_code in country_codes) {
     pred_folder <- file.path(ff_folder, "predictions", country_code)
-    if (verbose) cat("Downloading predictions to", pred_folder, "\n")
+    ff_cat("Downloading predictions to", pred_folder,verbose = verbose)
     if (!dir.exists(pred_folder)) dir.create(pred_folder, recursive = TRUE)
     prefix = file.path("predictions",country_code)
     s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region,max = Inf)
-    s3_files=as.character(sapply(s3_files,function(x) x$Key))
+    s3_files <- as.character(sapply(s3_files,function(x) x$Key))
     if (!is.null(dates_to_check)) {
       # Filter by dates
       date_matches <- sapply(s3_files, function(f) {
@@ -316,7 +316,7 @@ prediction_downloader <- function(ff_folder,country_codes,dates_to_check,bucket,
     for (file in s3_files) {
 
       if (!file.exists(file.path(ff_folder, file))){
-        ff_cat(file,"\n")
+        ff_cat(file, verbose = verbose)
         aws.s3::save_object(file, bucket = bucket, region = region,
                             file = file.path(ff_folder, file), verbose = F)
       }
