@@ -12,10 +12,10 @@ jobs:
     - name: Cache R packages
       uses: actions/cache@v3
       with:
-        path: ~/R/x86_64-pc-linux-gnu-library
-        key: ${{ runner.os }}-R-${{ hashFiles('renv.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-R-
+          path: ~/.cache/R/
+          key: ${{ runner.os }}-r-${{ hashFiles('**/renv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-r-
 
     - name: Set up R library environment using custom actions
       uses: r-lib/actions/setup-r@v2
