@@ -163,9 +163,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       traindata <- do.call(ff_prep, ff_prep_params_combined)
       if (validation) {
         sample_size <- min(1, 1.33 * fixed_sample_size / length(traindata$data_matrix$features))
-        if (verbose) {
-          ff_cat("adding validation matrix\n", color = "green")
-        }
+
+        ff_cat("adding validation matrix\n", color = "green", verbose = verbose)
+
       } else {
         sample_size <- min(1, fixed_sample_size / length(traindata$data_matrix$features))
       }
@@ -256,8 +256,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
           model_features <- list("inc_features" = get(load(gsub("\\.model", "\\.rda", trained_model))))
           if (verbose) {
             ff_cat("pre-trained model only includes the following features:",
-              paste(model_features$inc_features, collapse = ", "), "\n",
-              color = "green"
+                   paste(model_features$inc_features, collapse = ", "), "\n",
+                   color = "green"
             )
           }
           ff_prep_params_combined <- merge_lists(default = model_features, user = ff_prep_params_combined)
@@ -286,12 +286,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
         operator <- gsub("[[:alnum:]]", "", fltr_condition[i])
         value <- as.numeric(gsub("[^0-9.-]", "", fltr_condition[i]))
         curras <- switch(operator,
-          ">" = curras > value,
-          "<" = curras < value,
-          "==" = curras == value,
-          "!=" = curras != value,
-          ">=" = curras >= value,
-          "<=" = curras <= value
+                         ">" = curras > value,
+                         "<" = curras < value,
+                         "==" = curras == value,
+                         "!=" = curras != value,
+                         ">=" = curras >= value,
+                         "<=" = curras <= value
         )
         if (i == 1) {
           forestras <- curras
@@ -305,10 +305,10 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       if (predset$hasgroundtruth) {
         analysis_polygons <- terra::intersect(terra::vect(get(data("degree_polygons"))), terra::aggregate(shape))
         pols <- ff_analyze(prediction$predicted_raster > threshold,
-          groundtruth = predset$groundtruthraster,
-          csvfile = accuracy_csv, tile = tile, date = prediction_date,
-          return_polygons = verbose, append = TRUE, country = country,
-          verbose = verbose, forestmask = forestras, analysis_polygons = analysis_polygons
+                           groundtruth = predset$groundtruthraster,
+                           csvfile = accuracy_csv, tile = tile, date = prediction_date,
+                           return_polygons = verbose, append = TRUE, country = country,
+                           verbose = verbose, forestmask = forestras, analysis_polygons = analysis_polygons
         )
         if (verbose) {
           if (tile == tiles[1]) {
@@ -327,8 +327,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       precision <- sum(allpols$TP, na.rm = TRUE) / (sum(allpols$TP, na.rm = TRUE) + sum(allpols$FP, na.rm = TRUE))
       recall <- sum(allpols$TP, na.rm = TRUE) / (sum(allpols$TP, na.rm = TRUE) + sum(allpols$FN, na.rm = TRUE))
       ff_cat("date:", prediction_date, "precision:", precision, ",recall:", recall,
-        ",F0.5", (1.25 * precision * recall) / (0.25 * precision + recall), "\n",
-        color = "green"
+             ",F0.5", (1.25 * precision * recall) / (0.25 * precision + recall), "\n",
+             color = "green"
       )
     }
 

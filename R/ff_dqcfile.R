@@ -13,23 +13,23 @@
 #'
 #'
 ff_dqc_file <- function(raster, return_values = TRUE) {
-  loadras <- rast(raster)
+  loadras <- terra::rast(raster)
   return(list(
-    "npixel" = ncell(loadras),
-    "xmin" = xmin(loadras),
-    "xmax" = xmax(loadras),
-    "ymin" = ymin(loadras),
-    "ymax" = ymax(loadras),
-    "resolution" = res(loadras)[1],
-    "crsname" = crs(loadras, describe = TRUE)$name,
-    "crscode" = crs(loadras, describe = TRUE)$code,
+    "npixel" = terra::ncell(loadras),
+    "xmin" = terra::xmin(loadras),
+    "xmax" = terra::xmax(loadras),
+    "ymin" = terra::ymin(loadras),
+    "ymax" = terra::ymax(loadras),
+    "resolution" = terra::res(loadras)[1],
+    "crsname" = terra::crs(loadras, describe = TRUE)$name,
+    "crscode" = terra::crs(loadras, describe = TRUE)$code,
     "mean" = if (return_values) {
-      as.numeric(round(global(loadras, "mean", na.rm = TRUE), 2))
+      as.numeric(round(terra::global(loadras, "mean", na.rm = TRUE), 2))
     } else {
       NA
     },
     "max" = if (return_values) {
-      as.numeric(round(global(loadras, "max", na.rm = TRUE), 2))
+      as.numeric(round(terra::global(loadras, "max", na.rm = TRUE), 2))
     } else {
       NA
     },
