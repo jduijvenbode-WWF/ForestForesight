@@ -9,7 +9,7 @@ jobs:
   lintr-and-testthat:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1.2
+    - uses: actions/checkout@v1
     
     - name: Set up R environment and install required system dependencies
       run: |
