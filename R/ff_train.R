@@ -91,9 +91,9 @@ ff_train <- function(train_matrix, validation_matrix = NA, nrounds = 200, eta = 
   }
 
   # Train the XGBoost model
-  if (verbose) {
-    cat("starting training\n")
-  }
+
+    ff_cat("starting training", verbose = verbose)
+
   xgbmodel <- xgboost::xgb.train(
     params = params,
     nrounds = nrounds,
@@ -106,9 +106,9 @@ ff_train <- function(train_matrix, validation_matrix = NA, nrounds = 200, eta = 
   )
 
   if (!is.null(modelfilename)) {
-    if (verbose) {
-      cat("saving model to", modelfilename, "\n")
-    }
+
+      ff_cat("saving model to", modelfilename, verbose = verbose)
+
     feature_names <- xgbmodel$feature_names
     suppressWarnings({
       result <- xgboost::xgb.save(xgbmodel, modelfilename)
