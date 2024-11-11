@@ -1,45 +1,14 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-#
-# See https://github.com/r-lib/actions/tree/master/examples#readme for
-# additional example workflows available for the R community.
-name: R
-
-on:
-  push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
-
-permissions:
-  contents: read
+name: R Build and Checks
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        r-version: ['4.4.1']
-
     steps:
-      - uses: actions/checkout@v3   
-
-      - name: Set up R ${{ matrix.r-version }}
-        uses: r-lib/actions/setup-r@f57f1301a053485946083d7a45022b278929a78a
-        with:
-          r-version: ${{ matrix.r-version }}
-      - name: Install dependencies (including lintr, styler, and testthat)
-        run: |
-          install.packages(c("remotes", "rcmdcheck", "lintr", "testthat"))
-          remotes::install_deps(dependencies = TRUE)
-      - name: Lint code
-        run: |
-          lintr::lint_dir(".")  # Lint all files in the current directory
-      - name: Run tests
-        run: |
-          testthat::test_dir(".")  # Run all tests in the current directory
-      - name: Check
-        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
-        shell: Rscript {0}
+    - uses: actions/checkout@v1
+    - name: R Build and Checks
+      uses: Swechhya/R-actions@v1.2
+      with:
+        action: 'all'
+        needsBioc: false
+        buildSubDirectory: './'
