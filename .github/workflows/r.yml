@@ -27,7 +27,7 @@ jobs:
 
     - name: Initialize renv
       run: |
-        Rscript -e "renv::init()"
+        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); Rscript -e "renv::init()"
         
     - name: Run Linter
       run: |
