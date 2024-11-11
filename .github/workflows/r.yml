@@ -6,14 +6,19 @@ on:
     branches: [ "develop" ]
 
 jobs:
-  build:
+  lintr-and-testthat:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install Dependencies
+    - name: Install renv
       run: |
-        Rscript -e "install.packages(c('lintr', 'testthat'), repos = 'https://cran.rstudio.com/')"
+        sudo apt install libcurl4-openssl-dev  # Required for renv installation
+        Rscript -e "install.packages(c('lintr', 'testthat'), repos = 'https://cran.rstudio.com/', lib = '~/R/x86_64-pc-linux-gnu-library')"
 
+    - name: Initialize renv
+      run: |
+        Rscript -e "renv::init()"
+        
     - name: Run Linter
       run: |
         Rscript -e "lintr::lint()"
