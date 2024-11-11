@@ -15,25 +15,29 @@ jobs:
       run: |
         sudo apt install libcurl4-openssl-dev  # Required for renv installation
 
-    - name: Set up R environment and install R packages
+    - name: Set up R library path
       run: |
         mkdir -p ~/R/x86_64-pc-linux-gnu-library
         chmod 777 ~/R/x86_64-pc-linux-gnu-library
-        libpath <- "~/R/x86_64-pc-linux-gnu-library"
-        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); install.packages(c('lintr', 'testthat', 'renv'), repos = 'https://cran.rstudio.com/')"
+      env:
+          R_LIBS_USER: ~/R/x86_64-pc-linux-gnu-library  # Set user library path globally
+  
+    - name: Set up R environment and install basic R packages
+      run: |
+        Rscript -e "install.packages(c('lintr', 'testthat', 'renv'), repos = 'https://cran.rstudio.com/')"
 
     - name: Run Linter
       run: |
-          Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); lintr::lint()"
+          Rscript -e "lintr::lint()"
 
     - name: Initialize renv
       run: |
-        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); renv::init()"
+        Rscript -e "renv::init()"
     
     - name: Show installed R packages
       run: |
-        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
+        Rscript -e "installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
 
     - name: Run Tests
       run: |
-        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); testthat::test_dir()"
+        Rscript -e "testthat::test_dir()"
