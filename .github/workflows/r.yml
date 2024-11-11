@@ -14,7 +14,7 @@ jobs:
   
     - name: Set up R environment and install basic R packages
       run: |
-        Rscript -e "install.packages(c('lintr', 'testthat', 'renv'), repos = 'https://cran.rstudio.com/')"
+        Rscript -e "install.packages(c('lintr', 'testthat', 'renv', 'devtools'), repos = 'https://cran.rstudio.com/')"
 
     - name: Run Linter
       run: |
@@ -30,4 +30,4 @@ jobs:
 
     - name: Run Tests
       run: |
-        Rscript -e "testthat::test_dir('tests/testthat')"
+        Rscript -e "devtools::load_all(); testthat::test_dir('tests/testthat')"
