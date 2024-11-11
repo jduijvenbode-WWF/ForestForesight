@@ -93,8 +93,8 @@ ff_prep_refactored <- function(datafolder = Sys.getenv("DATA_FOLDER"), country =
   # Process tiles and dates <- CRF why is this comment here?
   ####### load raster data as matrix#########
   process_result <- process_tile_data(  #CRF which process?
-    tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, has_ground_truth, addxy, adddate,
-    fdts, sample_size, allindices, fltr_features, fltr_condition
+    tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
+    sample_size, allindices, fltr_features, fltr_condition
   )
 
   fdts <- process_result$fdts
@@ -436,9 +436,10 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
   return(list(fdts = fdts, data_label = data_label, groundtruth_raster = groundtruth_raster))
 }
 
-process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, has_ground_truth, addxy, adddate, fdts,
+process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
                               sample_size, allindices, fltr_features, fltr_condition) { # CRF snake_case problems
   first <- TRUE #CRF could use a comment because at first you have no clue what it's for
+  fdts <- NA
   ####### load raster data as matrix#########
   for (tile in tiles) {
     if (exists("extent", inherits = FALSE)) { #CRF what's the purpose of this if_block?
