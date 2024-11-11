@@ -6,7 +6,7 @@ on:
     branches: [ "develop" ]
 
 jobs:
-  lintr-and-testthat:
+  Checking-package:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -19,7 +19,7 @@ jobs:
       run: |
         mkdir -p ~/R/x86_64-pc-linux-gnu-library
         chmod 777 ~/R/x86_64-pc-linux-gnu-library
-        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); install.packages(c('lintr', 'testthat'), repos = 'https://cran.rstudio.com/')"
+        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); install.packages(c('lintr', 'testthat', 'renv'), repos = 'https://cran.rstudio.com/')"
     
     - name: Initialize renv
       run: |
