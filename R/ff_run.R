@@ -164,22 +164,22 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       if (validation) {
         sample_size <- min(1, 1.33 * fixed_sample_size / length(traindata$data_matrix$features))
 
-        ff_cat("adding validation matrix\n", color = "green", verbose = verbose)
+        ff_cat("adding validation matrix", color = "green", verbose = verbose)
 
       } else {
         sample_size <- min(1, fixed_sample_size / length(traindata$data_matrix$features))
       }
-      if (verbose) {
-        ff_cat("autoscaled sample size:", round(sample_size, 2), "\n", color = "green")
-      }
+
+      ff_cat("autoscaled sample size:", round(sample_size, 2), color = "green", verbose = verbose)
+
     }
 
 
 
-    if (verbose) {
-      ff_cat("Preparing data\n", color = "green")
-      ff_cat("looking in folder", prep_folder, "\n", color = "green")
-    }
+
+    ff_cat("Preparing data", color = "green", verbose = verbose)
+    ff_cat("looking in folder", prep_folder, verbose = verbose, color = "green")
+
     ff_prep_params_original <- list(
       datafolder = prep_folder, shape = shape, dates = train_dates,
       fltr_condition = fltr_condition, fltr_features = fltr_features,
@@ -193,9 +193,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
 
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     if (hasvalue(validation_dates)) {
-      if (verbose) {
-        ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n", color = "green")
-      }
+
+      ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n", color = "green", verbose = verbose)
+
       ff_prep_params_combined["dates"] <- validation_dates
       ff_prep_params_combined["sample_size"] <- 1 / 3 * sample_size
       valdata <- do.call(ff_prep, ff_prep_params_combined)
@@ -254,12 +254,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       if (class(trained_model) == "character") {
         if (file.exists(gsub("\\.model", "\\.rda", trained_model))) {
           model_features <- list("inc_features" = get(load(gsub("\\.model", "\\.rda", trained_model))))
-          if (verbose) {
-            ff_cat("pre-trained model only includes the following features:",
-                   paste(model_features$inc_features, collapse = ", "), "\n",
-                   color = "green"
-            )
-          }
+
+          ff_cat("pre-trained model only includes the following features:",
+                 paste(model_features$inc_features, collapse = ", "),
+                 color = "green", verbose = verbose
+          )
+
           ff_prep_params_combined <- merge_lists(default = model_features, user = ff_prep_params_combined)
         }
       }
@@ -318,16 +318,16 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
           }
         }
       } else {
-        if (verbose) {
-          ff_cat("no analysis is done because no groundtruth is available\n", color = "green")
-        }
+
+        ff_cat("no analysis is done because no groundtruth is available\n", color = "green", verbose = verbose)
+
       }
     }
     if (verbose && exists("allpols")) {
       precision <- sum(allpols$TP, na.rm = TRUE) / (sum(allpols$TP, na.rm = TRUE) + sum(allpols$FP, na.rm = TRUE))
       recall <- sum(allpols$TP, na.rm = TRUE) / (sum(allpols$TP, na.rm = TRUE) + sum(allpols$FN, na.rm = TRUE))
       ff_cat("date:", prediction_date, "precision:", precision, ",recall:", recall,
-             ",F0.5", (1.25 * precision * recall) / (0.25 * precision + recall), "\n",
+             ",F0.5", (1.25 * precision * recall) / (0.25 * precision + recall),
              color = "green"
       )
     }
@@ -346,9 +346,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       } else {
         filename <- save_path_predictions
       }
-      if (verbose) {
-        ff_cat("saving result to ", filename)
-      }
+
+      ff_cat("saving result to ", filename, verbose = verbose)
+
       terra::writeRaster(fullras, filename, overwrite = TRUE)
     }
 
