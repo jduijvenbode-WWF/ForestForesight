@@ -1,4 +1,4 @@
-name: R Build and Checks
+name: R Checks (no build yet)
 on:
   push:
     branches: [ "develop" ]
@@ -9,12 +9,18 @@ jobs:
   lintr-and-testthat:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Install renv
+    - uses: actions/checkout@v1.2
+    
+    - name: Set up R environment and install required system dependencies
       run: |
         sudo apt install libcurl4-openssl-dev  # Required for renv installation
-        Rscript -e "install.packages(c('lintr', 'testthat'), repos = 'https://cran.rstudio.com/', lib = '~/R/x86_64-pc-linux-gnu-library')"
 
+    - name: Set up R environment and install R packages
+      run: |
+        mkdir -p ~/R/x86_64-pc-linux-gnu-library
+        chmod 777 ~/R/x86_64-pc-linux-gnu-library
+        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); install.packages(c('lintr', 'testthat'), repos = 'https://cran.rstudio.com/')"
+    
     - name: Initialize renv
       run: |
         Rscript -e "renv::init()"
