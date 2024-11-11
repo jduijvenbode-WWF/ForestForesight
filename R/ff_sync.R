@@ -181,13 +181,9 @@ groundtruth_downloader <- function(ff_folder,tile,dates_to_check,bucket,region,v
     if (any(date_matches)) {
       matching_files <- matching_files[date_matches]
     } else {
-      ff_cat("no predictions found in daterange, downloading latest available\n")
+      ff_cat("no predictions found in daterange, downloading latest available")
       # If no files within date range, get the latest available
-      file_dates <- sapply(matching_files, function(f) {
-        sub(paste0(".*_([0-9]{4}-[0-9]{2}-[0-9]{2})_.*"), "\\1", f)
-      })
-      latest_file <- matching_files[which.max(file_dates)]
-      matching_files <- latest_file
+      matching_files <- select_files_date(given_date = min(dates_to_check),listed_files = matching_files)
     }
   }
 
@@ -272,9 +268,7 @@ data_downloader <- function(ff_folder,tile,feature_list,dates_to_check,bucket,re
         matching_files <- matching_files[date_matches]
       } else {
         # If no files within date range, get the latest available
-
-        latest_file <- max(matching_files)
-        matching_files <- latest_file
+        matching_files <- select_files_date(given_date = min(dates_to_check),listed_files = matching_files)
       }
     }
 
@@ -309,8 +303,7 @@ prediction_downloader <- function(ff_folder,country_codes,dates_to_check,bucket,
         s3_files <- s3_files[date_matches]
       } else {
         # If no files within date range, get the latest available
-        latest_file <- max(s3_files)
-        s3_files <- latest_file
+        s3_files <- select_files_date(given_date = min(dates_to_check),listed_files = s3_files)
       }
     }
     for (file in s3_files) {
