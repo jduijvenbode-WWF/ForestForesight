@@ -49,7 +49,7 @@ ff_polygonize <- function(raster,
                           verbose = FALSE,
                           calc_max = FALSE,
                           contain_polygons = NA) {
-  if (calc_max && !hasvalue(contain_polygons)) {
+  if (calc_max && !hasvalue(contain_polygons) && threshold != "medium") {
     ff_cat("since no container polygons were given the calc_max option might give weird results,
            with higher risk areas popping up where no medium risk areas are found.\n", color = "yellow")
   }
@@ -87,9 +87,9 @@ ff_polygonize <- function(raster,
     if (!exists("newthreshold")) {
       stop("the given character is not one of the possibilities medium, high or very high")
     }
-    if (verbose) {
-      ff_cat("new threshold is", newthreshold, "\n")
-    }
+
+      ff_cat("new threshold is", round(newthreshold,4), verbose = verbose)
+
     threshold <- newthreshold
   }
   br <- br > threshold
@@ -117,18 +117,15 @@ ff_polygonize <- function(raster,
     sqmras <- as.numeric(terra::expanse(raster)[2])
 
     ceiling_pols <- ceiling(sqrt(sqmras / 1e3) * perc_covered)
-    if (verbose) {
-      cat(
+
+      ff_cat(
         "based on area of raster (hectares:", round(sqmras / 1e5), ", actual coverage:",
-        round(perc_covered * 100), "percent), at maximum", ceiling_pols, " polygons are generated\n"
+        round(perc_covered * 100), "percent), at maximum", ceiling_pols, " polygons are generated",
+        verbose = verbose
       )
-    }
+
     pols <- sorted_pols[1:max(1, min(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min)))]
   }
-  # Select top polygons by size
-
-
-  # Fill holes and smooth
 
   if (length(pols) == 0) {
     ff_cat("Based on the chosen threshold no polygons were generated.
@@ -141,9 +138,9 @@ ff_polygonize <- function(raster,
   pols$sumrisk <- round(pols$size * pols$risk)
   pols$threshold <- threshold
   pols$date <- as.character(as.Date(Sys.time()))
-  if (verbose) {
-    ff_cat("writing", length(pols), "polygons to", output_file, "\n")
-  }
+
+    ff_cat("writing", length(pols), "polygons to", output_file, verbose = verbose)
+
   # Save result
   if (!is.na(output_file)) {
     terra::writeVector(x = pols, filename = output_file, overwrite = TRUE)
