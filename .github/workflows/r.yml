@@ -21,6 +21,10 @@ jobs:
         chmod 777 ~/R/x86_64-pc-linux-gnu-library
         Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); install.packages(c('lintr', 'testthat', 'renv'), repos = 'https://cran.rstudio.com/')"
     
+    - name: Show installed R packages
+      run: |
+        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
+
     - name: Initialize renv
       run: |
         Rscript -e "renv::init()"
