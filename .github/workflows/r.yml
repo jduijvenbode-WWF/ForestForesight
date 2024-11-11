@@ -19,22 +19,21 @@ jobs:
       run: |
         mkdir -p ~/R/x86_64-pc-linux-gnu-library
         chmod 777 ~/R/x86_64-pc-linux-gnu-library
-        # set library path
         libpath <- "~/R/x86_64-pc-linux-gnu-library"
-        Rscript -e ".libPaths(libpath); install.packages(c('lintr', 'testthat', 'renv'), repos = 'https://cran.rstudio.com/')"
+        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); install.packages(c('lintr', 'testthat', 'renv'), repos = 'https://cran.rstudio.com/')"
 
     - name: Run Linter
       run: |
-          Rscript -e ".libPaths(libpath); lintr::lint()"
+          Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); lintr::lint()"
 
     - name: Initialize renv
       run: |
-        Rscript -e ".libPaths(libpath); renv::init()"
+        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); renv::init()"
     
     - name: Show installed R packages
       run: |
-        Rscript -e ".libPaths(libpath); installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
+        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
 
     - name: Run Tests
       run: |
-        Rscript -e ".libPaths(libpath); testthat::test_dir()"
+        Rscript -e ".libPaths('~/R/x86_64-pc-linux-gnu-library'); testthat::test_dir()"
