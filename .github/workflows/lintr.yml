@@ -1,0 +1,15 @@
+name: R Lintr
+on:
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  lintr-ing-package:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Install and run Linter
+      run: |
+          Rscript -e "install.packages(c('lintr'), repos = 'https://cran.rstudio.com/');
+          lintr::lint_package()"
