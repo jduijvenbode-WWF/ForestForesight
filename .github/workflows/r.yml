@@ -28,10 +28,14 @@ jobs:
       run: |
         Rscript -e "installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
 
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libcurl4-openssl-dev
+
     - name: Run Tests
       run: |
-        Rscript -e "renv::restore(); 
-        renv::status(); 
+        Rscript -e "renv::status(); 
         install.packages(c('devtools', 'testthat'), repos = 'https://cran.rstudio.com/');
         devtools::load_all(); 
         testthat::test_dir('tests/testthat')"
