@@ -35,7 +35,7 @@ jobs:
 
     - name: Initialize renv / installing packages in DESCRIPTION file
       run: |
-        Rscript -e "renv::init()"
+        Rscript -e "renv::restore()"
     
     - name: Show installed R packages
       run: |
