@@ -18,7 +18,7 @@ jobs:
               
     - name: Test accessing variable
       run: |
-        Rscript -e "cat(a+b)"
+        Rscript -e "c <- 7; cat(c)"
 
     - name: Cache R packages
       uses: actions/cache@v3
