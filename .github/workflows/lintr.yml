@@ -14,7 +14,7 @@ jobs:
 
     - name: Install Linter
       run: |
-          lintr::lint_package()"
+          Rscript -e "lintr::lint_package()"
 
     - name: Run Linter
       run: |
