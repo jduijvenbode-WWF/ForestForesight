@@ -49,7 +49,7 @@ jobs:
 
     - name: Run Tests
       run: |
-        Rscript -e "renv::status();
-        install.packages(c('devtools', 'testthat'), repos = 'https://cran.rstudio.com/');
-        Rscript -e "devtools::load_all(); 
-        testthat::test_dir('tests/testthat')"
+        Rscript -e 'renv::status()'
+        Rscript -e 'install.packages(c("devtools", "testthat"), repos = "https://cran.rstudio.com/")'
+        Rscript -e 'devtools::load_all()'
+        Rscript -e 'testthat::test_dir("tests/testthat")'
