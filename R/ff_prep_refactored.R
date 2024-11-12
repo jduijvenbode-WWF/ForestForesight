@@ -72,29 +72,30 @@ ff_prep_refactored <- function(datafolder = Sys.getenv("DATA_FOLDER"), country =
   has_ground_truth <- FALSE
 
   ######## Get tiles and shape based on country or custom geometry ########
-  data(gfw_tiles, envir = environment()) #CRF unclear comments
+  data(gfw_tiles, envir = environment())
   tilesvect <- terra::vect(gfw_tiles)
   tile_and_shape <- get_tiles_and_shape(country, shape, tilesvect, tiles, verbose)
   shape <- tile_and_shape$shape
   tiles <- tile_and_shape$tiles
 
-  ########## list files and exclude features######
-  allfiles <- list_and_filter_tile_files(datafolder = datafolder, tiles, groundtruth_pattern, verbose) #CRF generic result name, also doesn't follow snakecase
+  ########## list files and filter features######
+  list_of_all_files <- list_and_filter_tile_files(datafolder = datafolder, tiles, groundtruth_pattern, verbose)
 
-  # remove features that are not wanted
-  allfiles <- filter_files_by_features(allfiles, exc_features, inc_features, groundtruth_pattern, verbose) #CRF unclear comment, it's filtering out features based on exc_ and inc_ + I understand why ground_truth_pattern is here, but it shouldn't as you'd never want to filter those out
+  # filter out the features based on inc_features and exc_features
+  list_of_all_files <- filter_files_by_features(list_of_all_files, exc_features, inc_features, groundtruth_pattern, verbose) #I understand why ground_truth_pattern is here, but it shouldn't as you'd never want to filter those out
 
   if (length(tiles) > 1) {
     if (verbose) {
-      cat("No groundtruth raster will be returned because multiple tiles are processed together \n") #CRF Add info about how to do and combine those afterwards if that is desired
+      cat("No groundtruth raster will be returned because multiple tiles are processed together \n")
+      #CRF Add info about how to do and combine those afterwards if that is desired
     }
   }
 
   # Process tiles and dates <- CRF why is this comment here?
   ####### load raster data as matrix#########
   process_result <- process_tile_data(  #CRF which process?
-    tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
-    sample_size, allindices, fltr_features, fltr_condition
+    tiles, list_of_all_files, shape, shrink, window, verbose, dates, groundtruth_pattern, has_ground_truth, addxy, adddate,
+    sample_size, fltr_features, fltr_condition
   )
 
   fdts <- process_result$fdts
@@ -196,7 +197,7 @@ list_and_filter_tile_files <- function(datafolder = NA, tiles, groundtruth_patte
   }
 
   # List all files from the input and ground truth directories
-  allfiles <- as.character(unlist(sapply(tiles, function(x) {
+  list_of_all_files <- as.character(unlist(sapply(tiles, function(x) {
     list.files(
       path = file.path(inputdatafolder, x), full.names = TRUE, recursive = TRUE,
       pattern = "tif$"
@@ -211,43 +212,43 @@ list_and_filter_tile_files <- function(datafolder = NA, tiles, groundtruth_patte
 
   # Filter ground truth files
   allgroundtruth <- allgroundtruth[endsWith(gsub(".tif", "", allgroundtruth), groundtruth_pattern)] #CRF This goundtruth filter could be done in the scan above
-  allfiles <- c(allfiles, allgroundtruth) #CRF Generic name
+  list_of_all_files <- c(list_of_all_files, allgroundtruth) #CRF Generic name
 
   # Error handling if no files are found
-  if (length(allfiles) == 0) {
+  if (length(list_of_all_files) == 0) {
     stop(paste("No folders with tif-files found that correspond to the given tile IDs:", paste(tiles, collapse = ",")))
   }
 
-  return(allfiles)
+  return(list_of_all_files)
 }
 
-filter_files_by_features <- function(allfiles, exc_features, inc_features, groundtruth_pattern, verbose) { #CRF Allowing for both inclusion and exclusion is counter-intuitive maybe put in an if-else and throw and error if both are non-empty?
+filter_files_by_features <- function(list_of_all_files, exc_features, inc_features, groundtruth_pattern, verbose) { #CRF Allowing for both inclusion and exclusion is counter-intuitive maybe put in an if-else and throw and error if both are non-empty?
   if (!is.na(exc_features[1])) {
     if (verbose) {
       cat("Excluding features\n")
     }
     exc_indices <- unique(unlist(sapply(exc_features, function(x) { #CRF quite a complex line, could use a comment: "Find indices of files that end with a feature in exc_features" for instance
-      which(endsWith(gsub(".tif", "", basename(allfiles)), x))
+      which(endsWith(gsub(".tif", "", basename(list_of_all_files)), x))
     })))
     if (length(exc_indices) > 0) {
-      allfiles <- allfiles[-exc_indices]
+      list_of_all_files <- list_of_all_files[-exc_indices]
     }
   }
 
   if (!is.na(inc_features[1])) {
     inc_indices <- unique(unlist(sapply(c(inc_features, groundtruth_pattern), function(x) {
-      which(endsWith(gsub(".tif", "", basename(allfiles)), x))
+      which(endsWith(gsub(".tif", "", basename(list_of_all_files)), x))
     })))
     if (length(inc_indices) > 0) {
-      allfiles <- allfiles[inc_indices]
+      list_of_all_files <- list_of_all_files[inc_indices]
     }
   }
 
-  if (length(allfiles) == 0) {
+  if (length(list_of_all_files) == 0) {
     stop("After including and excluding the requested variables there are no files left")
   }
 
-  return(allfiles) #CRF Maybe stop calling it all_files, because it's no longer all_files
+  return(list_of_all_files) #CRF Maybe stop calling it list_of_all_files, because it's no longer list_of_all_files
 }
 
 prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, verbose) {
@@ -303,18 +304,6 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
   return(list_gt_raster)
 }
 
-initialize_shape_from_borders <- function(shape, shrink, files, borders) { #CRF Not always from borders, it it already has a shape or a different shrink value then it just returns the shape, Also, function is in the wrong place, should be under where it's used
-  if (!hasvalue(shape) & (shrink == "extract")) {
-    if (!exists("countries", inherits = FALSE)) {
-      data(countries, envir = environment())
-      borders <- terra::vect(countries)
-    }
-    # TODO: to pass it's test case we needed to avoid aggregate and implement as below
-    # shape <- terra::union(terra::intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))), borders))
-    shape <- aggregate(intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))), borders))
-  }
-  return(shape)
-}
 
 filter_files_by_date_and_groundtruth <- function(date, files, groundtruth_pattern) {
   selected_files <- select_files_date(date, files)
@@ -436,9 +425,10 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
   return(list(fdts = fdts, data_label = data_label, groundtruth_raster = groundtruth_raster))
 }
 
-process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
-                              sample_size, allindices, fltr_features, fltr_condition) { # CRF snake_case problems
+process_tile_data <- function(tiles, list_of_all_files, shape, shrink, window, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
+                              sample_size,  fltr_features, fltr_condition) { # CRF snake_case problems
   first <- TRUE #CRF could use a comment because at first you have no clue what it's for
+  allindices <- NULL
   fdts <- NA
   ####### load raster data as matrix#########
   for (tile in tiles) {
@@ -446,8 +436,7 @@ process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, v
       rm(extent)
     }
 
-    files <- allfiles[grep(tile, allfiles)] #CRF using all_files previously makes this line confusing, as it becomes clear that all_files only contains file locations/names
-    shape <- initialize_shape_from_borders(shape, shrink, files, borders)
+    files <- list_of_all_files[grep(tile, list_of_all_files)] #CRF using list_of_all_files previously makes this line confusing, as it becomes clear that list_of_all_files only contains file locations/names
 
     result <- process_tile_dates( #CRF vague return param name
       tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size,
