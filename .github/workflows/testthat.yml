@@ -39,7 +39,7 @@ jobs:
     
     - name: Show installed R packages
       run: |
-        installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
+        Rscript -e "installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
 
     - name: Run Tests
       run: |
