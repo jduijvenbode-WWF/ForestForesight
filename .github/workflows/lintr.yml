@@ -14,9 +14,8 @@ jobs:
 
     - name: Install Linter
       run: |
-          Rscript -e "lintr::lint_package()"
+          Rscript -e "install.packages(c('lintr'), repos = 'https://cran.rstudio.com/')"
 
     - name: Run Linter
       run: |
-          Rscript -e "install.packages(c('lintr'), repos = 'https://cran.rstudio.com/');
           lintr::lint_package()"
