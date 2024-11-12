@@ -1,5 +1,4 @@
 # helper_config.R
-devtools::load_all()
 config_load()
 
 # Print a message to indicate the setup file has been executed
