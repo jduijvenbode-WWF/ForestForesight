@@ -30,4 +30,4 @@ jobs:
 
     - name: Run Tests
       run: |
-        Rscript -e "install.packages("devtools"); devtools::load_all(); testthat::test_dir('tests/testthat')"
+        Rscript -e "renv::restore(); devtools::load_all(); testthat::test_dir('tests/testthat')"
