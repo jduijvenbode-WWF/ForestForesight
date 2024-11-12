@@ -31,9 +31,15 @@ jobs:
 
     - name: Install renv package
       run: |
-          Rscript -e "install.packages(c('renv'), repos = 'https://cran.rstudio.com/')"
+        Rscript -e "install.packages('renv', repos = 'https://cran.rstudio.com/')"
 
-    - name: Initialize renv / installing packages in DESCRIPTION file
+    - name: Initialize renv and snapshot (First Run)
+      if: steps.cache-r-packages.outputs.cache-hit != 'true'
+      run: |
+        Rscript -e "renv::init(); renv::snapshot()"
+    
+    - name: Restore renv environment (Subsequent Runs)
+      if: steps.cache-r-packages.outputs.cache-hit == 'true'
       run: |
         Rscript -e "renv::restore()"
     
