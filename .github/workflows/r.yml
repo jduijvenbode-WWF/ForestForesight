@@ -20,18 +20,18 @@ jobs:
       run: |
           Rscript -e "lintr::lint_package()"
 
-    - name: Initialize renv
-      run: |
-        Rscript -e "renv::init()"
-    
-    - name: Show installed R packages
-      run: |
-        Rscript -e "installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
-
     - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install libcurl4-openssl-dev
+
+    - name: Initialize renv
+      run: |
+        Rscript -e "renv::init()" # this needs curl
+    
+    - name: Show installed R packages
+      run: |
+        Rscript -e "installed <- installed.packages(); print(installed[,c('Package', 'Version')])"
 
     - name: Run Tests
       run: |
