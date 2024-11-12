@@ -29,7 +29,7 @@ jobs:
           ${{ runner.os }}-r-
           ${{ runner.os }}-
 
-    - name: Install basic R packages
+    - name: Install renv package
       run: |
           Rscript -e "install.packages(c('renv'), repos = 'https://cran.rstudio.com/')"
 
