@@ -18,4 +18,4 @@ jobs:
 
     - name: Run Linter
       run: |
-          lintr::lint_package()"
+          Rscript -e "lintr::lint_package()"
