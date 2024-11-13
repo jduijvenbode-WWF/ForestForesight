@@ -7,17 +7,17 @@ library(terra)
 #   groundtruth_pattern <- "groundtruth"
 #   first <- TRUE # When is it false?
 #   verbose <- FALSE
-#   hasgroundtruth <- FALSE # should I put GT in the input folder???
+#   has_ground_truth <- FALSE # should I put GT in the input folder???
 
 #   # Expected output
 #   expected_groundtruth_raster <- terra::rast("groundtruth_file.tif")
 #   expected_hasgroundtruth <- TRUE
 
 #   # Run the function
-#   result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, hasgroundtruth)
+#   result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, has_ground_truth)
 
 #   # Check the results
-#   expect_true(result$hasgroundtruth)
+#   expect_true(result$has_ground_truth)
 #   expect_equal(result$groundtruth_raster, expected_groundtruth_raster)
 # })
 
@@ -38,16 +38,16 @@ test_that("load_groundtruth_raster handles no groundtruth file correctly", {
   selected_files <- filter_files_by_date_and_groundtruth(date, allfiles, groundtruth_pattern)
   first <- TRUE
   verbose <- FALSE
-  hasgroundtruth <- FALSE
+  has_ground_truth <- FALSE
 
   checker_raster <- terra::rast(selected_files[1], win = extent)
   checker_raster[] <- 0
   # Run the function
-  result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
+  result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, has_ground_truth)
 
   # Check the results
-  # message("hasgroundtruth is not false?\n")
-  expect_false(result$hasgroundtruth)
+  # message("has_ground_truth is not false?\n")
+  expect_false(result$has_ground_truth)
   # message("checker_raster is not equal?\n")
   expect_equal(dim(result$groundtruth_raster), dim(checker_raster))
   expect_equal(str(result$groundtruth_raster), str(checker_raster))

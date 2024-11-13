@@ -425,7 +425,7 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
   return(list(fdts = fdts, data_label = data_label, groundtruth_raster = groundtruth_raster))
 }
 
-process_tile_data <- function(tiles, list_of_all_files, shape, shrink, window, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
+process_tile_data <- function(tiles, list_of_all_files, shape, shrink, window, verbose, dates, groundtruth_pattern, has_ground_truth, addxy, adddate,
                               sample_size,  fltr_features, fltr_condition) { # CRF snake_case problems
   first <- TRUE #CRF could use a comment because at first you have no clue what it's for
   allindices <- NULL
