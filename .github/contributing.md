@@ -15,8 +15,7 @@ This workflow guides contributors on how to address **[confirmed]** issues in al
 ---
 
 ## Valid Issues
-Only issues with the label **[confirmed]** should be picked up and fixed. If you are interested in a new feature or bug fix, please check if there is already an issue created. If not, create a new issue.
-**Note:** Only issues labeled **[confirmed]** are eligible to be merged into the repository.
+Only issues with the label **[confirmed]** are guaranteed to be merged. If you have a suggestion for a new feature or bug fix, please check whether it is a duplicate before creating an issue. After issue creation a maintainer will determine whether it gets the **[confirmed]** label.
 
 ## Workflow
 
