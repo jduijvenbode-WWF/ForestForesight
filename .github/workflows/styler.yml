@@ -36,15 +36,6 @@ jobs:
           echo "skip_job=false" >> $GITHUB_ENV
         fi
 
-    - name: Check if commit message is 'Style code with styler'
-      id: check_commit
-      run: |
-        if [[ "${{ env.COMMIT_MESSAGE }}" == "Style code with styler" ]]; then
-          echo "skip_job=true" >> $GITHUB_ENV
-        else
-          echo "skip_job=false" >> $GITHUB_ENV
-        fi
-
     - name: Set up R library environment using custom actions
       if: env.skip_job == 'false'
       uses: r-lib/actions/setup-r@v2
