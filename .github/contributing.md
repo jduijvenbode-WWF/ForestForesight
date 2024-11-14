@@ -15,7 +15,8 @@ This workflow guides contributors on how to address **[confirmed]** issues in al
 ---
 
 ## Valid Issues
-Only issues with the label **[confirmed]** should be picked up and fixed. If you are interested in a new feature or bug fix, please check if there is already an issue created. If not, create a new issue, and wait for it to be labeled **[confirmed]** by maintainers before proceeding.
+Only issues with the label **[confirmed]** should be picked up and fixed. If you are interested in a new feature or bug fix, please check if there is already an issue created. If not, create a new issue.
+**Note:** Only issues labeled **[confirmed]** are eligible to be merged into the repository.
 
 ## Workflow
 
@@ -42,7 +43,7 @@ Only issues with the label **[confirmed]** should be picked up and fixed. If you
    - Wait for maintainers to review your PR. They will either approve the PR if it meets all criteria or request changes if adjustments are needed.
    - If changes are requested:
      - Respond to comments and make necessary updates at your earliest convenience.
-     - Push the updates to your branch in the forked repository; these changes will be reflected in the PR.
+     - Push the updates to your branch in the forked repository; these changes will be reflected in the PR. And wait for the review.
 
 ### 6. Approval and Merge
    - Once your PR is approved, a maintainer will merge it into the `develop` branch in the main repository.
