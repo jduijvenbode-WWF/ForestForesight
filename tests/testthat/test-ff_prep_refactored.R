@@ -5,14 +5,14 @@ test_that("refactored ff_prep has the same output as the original", {
 
   identifier <- Sys.getenv("TEST_FF_PREP_COUNTRY")
 
-  features <- c("temperature", "lastmonth", "confidence", "totallossalerts")
+  features <- c("wetlands", "initialforestcover", "lastsixmonths", "timesinceloss")
 
   # Change to your own data_folder because we can't store it locally
   data_folder <- paste(download_folder, "preprocessed", sep = "/")
 
   # sample_size=1 in order to remove randomness
   # running on tiles
-  tiles <- c("00N_000E", "00N_010E")
+  tiles <- c("10N_110E")
   tile_prepped_ref <- ff_prep_refactored(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
   tile_prepped <- ff_prep(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
 
@@ -34,7 +34,7 @@ test_that("refactored ff_prep has the same output as the original", {
 
   ## running on shape
   countries <- vect(get(data("countries")))
-  shape <- countries[countries$iso3 == "GAB"]
+  shape <- countries[countries$iso3 == "BRN"]
   shape_prepped <- ff_prep(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
   shape_prepped_ref <- ff_prep_refactored(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
 
@@ -51,7 +51,7 @@ test_that("refactored ff_prep has the same output as the original", {
   hash_folder <- paste(download_folder, "hashes/", sep = "/")
   date <- Sys.Date()
   hash_matrix <- data.frame(
-    identifier_or_tiles = c(combined_tiles, identifier, "shape_of_GAB"),
+    identifier_or_tiles = c(combined_tiles, identifier, "shape_of_BRN"),
     sample_size = c(1, 1, 1),
     included_features = c(combined_features, combined_features, combined_features),
     hash = c(tile_hash, country_hash, shape_hash),
@@ -59,7 +59,7 @@ test_that("refactored ff_prep has the same output as the original", {
   )
 
   hash_matrix_ref <- data.frame(
-    identifier_or_tiles = c(combined_tiles, identifier, "shape_of_GAB"),
+    identifier_or_tiles = c(combined_tiles, identifier, "shape_of_BRN"),
     sample_size = c(1, 1, 1),
     included_features = c(combined_features, combined_features, combined_features),
     hash = c(tile_hash_ref, country_hash_ref, shape_hash_ref),
