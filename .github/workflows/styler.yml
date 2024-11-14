@@ -17,20 +17,25 @@ jobs:
         git fetch origin ${GITHUB_HEAD_REF}
         COMMIT_HASH=$(git rev-parse origin/${GITHUB_HEAD_REF}^1)
         COMMIT_MESSAGE=$(git log -1 --pretty=%B $COMMIT_HASH)
+        COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an' $COMMIT_HASH)
+
         echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
         echo "COMMIT_MESSAGE<<EOF" >> $GITHUB_ENV
         echo "$COMMIT_MESSAGE" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
+        echo "COMMIT_AUTHOR=$COMMIT_AUTHOR" >> $GITHUB_ENV
           
     - name: Print the previous commit message and hash
       run: |
         echo "Previous commit hash: '${{ env.COMMIT_HASH }}'"
         echo "Previous commit message: '${{ env.COMMIT_MESSAGE }}'"
+        echo "Previous commit author: '${{ env.COMMIT_AUTHOR }}'"
+
   
     - name: Check if commit message is 'Style code with styler'
       id: check_commit
       run: |
-        if [[ "${{ env.COMMIT_MESSAGE }}" == "Style code with styler" ]]; then
+        if [[ "${{ env.COMMIT_MESSAGE }}" == "Style code with styler" ]] && [[ "${{ env.COMMIT_AUTHOR }}" == "github-actions[bot]" ]]; then
           echo "skip_job=true" >> $GITHUB_ENV
         else
           echo "skip_job=false" >> $GITHUB_ENV
