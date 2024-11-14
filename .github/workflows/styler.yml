@@ -11,67 +11,67 @@ jobs:
       with:
         fetch-depth: 0  # Fetch all history to get the previous commit
 
-    - name: Get the correct commit message
+    - name: Get the previous commit message
       id: get_commit_message
       run: |
-        COMMIT_MESSAGE=$(git log -1 --pretty=%B origin/${GITHUB_HEAD_REF})
+        COMMIT_MESSAGE=$(git log -2 --pretty=%B origin/${GITHUB_HEAD_REF})
         echo "COMMIT_MESSAGE<<EOF" >> $GITHUB_ENV
         echo "$COMMIT_MESSAGE" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
       
-    - name: Print commit message
+    - name: Print the previous commit message
       run: |
         echo "Previous commit message: '${{ env.COMMIT_MESSAGE }}'"
 
-    - name: Check if the previous commit message is 'Style code with styler'
+    - name: Check if commit message is 'Style code with styler'
       id: check_commit
       run: |
         if [[ "${{ env.COMMIT_MESSAGE }}" == "Style code with styler" ]]; then
-          echo "::set-output name=skip_job::true"
+          echo "skip_job=true" >> $GITHUB_ENV
         else
-          echo "::set-output name=skip_job::false"
+          echo "skip_job=false" >> $GITHUB_ENV
         fi
 
     - name: Set up R library environment using custom actions
-      if: steps.check_commit.outputs.skip_job == 'false'
+      if: env.skip_job == 'false'
       uses: r-lib/actions/setup-r@v2
 
     - name: Set locale and encoding
-      if: steps.check_commit.outputs.skip_job == 'false'
+      if: env.skip_job == 'false'
       run: |
         sudo locale-gen en_US.UTF-8
         export LANG=en_US.UTF-8
         export LC_ALL=en_US.UTF-8
 
     - name: Install Styler and Roxygen2
-      if: steps.check_commit.outputs.skip_job == 'false'
+      if: env.skip_job == 'false'
       run: |
         Rscript -e "install.packages(c('styler', 'roxygen2'), repos = 'https://cran.rstudio.com/')"
 
     - name: Style R code
-      if: steps.check_commit.outputs.skip_job == 'false'
+      if: env.skip_job == 'false'
       run: |
         Rscript -e "styler::style_pkg(include_roxygen_examples = FALSE); warnings()"
 
     - name: Check for changes
       id: check_changes
-      if: steps.check_commit.outputs.skip_job == 'false'
+      if: env.skip_job == 'false'
       run: |
         if git diff --quiet; then
           echo "No changes made by styler."
-          echo "::set-output name=changes_made::false"
+          echo "changes_made=false" >> $GITHUB_ENV
         else
           echo "Changes made by styler."
-          echo "::set-output name=changes_made::true"
+          echo "changes_made=true" >> $GITHUB_ENV
         fi
   
     - name: Fetch latest changes
-      if: steps.check_changes.outputs.changes_made == 'true' && steps.check_commit.outputs.skip_job == 'false'
+      if: env.changes_made == 'true' && env.skip_job == 'false'
       run: |
         git fetch origin ${GITHUB_HEAD_REF}:${GITHUB_HEAD_REF}
 
     - name: Commit changes
-      if: steps.check_changes.outputs.changes_made == 'true' && steps.check_commit.outputs.skip_job == 'false'
+      if: env.changes_made == 'true' && env.skip_job == 'false'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
