@@ -1,0 +1,27 @@
+name: Improving Code Readability part 2
+on:
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  linting-the-code:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up R library environment using custom actions
+      uses: r-lib/actions/setup-r@v2
+
+    - name: Set locale and encoding
+      run: |
+        sudo locale-gen en_US.UTF-8
+        export LANG=en_US.UTF-8
+        export LC_ALL=en_US.UTF-8
+
+    - name: Install Styler, Linter, and Roxygen2
+      run: |
+        Rscript -e "install.packages(c('lintr'), repos = 'https://cran.rstudio.com/')"
+        
+    - name: Run Linter
+      run: |
+        Rscript -e "lintr::lint_package()"
