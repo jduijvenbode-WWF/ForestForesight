@@ -373,8 +373,8 @@ finalize_column_names_and_data_matrix <- function(dts, selected_files, addxy, ad
   if (adddate) {
     newcolnames <- c(newcolnames, "sinmonth", "month", "monthssince2019")
   }
-  
-  colnames(dts) <- newcolnames 
+
+  colnames(dts) <- newcolnames
   dts <- dts[, order(colnames(dts))]
   return(list(dts = dts, newcolnames = newcolnames))
 }
@@ -434,9 +434,9 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
     data_label <- fdts[, groundtruth_index]
 
     if (hasvalue(label_threshold)) {
-      data_label <- as.numeric(data_label > label_threshold)
+      data_label <- as.numeric(data_label >= label_threshold)
       if (inherits(groundtruth_raster, "SpatRaster")) {
-        groundtruth_raster <- as.numeric(groundtruth_raster > label_threshold)
+        groundtruth_raster <- as.numeric(groundtruth_raster >= label_threshold)
       }
     }
 
