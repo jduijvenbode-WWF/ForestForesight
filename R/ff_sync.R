@@ -155,7 +155,7 @@ ff_sync_get_features = function(features,ff_folder){
       feature_metadata <- get("feature_metadata")
       if (!all(features %in% feature_metadata$name)) {
         missing_features <- features[!features %in% feature_metadata$name]
-        stop("The following features are not valid: ", paste(missing_features, collapse = ", "))
+        stop("The following features are not valid: ", paste(missing_features, collapse = ", "),"available features are:",paste(feature_metadata$name,collapse="\n"))
       }
       feature_list <- features
     }
