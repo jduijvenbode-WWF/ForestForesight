@@ -22,10 +22,6 @@ jobs:
       run: |
         Rscript -e "install.packages(c('styler', 'roxygen2'), repos = 'https://cran.rstudio.com/')"
 
-    - name: Print R session info
-      run: |
-        Rscript -e "sessionInfo()"
-
     - name: Style R code
       run: |
         Rscript -e "styler::style_pkg(include_roxygen_examples = FALSE); warnings()"
