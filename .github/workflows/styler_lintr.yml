@@ -20,7 +20,6 @@ jobs:
 
     - name: Style R code
       run: |
-        git fetch origin ${GITHUB_HEAD_REF}:${GITHUB_HEAD_REF} 
         Rscript -e "styler::style_pkg(include_roxygen_examples = FALSE); warnings()"
 
     - name: Check for changes by styler
@@ -57,4 +56,4 @@ jobs:
 
     - name: Run lintr
       run: |
-        Rscript -e "result <- lintr::lint_package(); count <- length(result); cat('Number of lintr comments generated:', count, '\n')"
+        Rscript -e "result <- lintr::lint_package(); count <- length(result); cat(result,'\nNumber of lintr comments generated:', count, '\n')"
