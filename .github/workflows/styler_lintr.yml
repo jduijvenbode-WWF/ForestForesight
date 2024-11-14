@@ -1,4 +1,4 @@
-name: Improving Code Readability
+name: Improving Readability
 on:
   pull_request:
     branches: [ "develop" ]
@@ -55,6 +55,6 @@ jobs:
         COMMIT_HASH=$(git rev-parse origin/${GITHUB_HEAD_REF})
         COMMIT_MESSAGE=$(git log -1 --pretty=%B $COMMIT_HASH)
         COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an' $COMMIT_HASH)
-        echo "Running lintr to '$COMMIT_MESSAGE' commit by '$COMMIT_AUTHOR' #$COMMIT_HASH"
+        echo "Running lintr to '$COMMIT_MESSAGE' commit by $COMMIT_AUTHOR #${COMMIT_HASH:0:7}"
         Rscript -e "result <- lintr::lint_package(); print(result); 
         cat('Number of lintr comments generated:', length(result))"
