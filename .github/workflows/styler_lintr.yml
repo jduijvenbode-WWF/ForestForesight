@@ -53,7 +53,11 @@ jobs:
     - name: Fetch the latest changes if there's a push from styler update
       if: env.changes_made == 'true' 
       run: |
-        git fetch origin ${GITHUB_HEAD_REF}
+        git fetch origin ${GITHUB_HEAD_REF}        
+        COMMIT_HASH=$(git rev-parse origin/${GITHUB_HEAD_REF}^1)
+        COMMIT_MESSAGE=$(git log -1 --pretty=%B $COMMIT_HASH)
+        COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an' $COMMIT_HASH)
+        echo "updating the codebase with $COMMIT_MESSAGE from $COMMIT_AUTHOR"
 
     - name: Run lintr
       run: |
