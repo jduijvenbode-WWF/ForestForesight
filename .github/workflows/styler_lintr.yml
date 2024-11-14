@@ -49,10 +49,10 @@ jobs:
       if: env.changes_made == 'true' 
       run: |
         git fetch origin ${GITHUB_HEAD_REF}        
-        COMMIT_HASH=$(git rev-parse origin/${GITHUB_HEAD_REF}^1)
+        COMMIT_HASH=$(git rev-parse origin/${GITHUB_HEAD_REF})
         COMMIT_MESSAGE=$(git log -1 --pretty=%B $COMMIT_HASH)
         COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an' $COMMIT_HASH)
-        echo "updating the codebase with $COMMIT_MESSAGE from $COMMIT_AUTHOR"
+        echo "Before running lintr: updating codebase from '$COMMIT_MESSAGE' from '$COMMIT_AUTHOR'"
 
     - name: Run lintr
       run: |
