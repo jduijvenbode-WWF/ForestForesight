@@ -56,4 +56,4 @@ jobs:
 
     - name: Run lintr
       run: |
-        Rscript -e "result <- lintr::lint_package(); count <- length(result); cat(result,'\nNumber of lintr comments generated:', count, '\n')"
+        Rscript -e "result <- lintr::lint_package(); print(result); cat('Number of lintr comments generated:', length(result))"
