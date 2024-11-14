@@ -49,12 +49,12 @@ jobs:
       if: env.changes_made == 'true' 
       run: |
         git fetch origin ${GITHUB_HEAD_REF}        
+
+    - name: Run lintr
+      run: |    
         COMMIT_HASH=$(git rev-parse origin/${GITHUB_HEAD_REF})
         COMMIT_MESSAGE=$(git log -1 --pretty=%B $COMMIT_HASH)
         COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an' $COMMIT_HASH)
-        echo "Before running lintr: updating codebase from '$COMMIT_MESSAGE' from '$COMMIT_AUTHOR'"
-
-    - name: Run lintr
-      run: |
+        echo "Running lintr to '$COMMIT_MESSAGE' commit by '$COMMIT_AUTHOR' #$COMMIT_HASH"
         Rscript -e "result <- lintr::lint_package(); print(result); 
         cat('Number of lintr comments generated:', length(result))"
