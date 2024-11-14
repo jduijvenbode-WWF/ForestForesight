@@ -1,0 +1,39 @@
+name: Improving Code Readability
+on:
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  styling-linting-the-code:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev libharfbuzz-dev libfribidi-dev
+        sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+
+    - name: Set up R library environment using custom actions
+      uses: r-lib/actions/setup-r@v2
+
+    - name: Install Styler and Linter
+      run: |
+          Rscript -e "install.packages(c('lintr', 'styler'), repos = 'https://cran.rstudio.com/')"
+
+    - name: Style R code
+      run: |
+          Rscript -e "styler::style_pkg()"
+    
+    - name: Commit changes
+      run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m 'Style code with styler' || echo "No changes to commit"
+          git push
+
+    - name: Run Linter
+      run: |
+          Rscript -e "lintr::lint_package()"
