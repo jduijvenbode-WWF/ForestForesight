@@ -16,12 +16,17 @@ jobs:
       run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
 
     - name: Print commit message
-      run: echo "Previous commit message: ${{ env.COMMIT_MESSAGE }}"
+      run: |
+        echo "Previous commit message: '${{ env.COMMIT_MESSAGE }}'"
+
+    - name: Set commit message as output
+      id: set_commit_message
+      run: echo "::set-output name=COMMIT_MESSAGE::${{ env.COMMIT_MESSAGE }}"
 
   conditional-job:
     runs-on: ubuntu-latest
     needs: check-commit-message
-    if: contains(needs.check-commit-message.outputs.COMMIT_MESSAGE, 'trigger-word')
+    if: contains(needs.check-commit-message.outputs.COMMIT_MESSAGE, 'Style')
     steps:
     - name: Run conditional step
-      run: echo "This job runs because the commit message contains 'trigger-word'."
+      run: echo "This job runs because the commit message contains 'Style'."
