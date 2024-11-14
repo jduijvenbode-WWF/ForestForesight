@@ -2,12 +2,7 @@ name: Improving Code Readability
 on:
   pull_request:
     branches: [ "develop" ]
-
-name: Improving Code Readability
-on:
-  pull_request:
-    branches: [ "develop" ]
-
+    
 jobs:
   styling-linting-the-code:
     runs-on: ubuntu-latest
