@@ -11,12 +11,12 @@ jobs:
       with:
         fetch-depth: 0  # Fetch all history to get the previous commit
 
-    - name: Get the correct previous commit message
+    - name: Get the previous commit message
       id: get_commit_message
       run: |
-        COMMIT_MESSAGE=$(git log -1 $GITHUB_SHA --pretty=%B)
+        COMMIT_MESSAGE=$(git log -1 --pretty=%B $(git rev-parse HEAD^1))
         echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
-  
+      
     - name: Print commit message
       run: |
         echo "Previous commit message: '${{ env.COMMIT_MESSAGE }}'"
