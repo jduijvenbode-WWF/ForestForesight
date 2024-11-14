@@ -3,6 +3,11 @@ on:
   pull_request:
     branches: [ "develop" ]
 
+name: Improving Code Readability
+on:
+  pull_request:
+    branches: [ "develop" ]
+
 jobs:
   styling-linting-the-code:
     runs-on: ubuntu-latest
@@ -24,9 +29,9 @@ jobs:
         export LANG=en_US.UTF-8
         export LC_ALL=en_US.UTF-8
 
-    - name: Install Styler and Linter
+    - name: Install Styler, Linter, and Roxygen2
       run: |
-        Rscript -e "install.packages(c('lintr', 'styler'), repos = 'https://cran.rstudio.com/')"
+        Rscript -e "install.packages(c('lintr', 'styler', 'roxygen2'), repos = 'https://cran.rstudio.com/')"
 
     - name: Print R session info
       run: |
@@ -34,17 +39,17 @@ jobs:
 
     - name: Style R code
       run: |
-        Rscript -e "styler::style_pkg(); warnings()"
-        
+        Rscript -e "styler::style_pkg(include_roxygen_examples = FALSE); warnings()"
+    
     - name: Commit changes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git config --local user.email "github-actions@users.noreply.github.com"
-        git config --local user.name "GitHub Actions"
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add .
         git commit -m 'Style code with styler' || echo "No changes to commit"
-        git push origin HEAD
+        git push origin HEAD:refs/heads/${{ github.head_ref }}
 
     - name: Run Linter
       run: |
