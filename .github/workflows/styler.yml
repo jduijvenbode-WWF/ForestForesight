@@ -14,7 +14,7 @@ jobs:
     - name: Get the correct commit message
       id: get_commit_message
       run: |
-        COMMIT_MESSAGE=$(git log -1 --pretty=%B $(git rev-parse HEAD^1))
+        COMMIT_MESSAGE=$(git log -1 --pretty=%B origin/${GITHUB_HEAD_REF})
         echo "COMMIT_MESSAGE<<EOF" >> $GITHUB_ENV
         echo "$COMMIT_MESSAGE" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
