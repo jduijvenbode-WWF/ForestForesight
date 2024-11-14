@@ -1,4 +1,4 @@
-name: Improving Code Readability part 2
+name: Lintr
 on:
   pull_request:
     branches: [ "develop" ]
@@ -21,7 +21,7 @@ jobs:
     - name: Install Styler, Linter, and Roxygen2
       run: |
         Rscript -e "install.packages(c('lintr'), repos = 'https://cran.rstudio.com/')"
-        
+
     - name: Run Linter
       run: |
         Rscript -e "lintr::lint_package()"
