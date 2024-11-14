@@ -27,7 +27,7 @@ Only issues with the label **[confirmed]** are guaranteed to be merged. If you h
 
 ### 3. Develop and Test Your Changes
    - After making the necessary changes in your branch, follow our [Testing Strategy](https://forestforesight.atlassian.net/wiki/spaces/EWS/overview?homepageId=32961) to ensure your changes are covered by unit tests.
-   - Ensure code quality by running the `styler` and `lintr` checks. You can follow the instructions in the [Tools](https://forestforesight.atlassian.net/wiki/spaces/EWS/overview?homepageId=32961) section to use `styler` and `lintr`.
+   - Ensure your code adheres to the tidyverse guidelines by running the `styler` and `lintr` checks. You can follow the instructions in the [Tools](https://forestforesight.atlassian.net/wiki/spaces/EWS/overview?homepageId=32961) section to use `styler` and `lintr`.
    - Confirm that all code meets the project’s standards before submitting.
 
 ### 4. Create a Pull Request (PR)
