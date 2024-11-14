@@ -6,5 +6,5 @@ DEFAULT_GROUNDTRUTH: "groundtruth6m"
 CODE_LOCATION: "C:/Users/maasv/Documents/#EngD/ForestForesight/Forked_repo/ForestForesight"
 TEST:
   DATA_FOLDER: "C:/Users/maasv/Documents/#EngD/ForestForesight/Forked_repo/ForestForesight/tests/test_data"
-  FF_PREP_QC_DATE: "2023-01-01"
+  FF_PREP_QC_DATE: "2021-01-01"
   FF_PREP_COUNTRY: "BRN"

@@ -9,7 +9,7 @@ verbose <- TRUE
 
 test_that("preprocess_by_shape_or_country works when country is provided", {
   # Case: Country is provided, should process based on country
-  country <- "GAB"
+  country <- "BRN"
   shape <- NULL
 
   # Run the function
@@ -22,9 +22,10 @@ test_that("preprocess_by_shape_or_country works when country is provided", {
 })
 
 test_that("preprocess_by_shape_or_country works when shape is provided", {
+  country <- NULL
   data(countries, envir = environment())
   countries <- vect(get(data("countries")))
-  shape_from_countries <- countries[countries$iso3 == "GAB"]
+  shape_from_countries <- countries[countries$iso3 == "BRN"]
 
   # Run the function with the shape from countries
   result <- preprocess_by_shape_or_country(country, shape_from_countries, tilesvect, tiles, verbose)
@@ -40,7 +41,7 @@ test_that("preprocess_by_shape_or_country projects shape to EPSG:4326 if necessa
   country <- NULL
   data(countries, envir = environment())
   countries <- vect(get(data("countries")))
-  shape_from_countries <- terra::project(countries[countries$iso3 == "GAB"], "+proj=utm +zone=33 +datum=WGS84")
+  shape_from_countries <- terra::project(countries[countries$iso3 == "BRN"], "+proj=utm +zone=33 +datum=WGS84")
 
   # Run the function
   result <- preprocess_by_shape_or_country(country, shape_from_countries, tilesvect, tiles, verbose)
@@ -49,16 +50,14 @@ test_that("preprocess_by_shape_or_country projects shape to EPSG:4326 if necessa
   expect_true(terra::is.lonlat(result$shape))
 })
 
-test_that("preprocess_by_shape_or_country returns unchanged tilesvect when neither country nor shape is provided", {
-  # Case: Neither country nor shape is provided, function should not change tilesvect
+test_that("preprocess_by_shape_or_country returns only NULL if neither country or shape is provided", {
+  # Case: Neither country nor shape is provided, function should return null values
   country <- NULL
   shape <- NULL
 
   # Run the function
   result <- preprocess_by_shape_or_country(country, shape, tilesvect, tiles, verbose)
 
-  # Check that tilesvect remains unchanged and no tiles are selected
-  expect_equal(result$tilesvect, tilesvect)
   expect_null(result$tiles)
   expect_null(result$shape)
 })
