@@ -23,7 +23,7 @@ jobs:
       run: |
         echo "Previous commit message: '${{ env.COMMIT_MESSAGE }}'"
 
-    - name: Check if commit message is 'Style code with styler'
+    - name: Check if the previous commit message is 'Style code with styler'
       id: check_commit
       run: |
         if [[ "${{ env.COMMIT_MESSAGE }}" == "Style code with styler" ]]; then
