@@ -13,10 +13,12 @@ jobs:
 
     - name: Get previous commit message
       id: get_commit_message
-      run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+      run: |
+        echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
 
     - name: Print commit message
-      run: echo "Previous commit message: '${{ env.COMMIT_MESSAGE }}'"
+      run: |
+        echo "Previous commit message: '${{ env.COMMIT_MESSAGE }}'"
 
     - name: Check if commit message is 'Style code with styler'
       id: check_commit
