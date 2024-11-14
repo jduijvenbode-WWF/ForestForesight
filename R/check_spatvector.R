@@ -5,7 +5,8 @@
 #' with known country boundaries.
 #'
 #' @param x Object to check.
-#' @param check_size Logical. Whether to check if the area is within reasonable bounds. Default is TRUE.
+#' @param check_size Logical. Whether to check if the area is within reasonable bounds.
+#' Default is TRUE.
 #'
 #' @return The input SpatVector, possibly reprojected to EPSG:4326.
 #'
@@ -15,7 +16,8 @@
 #' - If coordinate system is properly defined
 #' - If polygons are valid and non-empty
 #' - If the area overlaps with known country boundaries
-#' - Optionally checks if area is within reasonable bounds (larger than 10,000 ha but smaller than approximately Brazil)
+#' - Optionally checks if area is within reasonable bounds
+#' (larger than 10,000 ha but smaller than approximately Brazil)
 #'
 #' @import terra
 #'
@@ -31,73 +33,112 @@
 #'
 #' @export
 check_spatvector <- function(x, check_size = TRUE) {
-  # Check if object is SpatVector
+  x <- check_basic_properties(x)
+  x <- check_coordinate_system(x)
+  x <- check_country_overlap(x)
+  if (check_size) {
+    check_area_bounds(x)
+  }
+  return(x)
+}
+
+#' Check basic SpatVector properties
+#' @noRd
+check_basic_properties <- function(x) {
   if (!inherits(x, "SpatVector")) {
-    stop(paste0("Input must be a SpatVector object,received ",class(x)))
+    stop(paste0("Input must be a SpatVector object, received ", class(x)))
   }
-
-  # Check if it's a polygon
   if (terra::geomtype(x) != "polygons") {
-    stop(paste("Input must be a polygon SpatVector, received",terra::geomtype(x)))
+    stop(paste("Input must be a polygon SpatVector, received", terra::geomtype(x)))
   }
-
-  # Check if empty
   if (terra::nrow(x) == 0) {
     stop("Input SpatVector contains no polygons")
   }
+  return(x)
+}
 
-  # Check coordinate system
+#' Check and fix coordinate system
+#' @noRd
+check_coordinate_system <- function(x) {
   if (is.na(terra::crs(x))) {
-    if (terra::ext(x)$xmin >= -180 && terra::ext(x)$xmax <= 180) {
-      warning("No coordinate system defined but coordinates appear to be in decimal degrees. Assuming WGS84.")
-      terra::crs(x) <- "EPSG:4326"
-    } else {
-      stop("No coordinate system defined and coordinates are not in decimal degrees range")
-    }
-  } else if (terra::crs(x) != "EPSG:4326" & length(grep("WGS 84",terra::crs(x)))==0) {
+    x <- handle_missing_crs(x)
+  } else if (!is_wgs84(terra::crs(x))) {
     warning("Coordinate system is not EPSG:4326. Converting to WGS84.")
     x <- terra::project(x, "EPSG:4326")
   }
+  return(x)
+}
 
-  # Load countries dataset and check overlap
-  countries <- terra::aggregate(terra::vect(get(data("countries",envir = environment()))))
+#' Handle missing CRS
+#' @noRd
+handle_missing_crs <- function(x) {
+  if (is_within_degree_range(x)) {
+    warning("No coordinate system defined but coordinates appear to be in decimal degrees.
+            Assuming WGS84.")
+    terra::crs(x) <- "EPSG:4326"
+    return(x)
+  }
+  stop("No coordinate system defined and coordinates are not in decimal degrees range")
+}
 
-  # Calculate overlap
+#' Check if coordinates are within degree range
+#' @noRd
+is_within_degree_range <- function(x) {
+  terra::ext(x)$xmin >= -180 && terra::ext(x)$xmax <= 180
+}
+
+#' Check if CRS is WGS84
+#' @noRd
+is_wgs84 <- function(crs) {
+  identical(crs, "EPSG:4326") || length(grep("WGS 84", crs)) > 0
+}
+
+#' Check overlap with country boundaries
+#' @noRd
+check_country_overlap <- function(x) {
+  countries <- terra::aggregate(terra::vect(get(data("countries", envir = environment()))))
   intersection <- terra::intersect(x, countries)
 
   if (terra::nrow(intersection) == 0) {
     stop("Input shape does not overlap with any known country boundaries")
   }
 
-  # Calculate overlap percentage
+  check_overlap_percentage(x, intersection)
+  return(x)
+}
+
+#' Check overlap percentage
+#' @noRd
+check_overlap_percentage <- function(x, intersection) {
   overlap_area <- terra::expanse(intersection)
   shape_area <- terra::expanse(x)
   overlap_percentage <- (overlap_area / shape_area) * 100
 
-  if (overlap_percentage < 99.9) {  # Using 99.9% to account for potential rounding issues
-    warning(sprintf("Input shape only partially overlaps with known country boundaries (%.1f%% overlap)",
-                    overlap_percentage))
+  if (overlap_percentage < 99.9) {
+    warning(sprintf(
+      "Input shape only partially overlaps with known country boundaries (%.1f%% overlap)",
+      overlap_percentage
+    ))
   }
+}
 
-  # Check area
-  area_ha <- shape_area / 10000  # Convert m2 to hectares
+#' Check area bounds
+#' @noRd
+check_area_bounds <- function(x) {
+  area_ha <- terra::expanse(x) / 10000
 
   if (area_ha <= 0) {
     stop("Input SpatVector has zero or negative area")
   }
 
-  if (check_size) {
-    upper_area_threshold <- 1e9
-    lower_area_threshold <- 1e4
+  upper_area_threshold <- 1e9
+  lower_area_threshold <- 1e4
 
-    if (area_ha > upper_area_threshold) {
-      warning("Input area is very large. This may impact performance and processing time.")
-    }
-
-    if (area_ha < 10000) {
-      warning("Input area is smaller than 10,000 hectares. This may impact performance for training purposes.")
-    }
+  if (area_ha > upper_area_threshold) {
+    warning("Input area is very large. This may impact performance and processing time.")
   }
-
-  return(x)
+  if (area_ha < lower_area_threshold) {
+    warning("Input area is smaller than 10,000 hectares.
+            This may impact performance for training purposes.")
+  }
 }
