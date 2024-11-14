@@ -1,10 +1,10 @@
-name: Improving Code Readability
+name: Improving Code Readability part 1
 on:
   pull_request:
     branches: [ "develop" ]
 
 jobs:
-  styling-linting-the-code:
+  styling-the-code:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -18,9 +18,9 @@ jobs:
         export LANG=en_US.UTF-8
         export LC_ALL=en_US.UTF-8
 
-    - name: Install Styler, Linter, and Roxygen2
+    - name: Install Styler and Roxygen2
       run: |
-        Rscript -e "install.packages(c('lintr', 'styler', 'roxygen2'), repos = 'https://cran.rstudio.com/')"
+        Rscript -e "install.packages(c('styler', 'roxygen2'), repos = 'https://cran.rstudio.com/')"
 
     - name: Print R session info
       run: |
@@ -57,7 +57,3 @@ jobs:
         git commit -m 'Style code with styler'
         git pull --rebase origin ${GITHUB_HEAD_REF}
         git push origin HEAD:refs/heads/${GITHUB_HEAD_REF}
-  
-    - name: Run Linter
-      run: |
-        Rscript -e "lintr::lint_package()"
