@@ -11,18 +11,21 @@ jobs:
       with:
         fetch-depth: 0  # Fetch all history to get the previous commit
 
-    - name: Get the correct commit message
-      id: get_commit_message
+    - name: Get the correct commit message and hash
+      id: get_commit_info
       run: |
-        COMMIT_MESSAGE=$(git log -1 --pretty=%B $(git rev-parse HEAD^2))
+        COMMIT_HASH=$(git rev-parse HEAD^2)
+        COMMIT_MESSAGE=$(git log -1 --pretty=%B $COMMIT_HASH)
+        echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
         echo "COMMIT_MESSAGE<<EOF" >> $GITHUB_ENV
         echo "$COMMIT_MESSAGE" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
-      
-    - name: Print commit message
+        
+    - name: Print commit message and hash
       run: |
+        echo "Previous commit hash: '${{ env.COMMIT_HASH }}'"
         echo "Previous commit message: '${{ env.COMMIT_MESSAGE }}'"
-
+        
     - name: Check if commit message is 'Style code with styler'
       id: check_commit
       run: |
