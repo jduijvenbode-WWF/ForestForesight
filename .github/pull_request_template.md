@@ -27,4 +27,4 @@ Clearly describe the submitted changes in detail. Include images where helpful. 
 
 ### Related Issues
 
-<!-- Clearly references the issue it addresses by using `#issue-number` (e.g., `#123`). -->
+<!-- Clearly reference the issue this PR addresses by using '#issue-number' (e.g. ' #123' ). -->
