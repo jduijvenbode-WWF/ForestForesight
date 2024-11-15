@@ -1,5 +1,3 @@
-library(testthat)
-
 # Create a temporary folder structure and files for testing
 temp_datafolder <- tempdir()
 

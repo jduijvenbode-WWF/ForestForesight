@@ -12,10 +12,10 @@
 #' @param beta The weight of precision in the F-score calculation.
 #' @return A list containing the best threshold and the corresponding F-score.
 #' @examples
-#' bestThreshold(c(0.2, 0.6, 0.7), c(0, 1, 1))
+#' best_threshold(c(0.2, 0.6, 0.7), c(0, 1, 1))
 #' @export
-bestThreshold <- function(prediction, groundtruth, optimize_function = getFscore,
-                          a = 0.45, b = 0.55, tol = 0.001, maxiter = 100, beta = 0.5) {
+best_threshold <- function(prediction, groundtruth, optimize_function = getFscore,
+                           a = 0.45, b = 0.55, tol = 0.001, maxiter = 100, beta = 0.5) {
   # Golden ratio
   phi <- (1 + sqrt(5)) / 2
 
