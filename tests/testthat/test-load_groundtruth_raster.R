@@ -1,41 +1,18 @@
 library(testthat)
-library(terra)
 
-# test_that("load_groundtruth_raster works correctly", {
-#   # Mock data
-#   selected_files <- c("file1.tif", "groundtruth_file.tif", "file3.tif") # choose files in one tile and one date from test_data
-#   groundtruth_pattern <- "groundtruth"
-#   first <- TRUE # When is it false?
-#   verbose <- FALSE
-#   has_ground_truth <- FALSE # should I put GT in the input folder???
-
-#   # Expected output
-#   expected_groundtruth_raster <- terra::rast("groundtruth_file.tif")
-#   expected_hasgroundtruth <- TRUE
-
-#   # Run the function
-#   result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, has_ground_truth)
-
-#   # Check the results
-#   expect_true(result$has_ground_truth)
-#   expect_equal(result$groundtruth_raster, expected_groundtruth_raster)
-# })
-
-test_that("load_groundtruth_raster handles no groundtruth file correctly", {
+test_that("load_groundtruth_raster handles no groundtruth file of the correct date correctly", {
   # Mock data
   datafolder <- paste0(Sys.getenv("TEST_DATA_FOLDER"), "/preprocessed")
-  date <- "2024-09-01"
-  groundtruth_pattern <- Sys.getenv("DEFAULT_GROUNDTRUTH")
-  tiles <- c("00N_000E")
+  date <- "2024-09-01" # Missing date for ground truth
+  tiles <- c("10N_110E")
   groundtruth_pattern <- "groundtruth6m"
   verbose <- TRUE
-  extent <- ext(0, 10, -10, 0)
-
 
   message("\ndatafolder: ")
   message(datafolder)
   allfiles <- list_and_filter_tile_files(datafolder = datafolder, tiles, groundtruth_pattern, verbose)
   selected_files <- filter_files_by_date_and_groundtruth(date, allfiles, groundtruth_pattern)
+  extent <- terra::ext(terra::rast(selected_files[1]))
   first <- TRUE
   verbose <- FALSE
   has_ground_truth <- FALSE
@@ -46,9 +23,7 @@ test_that("load_groundtruth_raster handles no groundtruth file correctly", {
   result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, has_ground_truth)
 
   # Check the results
-  # message("has_ground_truth is not false?\n")
   expect_false(result$has_ground_truth)
-  # message("checker_raster is not equal?\n")
   expect_equal(dim(result$groundtruth_raster), dim(checker_raster))
   expect_equal(str(result$groundtruth_raster), str(checker_raster))
 })
