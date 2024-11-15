@@ -78,7 +78,8 @@ ff_train <- function(train_matrix,
     dtrain <- train_matrix
   } else {
     dtrain <- xgboost::xgb.DMatrix(train_matrix$features,
-                                   label = train_matrix$label)
+      label = train_matrix$label
+    )
   }
 
   # Set default parameters
@@ -101,7 +102,8 @@ ff_train <- function(train_matrix,
       deval <- validation_matrix
     } else {
       deval <- xgboost::xgb.DMatrix(validation_matrix$features,
-                                    label = validation_matrix$label)
+        label = validation_matrix$label
+      )
     }
     watchlist <- list(train = dtrain, eval = deval)
   }
@@ -122,7 +124,6 @@ ff_train <- function(train_matrix,
   )
 
   if (!is.null(modelfilename)) {
-
     ff_cat("saving model to", modelfilename, verbose = verbose)
 
     feature_names <- xgbmodel$feature_names
