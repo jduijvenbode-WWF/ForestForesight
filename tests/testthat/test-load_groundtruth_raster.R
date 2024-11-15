@@ -1,5 +1,3 @@
-library(testthat)
-
 test_that("load_groundtruth_raster handles no groundtruth file of the correct date correctly", {
   # Mock data
   datafolder <- paste0(Sys.getenv("TEST_DATA_FOLDER"), "/preprocessed")

@@ -1,5 +1,3 @@
-library(testthat)
-
 # Mock input data
 dates <- Sys.getenv("TEST_FF_PREP_QC_DATE")
 country <- Sys.getenv("TEST_FF_PREP_COUNTRY")
