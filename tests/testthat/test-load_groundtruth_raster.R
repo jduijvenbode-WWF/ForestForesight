@@ -3,7 +3,7 @@ library(testthat)
 test_that("load_groundtruth_raster handles no groundtruth file of the correct date correctly", {
   # Mock data
   datafolder <- paste0(Sys.getenv("TEST_DATA_FOLDER"), "/preprocessed")
-  date <- "2024-09-01" #Missing date for ground truth
+  date <- "2024-09-01" # Missing date for ground truth
   tiles <- c("10N_110E")
   groundtruth_pattern <- "groundtruth6m"
   verbose <- TRUE
