@@ -1,6 +1,7 @@
 #' Data quality control
 #'
-#' This function loops through all tif files in a given folder and gives a summary and total overview of the quality of the rasters
+#' This function loops through all tif files in a given folder and gives a summary
+#' and total overview of the quality of the rasters
 #'
 #' @param folder_path The path to the folder containing TIF files.
 #' @param return_values Should the values of the rasters also be returned.
@@ -12,7 +13,7 @@
 #' @export
 #'
 #'
-ff_dqc <- function(folder_path, return_values = T) {
+ff_dqc <- function(folder_path, return_values = TRUE) {
   summary_by_feature <- function(dataframe, feature) {
     type <- "dynamic"
     seldf <- dataframe[which(dataframe$featurenames == feature), ]
@@ -97,7 +98,7 @@ ff_dqc <- function(folder_path, return_values = T) {
   valuelist <- lapply(tif_files, function(x) ff_dqc_file(x, return_values))
   allvals <- as.data.frame(as.matrix(do.call(rbind, valuelist)))
   names(allvals) <- names(valuelist[[1]])
-  for (i in 1:ncol(allvals)) {
+  for (i in seq_len(ncol(allvals))) {
     allvals[, i] <- unlist(allvals[, i])
   }
   allvals$featurenames <- unlist(sapply(basename(tif_files), function(x) substr(x, 21, nchar(x) - 4)))
@@ -108,13 +109,17 @@ ff_dqc <- function(folder_path, return_values = T) {
   summary <- suppressWarnings(lapply(unique(allvals$featurenames), function(x) summary_by_feature(allvals, x)))
   summarytable <- as.data.frame(do.call(rbind, summary))
   names(summarytable) <- names(summary[[1]])
-  for (i in 1:ncol(summarytable)) {
+  for (i in seq_len(ncol(summarytable))) {
     summarytable[, i] <- unlist(summarytable[, i])
   }
   summarytable <- summarytable[order(summarytable$type), ]
   dyn_summary <- summarytable[which(!is.na(summarytable$mindate)), ]
-  datecheck <- all(dyn_summary$gaps == "no") & all(dyn_summary$doubles == "no") & (length(unique(dyn_summary$mindate)) == 1) & (length(unique(dyn_summary$maxdate)) == 1)
-  extentcheck <- length(c(unique(allvals$npixel), unique(allvals$xmin), unique(allvals$xmax), unique(allvals$ymin), unique(allvals$ymax), unique(allvals$resolution))) == 6
+  datecheck <- all(dyn_summary$gaps == "no") & all(dyn_summary$doubles == "no") &
+    (length(unique(dyn_summary$mindate)) == 1) & (length(unique(dyn_summary$maxdate)) == 1)
+  extentcheck <- length(c(
+    unique(allvals$npixel), unique(allvals$xmin), unique(allvals$xmax),
+    unique(allvals$ymin), unique(allvals$ymax), unique(allvals$resolution)
+  )) == 6
   return(list(
     "tile" = basename(folder_path),
     "byfeature" = summarytable,

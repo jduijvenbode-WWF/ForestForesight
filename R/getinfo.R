@@ -89,7 +89,9 @@ getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
 
   # Check available features
   if (!is.null(ff_dir)) {
-    available_features <- unlist(sapply(tile_ids, function(x) list.files(file.path(ff_dir, "preprocessed/input", x), full.names = FALSE)))
+    available_features <- unlist(sapply(tile_ids, function(x) {
+      list.files(file.path(ff_dir, "preprocessed/input", x), full.names = FALSE)
+    }))
     available_features <- sort(unique(sapply(available_features, function(x) extract_feature_name(x))))
   } else {
     available_features <- NULL
