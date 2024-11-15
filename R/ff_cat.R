@@ -10,9 +10,12 @@
 #' @param fill Logical. If TRUE, a newline is appended after the output.
 #' @param labels Character vector of labels for the lines printed.
 #' @param append Logical. If TRUE, output will be appended to the file.
-#' @param file A connection, or a character string naming the file to print to.
 #' @param style Character string specifying additional style to apply.
 #'   Must be a valid crayon style (e.g., "bold", "underline").
+#' @param verbose. Logical. Whether the ff_cat function should print. Is always overridden by logfile if that is set
+#' @param logfile Character. Path to a logfile that should be printed to.
+#' @param timestamp Logical. Whether a timestamp should be added
+#' @param auto_newline Logical. Whether a newline should be added
 #'
 #' @return No return value, called for side effects.
 #'
@@ -26,10 +29,13 @@
 #' @import crayon
 #' @export
 ff_cat <- function(..., color = NULL, sep = " ", fill = FALSE, labels = NULL,
-                   append = FALSE, file = "", style = NULL) {
+                   append = FALSE, style = NULL, verbose = FALSE, logfile = NULL, timestamp = FALSE , auto_newline = TRUE) {
   # Combine all arguments into a single string
   text <- paste(..., sep = sep)
-
+  if (auto_newline) {
+    if (!endsWith(text,"\n")) {text <- paste0(text,"\n")}
+  }
+  if (timestamp) {text <- paste(Sys.time(),text)}
   # Apply color if specified
   if (!is.null(color)) {
     if (color %in% names(crayon:::builtin_styles)) {
@@ -49,5 +55,10 @@ ff_cat <- function(..., color = NULL, sep = " ", fill = FALSE, labels = NULL,
   }
 
   # Use cat to output the colorized text
-  cat(text, sep = "", fill = fill, labels = labels, append = append, file = file)
+  if (verbose){cat(text, sep = "", fill = fill, labels = labels, append = append)}
+  if(hasvalue(logfile)){
+    if(timestamp) {cat(text, sep = "", fill = fill, labels = labels, append = append, file = logfile)}else{
+      cat(paste(Sys.time(),text), sep = "", fill = fill, labels = labels, append = append, file = logfile)
+    }
+  }
 }

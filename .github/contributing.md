@@ -15,7 +15,7 @@ This workflow guides contributors on how to address **[confirmed]** issues in al
 ---
 
 ## Valid Issues
-Only issues with the label **[confirmed]** should be picked up and fixed. If you are interested in a new feature or bug fix, please check if there is already an issue created. If not, create a new issue, and wait for it to be labeled **[confirmed]** by maintainers before proceeding.
+Only issues with the label **[confirmed]** are guaranteed to be merged. If you have a suggestion for a new feature or bug fix, please check whether it is a duplicate before creating an issue. After issue creation a maintainer will determine whether it gets the **[confirmed]** label.
 
 ## Workflow
 
@@ -27,7 +27,7 @@ Only issues with the label **[confirmed]** should be picked up and fixed. If you
 
 ### 3. Develop and Test Your Changes
    - After making the necessary changes in your branch, follow our [Testing Strategy](https://forestforesight.atlassian.net/wiki/spaces/EWS/overview?homepageId=32961) to ensure your changes are covered by unit tests.
-   - Ensure code quality by running the `styler` and `lintr` checks. You can follow the instructions in the [Tools](https://forestforesight.atlassian.net/wiki/spaces/EWS/overview?homepageId=32961) section to use `styler` and `lintr`.
+   - Ensure your code adheres to the tidyverse guidelines by running the `styler` and `lintr` checks. You can follow the instructions in the [Tools](https://forestforesight.atlassian.net/wiki/spaces/EWS/overview?homepageId=32961) section to use `styler` and `lintr`.
    - Confirm that all code meets the project’s standards before submitting.
 
 ### 4. Create a Pull Request (PR)
@@ -42,7 +42,7 @@ Only issues with the label **[confirmed]** should be picked up and fixed. If you
    - Wait for maintainers to review your PR. They will either approve the PR if it meets all criteria or request changes if adjustments are needed.
    - If changes are requested:
      - Respond to comments and make necessary updates at your earliest convenience.
-     - Push the updates to your branch in the forked repository; these changes will be reflected in the PR.
+     - Push the updates to your branch in the forked repository; these changes will be reflected in the PR. And wait for the review.
 
 ### 6. Approval and Merge
    - Once your PR is approved, a maintainer will merge it into the `develop` branch in the main repository.

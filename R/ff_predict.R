@@ -3,7 +3,8 @@
 #' This function trains an XGBoost model with optimized default parameters derived from worldwide data analysis.
 #'
 #' @param train_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for training.
-#' @param validation_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for validation. Default is NA.
+#' @param validation_matrix An xgb.DMatrix object or a list containing 'features' and 'label' for validation.
+#' Default is NA.
 #' @param nrounds Number of boosting rounds. Default is 200.
 #' @param eta Learning rate. Default is 0.1.
 #' @param max_depth Maximum tree depth. Default is 5.
@@ -15,7 +16,8 @@
 #' @param maximize Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.
 #' @param min_child_weight Minimum sum of instance weight needed in a child. Default is 1.
 #' @param verbose Boolean indicating whether to display training progress. Default is FALSE.
-#' @param xgb_model Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.
+#' @param xgb_model Previously trained model to continue training from.
+#' Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.
 #' @param modelfilename String specifying where to save the model. Should end with ".model" extension.
 #' @param features Vector of feature names used in the training dataset. Required when modelfilename is provided.
 #' @param objective Learning objective. Default is "binary:logistic".
@@ -55,7 +57,8 @@
 #' @keywords machine-learning xgboost forestry
 
 
-ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, indices = NA, templateraster = NA, verbose = F, certainty = F) {
+ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, indices = NA,
+                       templateraster = NA, verbose = FALSE, certainty = FALSE) {
   # Get the features
   if (class(model) == "character") {
     modelfilename <- model
@@ -78,7 +81,10 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
     extra_features <- setdiff(test_features, model_features)
     # If there are extra features, remove them from the test matrix
     if (length(extra_features) > 0) {
-      ff_cat(paste("Removing extra features from the test matrix:", paste(extra_features, collapse = ", ")), color = "yellow")
+      ff_cat(
+        "Removing extra features from the test matrix:",
+        paste(extra_features, collapse = ", ")
+      , color = "yellow")
       test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
     }
   }
@@ -88,37 +94,37 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
   } else {
     test_matrix <- xgboost::xgb.DMatrix(test_matrix$features)
   }
-  if (verbose) {
-    cat("calculating predictions\n")
-  }
+
+    ff_cat("calculating predictions", verbose = verbose)
+
   predictions <- predict(model, test_matrix)
   if (!is.na(groundtruth[1])) {
     if (class(groundtruth) == "SpatRaster") {
       groundtruth <- as.numeric(as.matrix(groundtruth))
     }
-    if (verbose) {
-      cat("calculationg scores\n")
-    }
+
+      cat("calculationg scores", verbose = verbose)
+
     precision <- c()
     recall <- c()
-    F05 <- c()
+    f05 <- c()
     for (thresh in threshold) {
       res <- table(2 * (predictions > thresh) + groundtruth)
       prec <- as.numeric(res[4] / (res[4] + res[3]))
       rec <- as.numeric(res[4] / (res[4] + res[2]))
       precision <- c(precision, prec)
       recall <- c(recall, rec)
-      F05 <- c(F05, 1.25 * prec * rec / (0.25 * prec + rec))
+      f05 <- c(f05, 1.25 * prec * rec / (0.25 * prec + rec))
     }
   } else {
-    precision <- recall <- F05 <- NA
+    precision <- recall <- f05 <- NA
   }
   if (class(templateraster) == "SpatRaster") {
     templateraster[] <- 0
     if (length(indices) > 1) {
-      if (verbose) {
-        cat("filling raster\n")
-      }
+
+        ff_cat("filling raster", verbose = verbose)
+
       if (!certainty) {
         templateraster[indices] <- predictions > threshold
       } else {
@@ -126,9 +132,9 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
       }
     } else {
       if (terra::ncell(templateraster) == length(predictions)) {
-        if (verbose) {
-          cat("filling raster\n")
-        }
+
+          cat("filling raster", verbose = verbose)
+
         if (!certainty) {
           templateraster[] <- predictions > threshold
         } else {
@@ -141,8 +147,11 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
   } else {
     templateraster <- NA
   }
-  if (verbose & !is.na(F05)) {
-    cat(paste("F0.5:", F05, "precision:", precision, "recall:", recall, "\n"))
+  if (!is.na(f05)) {
+    ff_cat("F0.5:", f05, "precision:", precision, "recall:", recall, verbose = verbose)
   }
-  return(list(threshold = threshold, "precision" = precision, "recall" = recall, "F0.5" = F05, "predicted_raster" = templateraster, "predictions" = predictions))
+  return(list(
+    threshold = threshold, "precision" = precision, "recall" = recall, "F0.5" = f05,
+    "predicted_raster" = templateraster, "predictions" = predictions
+  ))
 }
