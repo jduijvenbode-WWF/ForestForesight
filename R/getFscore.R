@@ -9,7 +9,7 @@
 #' @param pr Logical. whether it should also return the precision and recall
 #' @return F-score value.
 #' @export
-getFscore <- function(gt, pred, threshold = 0.5, beta = 0.5, pr = F) {
+get_f_score <- function(gt, pred, threshold = 0.5, beta = 0.5, pr = FALSE) {
   gt[is.na(gt)] <- 0
   pred[is.na(pred)] <- 0
   # Convert predictions to binary
