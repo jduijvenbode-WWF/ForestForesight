@@ -1,6 +1,3 @@
-library(testthat)
-library(terra)
-
 # Load sample data for tilesvect from gfw_tiles to simulate real spatial data
 data(gfw_tiles, envir = environment())
 tilesvect <- terra::vect(gfw_tiles)
