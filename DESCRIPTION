@@ -19,5 +19,6 @@ Imports:
     here,
     lintr,
     styler,
-    testthat
+    testthat,
+    yaml
 Config/testthat/edition: 3
