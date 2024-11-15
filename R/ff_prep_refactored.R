@@ -314,7 +314,7 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
       groundtruth_raster[] <- 0
     }
   }
-  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first=first)
+  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first = first)
   return(list_gt_raster)
 }
 
@@ -373,8 +373,8 @@ finalize_column_names_and_data_matrix <- function(dts, selected_files, addxy, ad
   if (adddate) {
     newcolnames <- c(newcolnames, "sinmonth", "month", "monthssince2019")
   }
-  
-  colnames(dts) <- newcolnames 
+
+  colnames(dts) <- newcolnames
   dts <- dts[, order(colnames(dts))]
   return(list(dts = dts, newcolnames = newcolnames))
 }
