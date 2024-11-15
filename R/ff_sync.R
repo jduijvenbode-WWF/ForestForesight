@@ -16,7 +16,7 @@
 #' @param download_data Logical. Whether to download the preprocessed input data. Default is TRUE.
 #' @param download_groundtruth Logical. Whether to download the groundtruth data as well.
 #' This should be turned off when you want to use your own data as groundtruth. Default is TRUE.
-#' @parm groundtruth_pattern The pattern to search for.
+#' @param groundtruth_pattern The pattern to search for.
 #' This is normally groundtruth6m for 6 months but can be set to groundtruth1m, groundtruth3m or groundtruth12m for one, three or twelve months respectively
 #' @param download_predictions Logical. Whether to download the prediction data.
 #' Only works when downloading for entire countries. Default is FALSE.
@@ -43,7 +43,7 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
                     download_model = FALSE, download_data = TRUE,
                     download_predictions = FALSE, download_groundtruth = TRUE,
                     groundtruth_pattern = "groundtruth6m",
-                    bucket = "forestforesight-public", region = "eu-west-1",
+                    bucket = Sys.getenv("AWS_BUCKET_NAME"), region = Sys.getenv("AWS_BUCKET_REGION"),
                     verbose = TRUE, sync_verbose = FALSE) {
   # Validate and process dates
   current_month <- format(Sys.Date(), "%Y-%m-01")
@@ -57,11 +57,11 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
     if (!grepl("-01$", date_start)) {
       stop("date_start must be the first day of a month")
     }
-    if (date_start < "2021-01-01") {
-      stop("date_start cannot be before 2021-01-01")
+    if (date_start < Sys.getenv("EARLIEST_DATA_DATE")) {
+      stop(paste0("date start cannot be before ", Sys.getenv("EARLIEST_DATA_DATE")))
     }
   } else if (!is.null(date_end)) {
-    date_start <- "2021-01-01"
+    date_start <- Sys.getenv("EARLIEST_DATA_DATE")
   }
 
   if (!is.null(date_end)) {

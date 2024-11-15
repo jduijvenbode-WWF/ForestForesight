@@ -3,7 +3,7 @@ AWS_BUCKET_NAME: "forestforesight-public"
 AWS_BUCKET_REGION: "eu-west-1"
 EARLIEST_DATA_DATE: "2021-01-01"
 DEFAULT_GROUNDTRUTH: "groundtruth6m"
-CODE_LOCATION: "D:/WWF/Repos/fork-1/ForestForesight"
+DATA_FOLDER: "C:/Kodingan3/FFdatas"
 TEST:
   DATA_FOLDER: "tests/test_data"
   FF_PREP_QC_DATE: "2021-01-01"
