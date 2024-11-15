@@ -52,7 +52,8 @@ and simplifies them based on various parameters.
 \examples{
 \dontrun{
 ff_polygonize("path/to/raster.tif", "output_polygons.shp",
-              min_pixel = 5, threshold = 0.5, window_size = 7)
+  min_pixel = 5, threshold = 0.5, window_size = 7
+)
 }
 
 }

@@ -59,16 +59,20 @@ This function trains an XGBoost model with optimized default parameters derived 
 \examples{
 \dontrun{
 # Prepare your data
-train_data <- list(features = matrix(runif(1000), ncol = 10),
-                   label = sample(0:1, 100, replace = TRUE))
+train_data <- list(
+  features = matrix(runif(1000), ncol = 10),
+  label = sample(0:1, 100, replace = TRUE)
+)
 
 # Train the model
-model <- ff_train(train_matrix = train_data,
-                  nrounds = 100,
-                  eta = 0.05,
-                  max_depth = 6,
-                  modelfilename = "forest_model.model",
-                  features = colnames(train_data$features))
+model <- ff_train(
+  train_matrix = train_data,
+  nrounds = 100,
+  eta = 0.05,
+  max_depth = 6,
+  modelfilename = "forest_model.model",
+  features = colnames(train_data$features)
+)
 }
 
 }
