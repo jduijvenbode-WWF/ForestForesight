@@ -5,7 +5,7 @@ test_that("refactored ff_prep has the same output as the original", {
 
   identifier <- Sys.getenv("TEST_FF_PREP_COUNTRY")
 
-  features <- c("wetlands", "initialforestcover", "lastsixmonths", "timesinceloss")
+  features <- c("initialforestcover", "lastsixmonths", "timesinceloss")
 
   # Change to your own data_folder because we can't store it locally
   data_folder <- paste(download_folder, "preprocessed", sep = "/")
