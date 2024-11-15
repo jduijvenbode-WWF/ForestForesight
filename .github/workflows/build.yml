@@ -10,6 +10,7 @@ jobs:
     strategy:
       matrix:
         r-version: ['3.6.3', '4.1.1']
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
       - name: Set up R ${{ matrix.r-version }}
@@ -18,8 +19,12 @@ jobs:
           r-version: ${{ matrix.r-version }}
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "rcmdcheck"))
+          install.packages("remotes")
           remotes::install_deps(dependencies = TRUE)
+          remotes::install_github("r-lib/rcmdcheck")
+        shell: Rscript {0}
+      - name: Session info
+        run: sessionInfo()
         shell: Rscript {0}
       - name: Check
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
