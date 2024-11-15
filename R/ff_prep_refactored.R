@@ -324,9 +324,7 @@ initialize_shape_from_borders <- function(shape, shrink, files, borders) {
       data(countries, envir = environment())
       borders <- terra::vect(countries)
     }
-    # TODO: to pass it's test case we needed to avoid aggregate and implement as below
-    # shape <- terra::union(terra::intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))), borders))
-    shape <- aggregate(intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))), borders))
+    shape <- terra::union(terra::intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))), borders))
   }
   return(shape)
 }
@@ -434,9 +432,9 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
     data_label <- fdts[, groundtruth_index]
 
     if (hasvalue(label_threshold)) {
-      data_label <- as.numeric(data_label > label_threshold)
+      data_label <- as.numeric(data_label >= label_threshold)
       if (inherits(groundtruth_raster, "SpatRaster")) {
-        groundtruth_raster <- as.numeric(groundtruth_raster > label_threshold)
+        groundtruth_raster <- as.numeric(groundtruth_raster >= label_threshold)
       }
     }
 
