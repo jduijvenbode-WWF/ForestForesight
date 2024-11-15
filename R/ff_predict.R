@@ -83,8 +83,9 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
     if (length(extra_features) > 0) {
       ff_cat(
         "Removing extra features from the test matrix:",
-        paste(extra_features, collapse = ", ")
-      , color = "yellow")
+        paste(extra_features, collapse = ", "),
+        color = "yellow"
+      )
       test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
     }
   }
@@ -95,7 +96,7 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
     test_matrix <- xgboost::xgb.DMatrix(test_matrix$features)
   }
 
-    ff_cat("calculating predictions", verbose = verbose)
+  ff_cat("calculating predictions", verbose = verbose)
 
   predictions <- predict(model, test_matrix)
   if (!is.na(groundtruth[1])) {
@@ -103,7 +104,7 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
       groundtruth <- as.numeric(as.matrix(groundtruth))
     }
 
-      cat("calculationg scores", verbose = verbose)
+    cat("calculationg scores", verbose = verbose)
 
     precision <- c()
     recall <- c()
@@ -122,8 +123,7 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
   if (class(templateraster) == "SpatRaster") {
     templateraster[] <- 0
     if (length(indices) > 1) {
-
-        ff_cat("filling raster", verbose = verbose)
+      ff_cat("filling raster", verbose = verbose)
 
       if (!certainty) {
         templateraster[indices] <- predictions > threshold
@@ -132,8 +132,7 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
       }
     } else {
       if (terra::ncell(templateraster) == length(predictions)) {
-
-          cat("filling raster", verbose = verbose)
+        cat("filling raster", verbose = verbose)
 
         if (!certainty) {
           templateraster[] <- predictions > threshold
