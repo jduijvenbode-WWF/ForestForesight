@@ -1,9 +1,9 @@
 config_load <- function() {
   # Load the yaml package
   library(yaml)
-
+  library(here)
   # Put your config.yml in your working directory
-  config_file <- file.path("config.yml") # To avoid conflict, make sure VARs in config.yml are different from Sys_Vars
+  config_file <- here::here("config.yml") # To avoid conflict, make sure VARs in config.yml are different from Sys_Vars
 
   # Check if the config file exists
   if (file.exists(config_file)) {
