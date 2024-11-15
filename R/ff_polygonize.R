@@ -88,7 +88,7 @@ ff_polygonize <- function(raster,
       stop("the given character is not one of the possibilities medium, high or very high")
     }
 
-      ff_cat("new threshold is", round(newthreshold,4), verbose = verbose)
+    ff_cat("new threshold is", round(newthreshold, 4), verbose = verbose)
 
     threshold <- newthreshold
   }
@@ -118,11 +118,11 @@ ff_polygonize <- function(raster,
 
     ceiling_pols <- ceiling(sqrt(sqmras / 1e3) * perc_covered)
 
-      ff_cat(
-        "based on area of raster (hectares:", round(sqmras / 1e5), ", actual coverage:",
-        round(perc_covered * 100), "percent), at maximum", ceiling_pols, " polygons are generated",
-        verbose = verbose
-      )
+    ff_cat(
+      "based on area of raster (hectares:", round(sqmras / 1e5), ", actual coverage:",
+      round(perc_covered * 100), "percent), at maximum", ceiling_pols, " polygons are generated",
+      verbose = verbose
+    )
 
     pols <- sorted_pols[1:max(1, min(ceiling_pols, sum(terra::expanse(sorted_pols) >= pixel_min)))]
   }
@@ -139,7 +139,7 @@ ff_polygonize <- function(raster,
   pols$threshold <- threshold
   pols$date <- as.character(as.Date(Sys.time()))
 
-    ff_cat("writing", length(pols), "polygons to", output_file, verbose = verbose)
+  ff_cat("writing", length(pols), "polygons to", output_file, verbose = verbose)
 
   # Save result
   if (!is.na(output_file)) {
