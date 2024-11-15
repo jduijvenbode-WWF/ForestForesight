@@ -314,7 +314,7 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, 
       groundtruth_raster[] <- 0
     }
   }
-  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first=first)
+  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first = first)
   return(list_gt_raster)
 }
 
