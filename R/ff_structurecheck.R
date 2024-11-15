@@ -17,7 +17,7 @@
 #' @export
 ff_structurecheck <- function(shape, folder_path, check_date = NULL) {
   # Get info from shape
-  info <- getinfo(shape, verbose = F)
+  info <- getinfo(shape, verbose = FALSE)
 
   # Set check_date if not provided
   if (is.null(check_date)) {
@@ -68,17 +68,29 @@ ff_structurecheck <- function(shape, folder_path, check_date = NULL) {
             has_check_date <- any(grepl(paste0("^", tile, "_", check_date, "_lastsixmonths.tif$"), files))
             if (subfolder != "groundtruth") {
               if (!has_check_date) {
-                ff_cat(paste("No EWS features for check date", check_date, "in", subfolder, "for tile", tile, "\n"), color = "yellow")
+                ff_cat(paste(
+                  "No EWS features for check date", check_date, "in", subfolder,
+                  "for tile", tile, "\n"
+                ), color = "yellow")
               } else {
-                ff_cat(paste("EWS features for check date", check_date, "present in", subfolder, "for tile", tile, "\n"), color = "green")
+                ff_cat(paste(
+                  "EWS features for check date", check_date, "present in", subfolder,
+                  "for tile", tile, "\n"
+                ), color = "green")
               }
             }
             if (subfolder == "groundtruth") {
               has_groundtruth6m <- any(grepl(paste0("^", tile, "_", check_date, "_groundtruth6m\\.tif$"), files))
               if (!has_groundtruth6m) {
-                ff_cat(paste("No groundtruth6m file for check date", check_date, "in groundtruth for tile", tile, "\n"), color = "yellow")
+                ff_cat(paste(
+                  "No groundtruth6m file for check date", check_date,
+                  "in groundtruth for tile", tile, "\n"
+                ), color = "yellow")
               } else {
-                ff_cat(paste("Groundtruth6m file present for check date", check_date, "in groundtruth for tile", tile, "\n"), color = "green")
+                ff_cat(paste(
+                  "Groundtruth6m file present for check date", check_date,
+                  "in groundtruth for tile", tile, "\n"
+                ), color = "green")
               }
             }
           }

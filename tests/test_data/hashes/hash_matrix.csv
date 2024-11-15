@@ -1,4 +1,4 @@
 "identifier_or_tiles","sample_size","included_features","hash","date"
-"00N_000E, 00N_010E",1,"temperature, lastmonth, confidence, totallossalerts","f3dfd0c3cf7cb560b7edd6bfcfeba51a",2024-11-08
-"GAB",1,"temperature, lastmonth, confidence, totallossalerts","ce03b1c33989f05d29bef49b4eae9efa",2024-11-08
-"shape_of_GAB",1,"temperature, lastmonth, confidence, totallossalerts","ce03b1c33989f05d29bef49b4eae9efa",2024-11-08
+"10N_110E",1,"initialforestcover, lastsixmonths, timesinceloss","542de6f793975219f02f5c6d392bb39b",2024-11-15
+"BRN",1,"initialforestcover, lastsixmonths, timesinceloss","542de6f793975219f02f5c6d392bb39b",2024-11-15
+"shape_of_BRN",1,"initialforestcover, lastsixmonths, timesinceloss","542de6f793975219f02f5c6d392bb39b",2024-11-15

@@ -5,7 +5,8 @@
 #' @param output_dir The directory where the downloaded data will be saved.
 #' @param country An optional parameter specifying the ISO3 country code to filter the data. Default is NA.
 #' @param separate_folders Logical. If TRUE, data is saved in separate folders based on tile_id. Default is FALSE.
-#' @param basename An optional parameter to specify a basename for the downloaded files. Applicable only when separate_folders is TRUE. Default is NA.
+#' @param basename An optional parameter to specify a basename for the downloaded files.
+#' Applicable only when separate_folders is TRUE. Default is NA.
 #'
 #' @return locations of the created output tif-files.
 #'
@@ -19,8 +20,8 @@
 #'
 #' @export
 
-download_gfw_alerts <- function(output_dir, country = NA, separate_folders = F, basename = NA) {
-  if ((!is.na(basename)) & (!separate_folders)) {
+download_gfw_alerts <- function(output_dir, country = NA, separate_folders = FALSE, basename = NA) {
+  if ((!is.na(basename)) && (!separate_folders)) {
     stop("basename can only be applied if the data is written in separate folders, otherwise they overwrite themselves")
   }
   data(gfw_tiles)
@@ -38,7 +39,7 @@ download_gfw_alerts <- function(output_dir, country = NA, separate_folders = F, 
     dir.create(output_dir)
   }
   outputfiles <- c()
-  for (id in seq(nrow(gfw_tiles))) {
+  for (id in seq_len(nrow(gfw_tiles))) {
     file <- gfw_tiles$download[id]
     name <- gfw_tiles$tile_id[id]
     filename <- if (!is.na(basename)) {

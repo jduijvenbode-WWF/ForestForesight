@@ -1,57 +1,53 @@
-library(here)
-library(digest)
 test_that("refactored ff_prep has the same output as the original", {
   download_folder <- Sys.getenv("TEST_DATA_FOLDER") # modify this value in tests/testthat/config.yml
 
   identifier <- Sys.getenv("TEST_FF_PREP_COUNTRY")
 
-  features <- c("temperature", "lastmonth", "confidence", "totallossalerts")
+  features <- c("initialforestcover", "lastsixmonths", "timesinceloss")
 
-  # Change to your own data_folder because we can't store it locally
   data_folder <- paste(download_folder, "preprocessed", sep = "/")
 
   # sample_size=1 in order to remove randomness
   # running on tiles
-  tiles <- c("00N_000E", "00N_010E")
+  tiles <- c("10N_110E")
   tile_prepped_ref <- ff_prep_refactored(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
   tile_prepped <- ff_prep(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
 
-  tile_hash_ref <- digest(tile_prepped_ref$data_matrix, algo = "md5")
+  tile_hash_ref <- digest::digest(tile_prepped_ref$data_matrix, algo = "md5")
   cat("tile hash ", tile_hash_ref, "\n")
 
-  tile_hash <- digest(tile_prepped$data_matrix, algo = "md5")
+  tile_hash <- digest::digest(tile_prepped$data_matrix, algo = "md5")
   cat("tile hash ", tile_hash, "\n")
 
   # running on country
   country_prepped <- ff_prep(datafolder = data_folder, country = identifier, sample_size = 1, inc_features = features)
   country_prepped_ref <- ff_prep_refactored(datafolder = data_folder, country = identifier, sample_size = 1, inc_features = features)
 
-  country_hash <- digest(country_prepped$data_matrix, algo = "md5")
+  country_hash <- digest::digest(country_prepped$data_matrix, algo = "md5")
   cat("Country hash", country_hash, "\n")
 
-  country_hash_ref <- digest(country_prepped_ref$data_matrix, algo = "md5")
+  country_hash_ref <- digest::digest(country_prepped_ref$data_matrix, algo = "md5")
   cat("Country hash", country_hash_ref, "\n")
 
   ## running on shape
   countries <- vect(get(data("countries")))
-  shape <- countries[countries$iso3 == "GAB"]
+  shape <- countries[countries$iso3 == "BRN"]
   shape_prepped <- ff_prep(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
   shape_prepped_ref <- ff_prep_refactored(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
 
-  shape_hash <- digest(shape_prepped$data_matrix, algo = "md5")
+  shape_hash <- digest::digest(shape_prepped$data_matrix, algo = "md5")
   cat("Shape hash", shape_hash, "\n")
 
-  shape_hash_ref <- digest(shape_prepped_ref$data_matrix, algo = "md5")
+  shape_hash_ref <- digest::digest(shape_prepped_ref$data_matrix, algo = "md5")
   cat("Shape hash", shape_hash_ref, "\n")
 
   combined_tiles <- paste(tiles, collapse = ", ")
   combined_features <- paste(features, collapse = ", ")
 
-  # change this to wherever you want to save it
   hash_folder <- paste(download_folder, "hashes/", sep = "/")
   date <- Sys.Date()
   hash_matrix <- data.frame(
-    identifier_or_tiles = c(combined_tiles, identifier, "shape_of_GAB"),
+    identifier_or_tiles = c(combined_tiles, identifier, "shape_of_BRN"),
     sample_size = c(1, 1, 1),
     included_features = c(combined_features, combined_features, combined_features),
     hash = c(tile_hash, country_hash, shape_hash),
@@ -59,7 +55,7 @@ test_that("refactored ff_prep has the same output as the original", {
   )
 
   hash_matrix_ref <- data.frame(
-    identifier_or_tiles = c(combined_tiles, identifier, "shape_of_GAB"),
+    identifier_or_tiles = c(combined_tiles, identifier, "shape_of_BRN"),
     sample_size = c(1, 1, 1),
     included_features = c(combined_features, combined_features, combined_features),
     hash = c(tile_hash_ref, country_hash_ref, shape_hash_ref),
