@@ -15,6 +15,8 @@ RoxygenNote: 7.3.2
 Depends: terra, sf, xgboost, httr, lubridate, smoothr, crayon, aws.s3
 Imports: 
     devtools,
+    digest,
+    here,
     lintr,
     styler,
     testthat

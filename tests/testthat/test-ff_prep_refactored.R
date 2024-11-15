@@ -1,5 +1,3 @@
-library(here)
-library(digest)
 test_that("refactored ff_prep has the same output as the original", {
   download_folder <- Sys.getenv("TEST_DATA_FOLDER") # modify this value in tests/testthat/config.yml
 
@@ -16,20 +14,20 @@ test_that("refactored ff_prep has the same output as the original", {
   tile_prepped_ref <- ff_prep_refactored(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
   tile_prepped <- ff_prep(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
 
-  tile_hash_ref <- digest(tile_prepped_ref$data_matrix, algo = "md5")
+  tile_hash_ref <- digest::digest(tile_prepped_ref$data_matrix, algo = "md5")
   cat("tile hash ", tile_hash_ref, "\n")
 
-  tile_hash <- digest(tile_prepped$data_matrix, algo = "md5")
+  tile_hash <- digest::digest(tile_prepped$data_matrix, algo = "md5")
   cat("tile hash ", tile_hash, "\n")
 
   # running on country
   country_prepped <- ff_prep(datafolder = data_folder, country = identifier, sample_size = 1, inc_features = features)
   country_prepped_ref <- ff_prep_refactored(datafolder = data_folder, country = identifier, sample_size = 1, inc_features = features)
 
-  country_hash <- digest(country_prepped$data_matrix, algo = "md5")
+  country_hash <- digest::digest(country_prepped$data_matrix, algo = "md5")
   cat("Country hash", country_hash, "\n")
 
-  country_hash_ref <- digest(country_prepped_ref$data_matrix, algo = "md5")
+  country_hash_ref <- digest::digest(country_prepped_ref$data_matrix, algo = "md5")
   cat("Country hash", country_hash_ref, "\n")
 
   ## running on shape
@@ -38,10 +36,10 @@ test_that("refactored ff_prep has the same output as the original", {
   shape_prepped <- ff_prep(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
   shape_prepped_ref <- ff_prep_refactored(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
 
-  shape_hash <- digest(shape_prepped$data_matrix, algo = "md5")
+  shape_hash <- digest::digest(shape_prepped$data_matrix, algo = "md5")
   cat("Shape hash", shape_hash, "\n")
 
-  shape_hash_ref <- digest(shape_prepped_ref$data_matrix, algo = "md5")
+  shape_hash_ref <- digest::digest(shape_prepped_ref$data_matrix, algo = "md5")
   cat("Shape hash", shape_hash_ref, "\n")
 
   combined_tiles <- paste(tiles, collapse = ", ")
