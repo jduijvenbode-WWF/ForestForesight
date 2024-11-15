@@ -13,6 +13,9 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
 Depends: terra, sf, xgboost, httr, lubridate, smoothr, crayon, aws.s3
-Suggests:
-    testthat (>= 3.0.0)
+Imports: 
+    devtools,
+    lintr,
+    styler,
+    testthat
 Config/testthat/edition: 3
