@@ -4,7 +4,7 @@
 #' appropriate coordinate system and size constraints, and validates its overlap
 #' with known country boundaries.
 #'
-#' @param x Object to check.
+#' @param shape Object of class SpatVector to check.
 #' @param check_size Logical. Whether to check if the area is within reasonable bounds.
 #' Default is TRUE.
 #'
@@ -32,12 +32,12 @@
 #' }
 #'
 #' @export
-check_spatvector <- function(x, check_size = TRUE) {
-  x <- check_basic_properties(x)
-  x <- check_coordinate_system(x)
-  x <- check_country_overlap(x)
+check_spatvector <- function(shape, check_size = TRUE) {
+  x <- check_basic_properties(shape)
+  x <- check_coordinate_system(shape)
+  x <- check_country_overlap(shape)
   if (check_size) {
-    check_area_bounds(x)
+    check_area_bounds(shape)
   }
   return(x)
 }
