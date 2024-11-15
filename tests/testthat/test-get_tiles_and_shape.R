@@ -9,7 +9,7 @@ verbose <- TRUE
 
 test_that("get_tiles_and_shape works when country is provided", {
   # Case: Country is provided, should process based on country
-  country <- "GAB"
+  country <- "BRN"
   shape <- NULL
 
   # Run the function
@@ -22,9 +22,10 @@ test_that("get_tiles_and_shape works when country is provided", {
 })
 
 test_that("get_tiles_and_shape works when shape is provided", {
+  country <- NULL
   data(countries, envir = environment())
   countries <- vect(get(data("countries")))
-  shape_from_countries <- countries[countries$iso3 == "GAB"]
+  shape_from_countries <- countries[countries$iso3 == "BRN"]
 
   # Run the function with the shape from countries
   result <- get_tiles_and_shape(NULL, shape_from_countries, tilesvect, tiles, verbose)
@@ -40,7 +41,7 @@ test_that("get_tiles_and_shape projects shape to EPSG:4326 if necessary", {
   country <- NULL
   data(countries, envir = environment())
   countries <- vect(get(data("countries")))
-  shape_from_countries <- terra::project(countries[countries$iso3 == "GAB"], "+proj=utm +zone=33 +datum=WGS84")
+  shape_from_countries <- terra::project(countries[countries$iso3 == "BRN"], "+proj=utm +zone=33 +datum=WGS84")
 
   # Run the function
   result <- get_tiles_and_shape(country, shape_from_countries, tilesvect, tiles, verbose)
@@ -49,15 +50,14 @@ test_that("get_tiles_and_shape projects shape to EPSG:4326 if necessary", {
   expect_true(terra::is.lonlat(result$shape))
 })
 
-test_that("get_tiles_and_shape returns unchanged tilesvect when neither country nor shape is provided", {
-  # Case: Neither country nor shape is provided, function should not change tilesvect
+test_that("get_tiles_and_shape returns only NULL if neither country or shape is provided", {
+  # Case: Neither country nor shape is provided, function should return null values
   country <- NULL
   shape <- NULL
 
   # Run the function
   result <- get_tiles_and_shape(country, shape, tilesvect, tiles, verbose)
 
-  # Check that tilesvect remains unchanged and no tiles are selected
   expect_null(result$tiles)
   expect_null(result$shape)
 })

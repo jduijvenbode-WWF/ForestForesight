@@ -7,20 +7,27 @@
 #' @param forestmask An optional character vector or raster object representing the forest mask.
 #' @param csvfile An optional CSV file to which the results will be written.
 #' @param append Logical. If TRUE, results will be appended to the existing CSV file.
-#' @param country Character. If NULL all the overlapping polygons will be processed. Otherwise the ISO3 code should be given and the analysis_polygons dataset should contain a column called iso3
+#' @param country Character. If NULL all the overlapping polygons will be processed.
+#' Otherwise the ISO3 code should be given and the analysis_polygons dataset should contain a column called iso3
 #' @param analysis_polygons Optional vector or character vector representing analysis polygons.
 #' @param return_polygons Logical. If TRUE, the polygons with calculated scores will be returned.
 #' @param remove_empty Logical. If TRUE, empty rows (with all scores being zero) will be removed from the output.
-#' @param date character. should be in format (YYYY-MM-DD). Optional if either groundtruth or predictions is a character to the tiffile.
-#' @param tile character. should be in format AA{N-S}_BBB{W-E}. Optional if either groundtruth or predictions is a character to the tiffile with a directory name.
-#' @param method character. the shorthand for the method used, which should also be included in the separate csv file for storing methods
+#' @param date character. should be in format (YYYY-MM-DD).
+#'  Optional if either groundtruth or predictions is a character to the tiffile.
+#' @param tile character. should be in format AA{N-S}_BBB{W-E}.
+#' Optional if either groundtruth or predictions is a character to the tiffile with a directory name.
+#' @param method character. the shorthand for the method used,
+#'  which should also be included in the separate csv file for storing methods
 #' @param verbose Logical. Whether the steps taken in the function should be verbose.
 #'
 #' @return A vector dataset containing calculated scores for each polygon.
 #'
 #' @export
 
-ff_analyze_amounts <- function(predictions, groundtruth, forestmask = NULL, csvfile = NULL, country = NULL, append = T, analysis_polygons = NULL, return_polygons = T, remove_empty = T, date = NULL, tile = NULL, method = NA, verbose = F) {
+ff_analyze_amounts <- function(predictions, groundtruth, forestmask = NULL, csvfile = NULL,
+                               country = NULL, append = TRUE, analysis_polygons = NULL,
+                               return_polygons = TRUE, remove_empty = TRUE, date = NULL,
+                               tile = NULL, method = NA, verbose = FALSE) {
   if (!(class(predictions) %in% c("character", "SpatRaster"))) {
     stop("predictions is not a raster or path to a raster")
   }
@@ -28,8 +35,8 @@ ff_analyze_amounts <- function(predictions, groundtruth, forestmask = NULL, csvf
     stop("predictions is not a raster or path to a raster")
   }
   if (!is.null(csvfile)) {
-    if (append == TRUE & !file.exists(csvfile)) {
-      append <- F
+    if (append == TRUE && !file.exists(csvfile)) {
+      append <- FALSE
       cat("CSV file did not yet exist, creating empty one\n")
     }
   }
@@ -44,7 +51,7 @@ ff_analyze_amounts <- function(predictions, groundtruth, forestmask = NULL, csvf
       }
     }
   }
-  if (is.null(tile) & (!is.null(analysis_polygons))) {
+  if (is.null(tile) && (!is.null(analysis_polygons))) {
     if (!class(predictions) == "character") {
       stop("tile ID not given and cannot be derived from raster itself")
     }
@@ -92,17 +99,17 @@ ff_analyze_amounts <- function(predictions, groundtruth, forestmask = NULL, csvf
   if (verbose) {
     cat("summarizing statistics\n")
   }
-  pols$rmse <- (terra::extract(se, pols, fun = "mean", na.rm = T, touches = F)[, 2])^0.5
+  pols$rmse <- (terra::extract(se, pols, fun = "mean", na.rm = TRUE, touches = FALSE)[, 2])^0.5
   if (verbose) {
     cat(paste("rmse = ", pols$rmse))
   }
   pols$date <- date
   pols$method <- method
   if (remove_empty) {
-    pols <- pols[-which(rowSums(as.data.frame(pols[, c("rmse")]), na.rm = T) == 0), ]
+    pols <- pols[-which(rowSums(as.data.frame(pols[, c("rmse")]), na.rm = TRUE) == 0), ]
   }
   if (!is.null(csvfile)) {
-    if (append & file.exists(csvfile)) {
+    if (append && file.exists(csvfile)) {
       if (verbose) {
         cat("appending to existing dataset")
       }
@@ -110,7 +117,7 @@ ff_analyze_amounts <- function(predictions, groundtruth, forestmask = NULL, csvf
       pastdata$X <- NULL
       write.csv(rbind(pastdata, as.data.frame(pols)), csvfile)
     } else {
-      if (!file.exists(csvfile) & append & verbose) {
+      if (!file.exists(csvfile) && append && verbose) {
         ff_cat("the given file does not exist, while append was set to TRUE", color = "yellow")
       }
       write.csv(as.data.frame(pols), csvfile)
