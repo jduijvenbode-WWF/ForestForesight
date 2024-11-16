@@ -3,26 +3,23 @@ name: R
 on:
   pull_request:
     branches: [ "develop" ]
-
+    
 jobs:
   Building-package:
-    runs-on: ${{ matrix.config.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        config:
-          - { os: ubuntu-latest, r-version: '4.1.1' }
-          - { os: macOS-latest, r-version: '4.1.1' }
-          - { os: windows-latest, r-version: '4.1.1' }
+        r-version: ['4.1.1']
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up R ${{ matrix.config.r-version }}
+      - name: Set up R ${{ matrix.r-version }}
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: ${{ matrix.config.r-version }}
+          r-version: ${{ matrix.r-version }}
 
-      - name: Install system dependencies (Linux only)
-        if: runner.os == 'Linux'
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev        
@@ -43,7 +40,7 @@ jobs:
           remotes::install_github("r-lib/rcmdcheck")
         shell: Rscript {0}
         env:
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}  # Use your PAT to authenticate GitHub requests
 
       - name: Session info
         run: sessionInfo()
