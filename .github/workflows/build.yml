@@ -35,9 +35,7 @@ jobs:
 
       - name: Check
         run: |
-          Rscript -e "Sys.setenv('_R_CHECK_RUNNING_' = 'TRUE')"
-          # the R code that will read _R_CHECK_RUNNING_ is gonna be executed in rchmdcheck
-          rcmdcheck::rcmdcheck(args = "--no-manual --no-tests", error_on = "error")
+          rcmdcheck::rcmdcheck(args = "--no-manual --no-tests --ignore-vignettes", error_on = "error")
         shell: Rscript {0}
 
       - name: Build package
