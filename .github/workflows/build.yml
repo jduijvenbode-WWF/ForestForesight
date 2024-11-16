@@ -30,7 +30,7 @@ jobs:
           remotes::install_github("r-lib/rcmdcheck")
         shell: Rscript {0}
         env:
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Session info
         run: sessionInfo()
