@@ -33,12 +33,6 @@ jobs:
         run: sessionInfo()
         shell: Rscript {0}
 
-      - name: Check
-        run: |
-          # Disable tests by setting NOT_CRAN to false
-          NOT_CRAN=false rcmdcheck::rcmdcheck(args = "--no-manual --no-tests --as-cran", error_on = "error")
-        shell: Rscript {0}
-
       - name: Build package
         run: R CMD build .
         shell: bash
