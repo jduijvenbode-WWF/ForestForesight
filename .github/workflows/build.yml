@@ -3,9 +3,9 @@ name: R
 on:
   pull_request:
     branches: [ "develop" ]
-    
+
 jobs:
-  Building-package:
+  Build-Upload-package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -34,5 +34,33 @@ jobs:
         shell: Rscript {0}
 
       - name: Check
-        run: rcmdcheck::rcmdcheck(args = "--no-manual --no-tests", error_on = "error")
+        run: |
+          Rscript -e "Sys.setenv('_R_CHECK_RUNNING_' = 'TRUE')"
+          # the R code that will read _R_CHECK_RUNNING_ is gonna be executed in rchmdcheck
+          rcmdcheck::rcmdcheck(args = "--no-manual --no-tests", error_on = "error")
         shell: Rscript {0}
+
+      - name: Build package
+        run: R CMD build .
+        shell: bash
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v1.0.${{ github.run_number }}"
+          release_name: "Package v1.0.${{ github.run_number }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload build package to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: "./<your-package-name>_*.tar.gz"
+          asset_name: "<your-package-name>_v1.0.${{ github.run_number }}.tar.gz"
+          asset_content_type: application/gzip
