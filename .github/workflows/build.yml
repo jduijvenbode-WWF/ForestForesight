@@ -3,7 +3,6 @@ name: Build and release
 on:
   workflow_run:
     workflows: ["Test Workflow"] # Wait for the "Test Workflow"
-    branches: [ "develop" ] # later, we can change this to "main"
     types:
       - completed # Trigger when it completes
 
