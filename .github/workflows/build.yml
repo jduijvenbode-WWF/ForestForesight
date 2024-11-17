@@ -8,9 +8,11 @@ on:
 jobs:
   Building-package:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }} 
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      - run: git branch
 
       ### RELEASE VERSION SECTION ###
       - name: Get current version (MAJOR.MINOR) from DESCRIPTION file
