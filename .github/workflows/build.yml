@@ -120,8 +120,8 @@ jobs:
           tag_name: ${{ env.VERSION }}
           release_name: ForestForesight ${{ env.VERSION }}
           body: |
-            This release is based on PR [#${{ github.event.pull_request.number }}](${{ steps.get_pr_info.outputs.url }}): ${{ steps.get_pr_info.outputs.title }}
-          draft: false
+            This release is based on PR [#${{ github.event.pull_request.number }}](https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}): ${{ steps.get_pr_info.outputs.title }}          draft: false
+            Click on it too see more information.
           prerelease: false
   
       - name: Upload release asset
