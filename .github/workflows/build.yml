@@ -21,7 +21,7 @@ jobs:
           
           # Output MAJOR and MINOR to GitHub environment
           echo "MAJOR=$MAJOR" >> $GITHUB_ENV
-          echo "MINOR=$MINOR" >> $GITHUB_ENV
+          echo "MINOR=$MINOR" >> $GITHUB_ENV    
 
       # Get the latest PATCH version for the current MAJOR and MINOR version
       - name: Get latest PATCH version from GitHub releases
@@ -29,20 +29,19 @@ jobs:
         run: |
           # Get the list of existing releases
           releases=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases")
-
+      
           # Find the latest release with the same MAJOR.MINOR version
-          latest_patch=$(echo "$releases" | jq -r --arg MAJOR "$MAJOR" --arg MINOR "$MINOR" \
-            '[.[] | select(.tag_name | startswith("\($MAJOR).\($MINOR).")) | .tag_name] | max_by(.) | split(".")[2]')
-
-          # If no matching release is found, start PATCH at 0
-          if [[ -z "$latest_patch" || "$latest_patch" == "null" ]]; then
-            PATCH=0
-          else
-            PATCH=$((latest_patch + 1))
-          fi
-
+          latest_patch=$(echo "$releases" | jq -r --arg MAJOR "$MAJOR" --arg MINOR "$MINOR" '
+            [
+              .[] | select(.tag_name | startswith("\($MAJOR).\($MINOR).")) | .tag_name
+            ] | map(split(".")[2] | tonumber) | max // 0
+          ')
+      
+          # Increment the PATCH version
+          PATCH=$((latest_patch + 1))
+      
           # Output PATCH to the GitHub environment
-          echo "PATCH=$PATCH" >> $GITHUB_ENV
+          echo "PATCH=$PATCH" >> $GITHUB_ENV    
 
       # Combine the version components
       - name: Set version number
