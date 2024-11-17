@@ -103,7 +103,24 @@ jobs:
             exit 1
           fi
         shell: bash
-
+      
+      - name: Get PR info
+        id: get_pr_info
+        uses: octokit/graphql-action@v2.x
+        with:
+          query: |
+            query ($prNumber: Int!) {
+              repository(owner: "OWNER", name: "REPO") {
+                pullRequest(number: $prNumber) {
+                  title
+                  url
+                }
+              }
+            }
+          variables: '{"prNumber": ${{ github.event.pull_request.number }}}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -112,9 +129,11 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           release_name: ForestForesight ${{ env.VERSION }}
+          body: |
+            This release is based on PR [#${{ github.event.pull_request.number }}](${{ steps.get_pr_info.outputs.url }}): ${{ steps.get_pr_info.outputs.title }}
           draft: false
           prerelease: false
-
+  
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
@@ -124,7 +143,7 @@ jobs:
           asset_path: ${{ env.TARBALL_PATH }}
           asset_name: ForestForesight_${{ env.VERSION }}.tar.gz
           asset_content_type: application/gzip
-
+    
       - name: Final directory listing (post-upload)
         run: |
           echo "Final check of directories:"
