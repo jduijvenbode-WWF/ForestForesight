@@ -10,6 +10,51 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      ### RELEASE VERSION SECTION ###
+      - name: Get current version (MAJOR.MINOR) from DESCRIPTION file
+        id: get_version
+        run: |
+          # Extract version from DESCRIPTION file
+          VERSION=$(grep '^Version:' DESCRIPTION | awk '{print $2}')
+          MAJOR=$(echo $VERSION | cut -d '.' -f 1)
+          MINOR=$(echo $VERSION | cut -d '.' -f 2)
+          
+          # Output MAJOR and MINOR to GitHub environment
+          echo "MAJOR=$MAJOR" >> $GITHUB_ENV
+          echo "MINOR=$MINOR" >> $GITHUB_ENV
+
+      # Get the latest PATCH version for the current MAJOR and MINOR version
+      - name: Get latest PATCH version from GitHub releases
+        id: get_latest_patch
+        run: |
+          # Get the list of existing releases
+          releases=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases")
+
+          # Find the latest release with the same MAJOR.MINOR version
+          latest_patch=$(echo "$releases" | jq -r --arg MAJOR "$MAJOR" --arg MINOR "$MINOR" \
+            '[.[] | select(.tag_name | startswith("\($MAJOR).\($MINOR).")) | .tag_name] | max_by(.) | split(".")[2]')
+
+          # If no matching release is found, start PATCH at 0
+          if [[ -z "$latest_patch" || "$latest_patch" == "null" ]]; then
+            PATCH=0
+          else
+            PATCH=$((latest_patch + 1))
+          fi
+
+          # Output PATCH to the GitHub environment
+          echo "PATCH=$PATCH" >> $GITHUB_ENV
+
+      # Combine the version components
+      - name: Set version number
+        run: |
+          VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      # Display the newly set version
+      - name: Display new version
+        run: echo "New version is ${{ env.VERSION }}"
+      ### END OF RELEASE VERSION SECTION ###
+      
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
@@ -58,59 +103,6 @@ jobs:
             exit 1
           fi
         shell: bash
-
-      # Get current version from file or initialize
-      - name: Get current version
-        id: get_version
-        run: |
-          # Default version components
-          MAJOR=1
-          MINOR=0
-          PATCH=0
-
-          # Check if a VERSION file exists and extract current version
-          if [ -f VERSION ]; then
-            VERSION=$(cat VERSION)
-            MAJOR=$(echo $VERSION | cut -d '.' -f 1)
-            MINOR=$(echo $VERSION | cut -d '.' -f 2)
-            PATCH=$(echo $VERSION | cut -d '.' -f 3)
-          fi
-          
-          # Output current version components to the GitHub environment
-          echo "MAJOR=$MAJOR" >> $GITHUB_ENV
-          echo "MINOR=$MINOR" >> $GITHUB_ENV
-          echo "PATCH=$PATCH" >> $GITHUB_ENV
-          
-      # Adjust the version number based on the pull request title
-      - name: Set dynamic version number
-        id: set_version
-        run: |
-          # Extract the pull request title
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          echo "Pull request title: $PR_TITLE"
-
-          # Check for MAJOR or MINOR in the title and update version accordingly
-          if [[ "$PR_TITLE" == *"MAJOR"* ]]; then
-            MAJOR=$((MAJOR + 1))
-            MINOR=0
-            PATCH=0
-          elif [[ "$PR_TITLE" == *"MINOR"* ]]; then
-            MINOR=$((MINOR + 1))
-            PATCH=0
-          else
-            PATCH=$((PATCH + 1))
-          fi
-
-          # Combine the updated version
-          VERSION="$MAJOR.$MINOR.$PATCH"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-          # Save the new version to a VERSION file
-          echo "$VERSION" > VERSION
-
-      # Display the newly set version
-      - name: Display new version
-        run: echo "New version is ${{ env.VERSION }}"
 
       - name: Create release
         id: create_release
