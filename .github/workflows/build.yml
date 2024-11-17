@@ -2,13 +2,15 @@ name: Build and release
 
 on:
   pull_request:
+    types: [closed]
     branches: 
-      - "develop" # we will delete this later
+      - "develop" # we can delete this later
       - "main"
 
 jobs:
   Building-package:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true || github.event.review.state == 'approved'
     steps:
       - uses: actions/checkout@v2
 
@@ -120,8 +122,7 @@ jobs:
           tag_name: ${{ env.VERSION }}
           release_name: ForestForesight ${{ env.VERSION }}
           body: |
-            This release is based on PR [#${{ github.event.pull_request.number }}](https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}): ${{ steps.get_pr_info.outputs.title }}          draft: false
-            Click on it too see more information.
+            This release is based on PR [#${{ github.event.pull_request.number }}](https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}): ${{ steps.get_pr_info.outputs.title }} (click to see more information)
           prerelease: false
   
       - name: Upload release asset
