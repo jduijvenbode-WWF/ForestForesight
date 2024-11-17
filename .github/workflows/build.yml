@@ -22,7 +22,7 @@ jobs:
           # Output MAJOR and MINOR to GitHub environment
           echo "MAJOR=$MAJOR" >> $GITHUB_ENV
           echo "MINOR=$MINOR" >> $GITHUB_ENV    
-          echo "The version from DESCRIPTION: ${{ env.MAJOR }}.${{ env.MINOR }}"
+          echo "The version from DESCRIPTION: $MAJOR.$MINOR"
 
       - name: Get latest PATCH version from GitHub releases
         id: get_latest_patch
@@ -42,7 +42,7 @@ jobs:
       
           # Output PATCH to the GitHub environment
           echo "PATCH=$PATCH" >> $GITHUB_ENV    
-          echo "New Patch number: ${{ env.PATCH }}"
+          echo "New Patch number: $PATCH"
 
       # Combine the version components
       - name: Set version number
