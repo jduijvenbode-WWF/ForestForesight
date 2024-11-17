@@ -1,7 +1,10 @@
-name: R Tests
+name: Test Workflow
+
 on:
   pull_request:
-    branches: [ "develop" ]
+    branches: 
+      - "develop"
+      - "main"
 
 jobs:
   Testing-package:
