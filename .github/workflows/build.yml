@@ -102,7 +102,7 @@ jobs:
         with:
           query: |
             query ($prNumber: Int!) {
-              repository(owner: "OWNER", name: "REPO") {
+              repository(owner: "${{ github.repository_owner }}", name: "${{ github.event.repository.name }}") {
                 pullRequest(number: $prNumber) {
                   title
                   url
@@ -112,6 +112,7 @@ jobs:
           variables: '{"prNumber": ${{ github.event.pull_request.number }}}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
   
       - name: Create release
         id: create_release
