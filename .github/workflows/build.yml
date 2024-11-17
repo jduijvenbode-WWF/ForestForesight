@@ -1,11 +1,10 @@
 name: Build and release
 
 on:
-  workflow_dispatch:
   workflow_run:
     workflows: [Tests]
     types: [completed]
-    
+
 jobs:
   Building-package:
     runs-on: ubuntu-latest
