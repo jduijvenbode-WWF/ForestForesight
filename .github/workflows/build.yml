@@ -2,14 +2,13 @@ name: Build and release
 
 on:
   workflow_run:
-    workflows: ["Test Workflow"] # Wait for the "Test Workflow"
+    workflows: [Test Workflow]
     types:
       - completed # Trigger when it completes
 
 jobs:
   Building-package:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Only run if the test workflow succeeded
     steps:
       - uses: actions/checkout@v2
 
