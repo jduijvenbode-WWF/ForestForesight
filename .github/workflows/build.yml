@@ -45,11 +45,14 @@ jobs:
           echo "Checking parent directory after build:"
           ls -l ..
         shell: bash
-
+        
       - name: Verify package tarball exists
+        id: verify_tarball
         run: |
-          if [ -f ./ForestForesight_*.tar.gz ]; then
-            echo "Package tarball found."
+          tarball=$(ls ./ForestForesight_*.tar.gz)
+          if [ -f "$tarball" ]; then
+            echo "Package tarball found: $tarball"
+            echo "TARBALL_PATH=$tarball" >> $GITHUB_ENV
           else
             echo "Package tarball NOT found!"
             exit 1
@@ -65,16 +68,15 @@ jobs:
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Pass the GitHub token here
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload package release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ForestForesight_*.tar.gz
+          asset_path: ${{ env.TARBALL_PATH }}
           asset_name: ForestForesight_4.0.0.tar.gz
           asset_content_type: application/gzip
-
       - name: Final directory listing (post-upload)
         run: |
           echo "Final check of directories:"
