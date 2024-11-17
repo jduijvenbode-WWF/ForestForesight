@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows: [Tests]
-    types:
-      - completed # Trigger when it completes
-
+    types: [completed]
+    
 jobs:
   Building-package:
     runs-on: ubuntu-latest
