@@ -34,6 +34,7 @@
 #'
 #' @export
 check_spatvector <- function(shape, check_size = TRUE, add_overlap = FALSE) {
+  check_basic_properties(shape)
   shape <- check_coordinate_system(shape)
   overlap <- check_country_overlap(shape)
   if (add_overlap) {
