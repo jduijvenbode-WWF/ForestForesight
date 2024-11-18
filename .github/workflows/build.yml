@@ -101,7 +101,7 @@ jobs:
           tag_name: ${{ env.VERSION }}
           release_name: ForestForesight ${{ env.VERSION }}
           body: |
-            This release is based on PR #${{ github.event.pull_request.number }}: ${{ steps.get_pr_info.outputs.title }} (click to see more information)
+            This release is based on PR #${{ github.event.pull_request.number }} ${{ steps.get_pr_info.outputs.title }} (click to see more detail)
           draft: false
           prerelease: false
         env:
