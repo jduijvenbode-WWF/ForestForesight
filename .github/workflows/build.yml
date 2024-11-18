@@ -2,14 +2,14 @@ name: Build and release
 
 on:
   pull_request:
-    # types: [closed]
+    types: [closed]
     branches: 
       - "develop" # we can delete this later
       - "main"
 jobs:
   Building-package:
     runs-on: ubuntu-latest
-    # if: github.event.pull_request.merged == true || github.event.review.state == 'approved'
+    if: github.event.pull_request.merged == true || github.event.review.state == 'approved'
     steps:
       - uses: actions/checkout@v2
 
