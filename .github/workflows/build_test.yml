@@ -98,6 +98,16 @@ jobs:
           fi
         shell: bash
 
+      - name: Verify config.yml exists
+        run: |
+          if [ -f "./config.yml" ]; then
+            echo "config.yml found"
+          else
+            echo "config.yml NOT found!"
+            exit 1
+          fi
+        shell: bash
+
       - name: Run unit tests
         run: |
           R CMD INSTALL ${{ env.TARBALL_PATH }}
