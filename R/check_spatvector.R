@@ -6,6 +6,7 @@
 #'
 #' @param shape Object of class SpatVector to check.
 #' @param check_size Logical. Whether to check if the area is within reasonable bounds.
+#' @param add_overlap Logical. Whether the overlap with landmass in percentage should be added as an attribute.
 #' Default is TRUE.
 #'
 #' @return The input SpatVector, possibly reprojected to EPSG:4326.
@@ -32,14 +33,15 @@
 #' }
 #'
 #' @export
-check_spatvector <- function(shape, check_size = TRUE) {
-  x <- check_basic_properties(shape)
-  x <- check_coordinate_system(shape)
-  x <- check_country_overlap(shape)
+check_spatvector <- function(shape, check_size = TRUE, add_overlap = FALSE) {
+  shape <- check_basic_properties(shape)
+  shape <- check_coordinate_system(shape)
+  overlap <- check_country_overlap(shape)
+  if (add_overlap) {shape$overlap <- overlap}
   if (check_size) {
     check_area_bounds(shape)
   }
-  return(x)
+  return(shape)
 }
 
 #' Check basic SpatVector properties
@@ -54,7 +56,6 @@ check_basic_properties <- function(x) {
   if (terra::nrow(x) == 0) {
     stop("Input SpatVector contains no polygons")
   }
-  return(x)
 }
 
 #' Check and fix coordinate system
@@ -103,8 +104,8 @@ check_country_overlap <- function(x) {
     stop("Input shape does not overlap with any known country boundaries")
   }
 
-  check_overlap_percentage(x, intersection)
-  return(x)
+  overlap <- check_overlap_percentage(x, intersection)
+  return(overlap)
 }
 
 #' Check overlap percentage
@@ -120,6 +121,7 @@ check_overlap_percentage <- function(x, intersection) {
       overlap_percentage
     ), color = "yellow")
   }
+  return(overlap_percentage)
 }
 
 #' Check area bounds
