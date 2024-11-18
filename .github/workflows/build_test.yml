@@ -7,7 +7,7 @@ on:
 jobs:
   Building-testing-package:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true || github.event.review.state == 'approved'
+    # if: github.event.pull_request.merged == true || github.event.review.state == 'approved'
     steps:
       - uses: actions/checkout@v2
 
