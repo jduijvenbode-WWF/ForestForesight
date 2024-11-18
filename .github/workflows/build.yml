@@ -6,7 +6,6 @@ on:
     branches: 
       - "develop" # we can delete this later
       - "main"
-
 jobs:
   Building-package:
     runs-on: ubuntu-latest
@@ -101,6 +100,8 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           release_name: ForestForesight ${{ env.VERSION }}
+          body: |
+            This release is based on PR #${{ github.event.pull_request.number }}: ${{ steps.get_pr_info.outputs.title }} (click to see more information)
           draft: false
           prerelease: false
         env:
