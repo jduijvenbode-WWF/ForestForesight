@@ -7,7 +7,7 @@ on:
       - "develop" # we can delete this later
       - "main"
 jobs:
-  Building-package:
+  Build-release-package:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true || github.event.review.state == 'approved'
     steps:
