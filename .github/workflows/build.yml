@@ -107,14 +107,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload package release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.TARBALL_PATH }}
-          asset_name: ForestForesight_${{ env.VERSION }}.tar.gz
-          asset_content_type: application/gzip
-
       - name: Final directory listing (post-upload)
         run: |
           echo "Final check of directories:"
