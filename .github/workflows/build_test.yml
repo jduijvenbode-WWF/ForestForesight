@@ -1,16 +1,13 @@
-name: Build and release
+name: R
 
 on:
   pull_request:
-    # types: [closed]
-    branches: 
-      - "develop" # we can delete this later
-      - "main"
+    branches: [ "develop" ]
 
 jobs:
-  Building-package:
+  Building-testing-package:
     runs-on: ubuntu-latest
-    # if: github.event.pull_request.merged == true || github.event.review.state == 'approved'
+    if: github.event.pull_request.merged == true || github.event.review.state == 'approved'
     steps:
       - uses: actions/checkout@v2
 
@@ -69,6 +66,12 @@ jobs:
           sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
           sudo apt-get install -y pkg-config
 
+      - name: Install R dependencies
+        run: |
+          install.packages("remotes")
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
+
       - name: Build package
         run: |
           R CMD build . --no-build-vignettes --no-manual
@@ -95,48 +98,9 @@ jobs:
           fi
         shell: bash
 
-      - name: Get PR info
-        id: get_pr_info
-        uses: octokit/graphql-action@v2.x
-        with:
-          query: |
-            query ($prNumber: Int!) {
-              repository(owner: "${{ github.repository_owner }}", name: "${{ github.event.repository.name }}") {
-                pullRequest(number: $prNumber) {
-                  title
-                  url
-                }
-              }
-            }
-          variables: '{"prNumber": ${{ github.event.pull_request.number }}}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.VERSION }}
-          release_name: ForestForesight ${{ env.VERSION }}
-          body: |
-            This release is based on PR #${{ github.event.pull_request.number }}: ${{ steps.get_pr_info.outputs.title }} (click to see more information)
-          prerelease: false
-  
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.TARBALL_PATH }}
-          asset_name: ForestForesight_${{ env.VERSION }}.tar.gz
-          asset_content_type: application/gzip
-    
-      - name: Final directory listing (post-upload)
+      - name: Run unit tests
         run: |
-          echo "Final check of directories:"
-          ls -l .
-          ls -l ..
+          R CMD INSTALL ${{ env.TARBALL_PATH }}
+          Rscript -e 'testthat::test_dir("tests/testthat")'
         shell: bash
+      
