@@ -34,10 +34,11 @@
 #'
 #' @export
 check_spatvector <- function(shape, check_size = TRUE, add_overlap = FALSE) {
-  shape <- check_basic_properties(shape)
   shape <- check_coordinate_system(shape)
   overlap <- check_country_overlap(shape)
-  if (add_overlap) {shape$overlap <- overlap}
+  if (add_overlap) {
+    shape$overlap <- overlap
+  }
   if (check_size) {
     check_area_bounds(shape)
   }
@@ -138,10 +139,10 @@ check_area_bounds <- function(x) {
 
   if (area_ha > upper_area_threshold) {
     ff_cat("Input area is very large.
-           This may impact performance and processing time.",color = "yellow")
+           This may impact performance and processing time.", color = "yellow")
   }
   if (area_ha < lower_area_threshold) {
     ff_cat("Input area is smaller than 10,000 hectares.
-            This may impact performance for training purposes.",color = "yellow")
+            This may impact performance for training purposes.", color = "yellow")
   }
 }
