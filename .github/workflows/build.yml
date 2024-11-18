@@ -52,7 +52,7 @@ jobs:
         run: |
           VERSION="$MAJOR.$MINOR.$PATCH"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "New version is ${{ env.VERSION }}"
+          echo "New version is $VERSION"
       ### END OF RELEASE VERSION SECTION ###
       
       - name: Set up R
