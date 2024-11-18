@@ -37,7 +37,7 @@ jobs:
           latest_patch=$(echo "$releases" | jq -r --arg MAJOR "$MAJOR" --arg MINOR "$MINOR" '
             [
               .[] | select(.tag_name | startswith("\($MAJOR).\($MINOR).")) | .tag_name
-            ] | map(split(".")[2] | tonumber) | max // 0
+            ] | map(split(".")[2] | tonumber) | max // -1
           ')
       
           # Increment the PATCH version
