@@ -111,6 +111,6 @@ jobs:
       - name: Run unit tests
         run: |
           R CMD INSTALL ${{ env.TARBALL_PATH }}
-          Rscript -e 'library(ForestForesight); testthat::test_dir("tests/testthat", reporter = "summary")'
+          Rscript -e 'library(ForestForesight); testthat::test_dir('tests/testthat')'
         shell: bash
       
