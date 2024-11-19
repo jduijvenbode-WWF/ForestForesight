@@ -1,5 +1,3 @@
-library(testthat)
-
 test_that("list_and_filter_tile_files function works as expected", {
   tiles <- c("00N_000E", "00N_010E")
   groundtruth_pattern <- "groundtruth6m"

@@ -5,7 +5,6 @@ test_that("refactored ff_prep has the same output as the original", {
 
   features <- c("initialforestcover", "lastsixmonths", "timesinceloss")
 
-  # Change to your own data_folder because we can't store it locally
   data_folder <- paste(download_folder, "preprocessed", sep = "/")
 
   # sample_size=1 in order to remove randomness
@@ -45,7 +44,6 @@ test_that("refactored ff_prep has the same output as the original", {
   combined_tiles <- paste(tiles, collapse = ", ")
   combined_features <- paste(features, collapse = ", ")
 
-  # change this to wherever you want to save it
   hash_folder <- paste(download_folder, "hashes/", sep = "/")
   date <- Sys.Date()
   hash_matrix <- data.frame(
