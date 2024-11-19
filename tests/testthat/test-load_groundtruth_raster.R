@@ -1,5 +1,3 @@
-library(testthat)
-
 test_that("load_groundtruth_raster handles no groundtruth file of the correct date correctly", {
   # Mock data
   datafolder <- paste0(Sys.getenv("TEST_DATA_FOLDER"), "/preprocessed")
@@ -15,15 +13,15 @@ test_that("load_groundtruth_raster handles no groundtruth file of the correct da
   extent <- terra::ext(terra::rast(selected_files[1]))
   first <- TRUE
   verbose <- FALSE
-  hasgroundtruth <- FALSE
+  has_ground_truth <- FALSE
 
   checker_raster <- terra::rast(selected_files[1], win = extent)
   checker_raster[] <- 0
   # Run the function
-  result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
+  result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, has_ground_truth)
 
   # Check the results
-  expect_false(result$hasgroundtruth)
+  expect_false(result$has_ground_truth)
   expect_equal(dim(result$groundtruth_raster), dim(checker_raster))
   expect_equal(str(result$groundtruth_raster), str(checker_raster))
 })
