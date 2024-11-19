@@ -9,7 +9,7 @@ on:
 jobs:
   Build-release-package:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true || github.event.review.state == 'approved'
+    if: github.event.pull_request.merged == true
     steps:
       - uses: actions/checkout@v2
 
@@ -19,8 +19,22 @@ jobs:
         run: |
           # Extract version from DESCRIPTION file
           VERSION=$(grep '^Version:' DESCRIPTION | awk '{print $2}')
+
+          # Check if version was extracted
+          if [[ -z "$VERSION" ]]; then
+            echo "Error: Could not extract version from DESCRIPTION file"
+            exit 1
+          fi
+
+          # Extract MAJOR and MINOR versions
           MAJOR=$(echo $VERSION | cut -d '.' -f 1)
           MINOR=$(echo $VERSION | cut -d '.' -f 2)
+
+          # Check if MAJOR and MINOR were extracted correctly
+          if [[ -z "$MAJOR" || -z "$MINOR" ]]; then
+            echo "Error: Could not extract MAJOR or MINOR version from DESCRIPTION file"
+            exit 1
+          fi
           
           # Output MAJOR and MINOR to GitHub environment
           echo "MAJOR=$MAJOR" >> $GITHUB_ENV
@@ -58,7 +72,10 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
-          r-version: '4.1.1'
+          r-version: 'latest'  # or 'release'
+
+      - name: Print R version
+        run: R --version
 
       - name: Install system dependencies
         run: |
