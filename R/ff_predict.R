@@ -49,6 +49,7 @@
 #' @references
 #' Jonas van Duijvenbode (2023)
 #' Zillah Calle (2023)
+#' Badcoder MC ForLoopFace
 #'
 #' @seealso
 #' \code{\link{ff_prep}} for preparing data for this function
@@ -59,67 +60,23 @@
 
 ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, indices = NA,
                        templateraster = NA, verbose = FALSE, certainty = FALSE) {
-  # Get the features
-  if (class(model) == "character") {
-    modelfilename <- model
-    if (file.exists(model)) {
-      if (!test_feature_model_match(model)) {
-        stop("number of features in model and corresponding feature names RDA file do not match")
-      }
-      model <- xgboost::xgb.load(model)
-      if (file.exists(gsub("\\.model", "\\.rda", modelfilename))) {
-        model_features <- get(load(gsub("\\.model", "\\.rda", modelfilename)))
-        attr(model, "feature_names") <- model_features
-      }
-    }
-  } else {
-    model_features <- model$feature_names
-  }
-  if (!is.null(model_features)) {
-    test_features <- colnames(test_matrix$features)
-    # Check for features in the test matrix not present in the model
-    extra_features <- setdiff(test_features, model_features)
-    # If there are extra features, remove them from the test matrix
-    if (length(extra_features) > 0) {
-      ff_cat(
-        "Removing extra features from the test matrix:",
-        paste(extra_features, collapse = ", "),
-        color = "yellow"
-      )
-      test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
-    }
-  }
-  # Convert the matrix to a "DMatrix object
+  mdlftrs <- model_loader(model, test_matrix, threshold, groundtruth, indices, templateraster, verbose, certainty) #load features from model
+
+  # prep the features
+  #convertmodel
+  prepFeatures <- FeaturePrepper(model, test_matrix, threshold, groundtruth, indices, templateraster, verbose, certainty, mdlftrs)
   if (!is.na(test_matrix$label[1])) {
     test_matrix <- xgboost::xgb.DMatrix(test_matrix$features, label = test_matrix$label)
   } else {
-    test_matrix <- xgboost::xgb.DMatrix(test_matrix$features)
+    test_matrix <- xgboost::xgb.DMatrix(test_matrix$features, label = test_matrix$label)
   }
 
   ff_cat("calculating predictions", verbose = verbose)
 
   predictions <- predict(model, test_matrix)
-  if (!is.na(groundtruth[1])) {
-    if (class(groundtruth) == "SpatRaster") {
-      groundtruth <- as.numeric(as.matrix(groundtruth))
-    }
+  scores <- calcScores(predictions, threshold)
 
-    cat("calculationg scores", verbose = verbose)
-
-    precision <- c()
-    recall <- c()
-    f05 <- c()
-    for (thresh in threshold) {
-      res <- table(2 * (predictions > thresh) + groundtruth)
-      prec <- as.numeric(res[4] / (res[4] + res[3]))
-      rec <- as.numeric(res[4] / (res[4] + res[2]))
-      precision <- c(precision, prec)
-      recall <- c(recall, rec)
-      f05 <- c(f05, 1.25 * prec * rec / (0.25 * prec + rec))
-    }
-  } else {
-    precision <- recall <- f05 <- NA
-  }
+  if (model != NA) {
   if (class(templateraster) == "SpatRaster") {
     templateraster[] <- 0
     if (length(indices) > 1) {
@@ -149,8 +106,75 @@ ff_predict <- function(model, test_matrix, threshold = 0.5, groundtruth = NA, in
   if (!is.na(f05)) {
     ff_cat("F0.5:", f05, "precision:", precision, "recall:", recall, verbose = verbose)
   }
+  }
+
+  save_toFile(scores$f05)
   return(list(
     threshold = threshold, "precision" = precision, "recall" = recall, "F0.5" = f05,
     "predicted_raster" = templateraster, "predictions" = predictions
   ))
+}
+
+model_loader <- function(model, test_matrix, threshold, groundtruth, indices, templateraster, verbose, certainty) {
+  if (class(model) == "character") {
+    modelfilename <- model
+    if (file.exists(model)) {
+      if (!test_feature_model_match(model)) { stop("number of features in model and corresponding feature names RDA file do not match")}
+      model <- xgboost::xgb.load(model)
+      if (file.exists(gsub("\\.model", "\\.rda", modelfilename))) {
+        model_features <- get(load(gsub("\\.model", "\\.rda", modelfilename)))
+        attr(model, "feature_names") <- model_features
+      }
+    }
+  } else {
+    model_features <- model$feature_names
+  }
+  return(model_features)
+}
+
+FeaturePrepper <- function(model, test_matrix, threshold, groundtruth, indices, templateraster, verbose, certainty, mdlftrs) {
+  if (!is.null(model_features)) {
+    test_features <- colnames(test_matrix$features)
+    # Check for features in the test matrix not present in the model
+    extra_features <- setdiff(test_features, mdlftrs)
+    # If there are extra features, remove them from the test matrix
+    if (length(extra_features) > 0) {
+      ff_cat(
+        "Removing extra features from the test matrix:",
+        paste(extra_features, collapse = ", "),
+        color = "yellow"
+      )
+      test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features), drop = FALSE]
+    }
+  }
+  return(test_matrix)
+}
+
+
+#TODO; Still gotta test whether this works.
+calcScores <- function(prediction, threshold) {
+  if (!is.na(groundtruth[1])) {
+    if (class(groundtruth) == "SpatRaster") {
+      groundtruth <- as.numeric(as.matrix(groundtruth))
+    }
+
+    cat("calculationg scores", verbose = verbose)
+
+    precision <- c()
+    recall <- c()
+    f05 <- c()
+    for (thresh in threshold) {
+      res <- table(2 * (predictions > thresh) + groundtruth)
+      prec <- as.numeric(res[4] / (res[4] + res[3]))
+      rec <- as.numeric(res[4] / (res[4] + res[2]))
+      precision <- c(precision, prec)
+      recall <- c(recall, rec)
+      f05 <- c(f05, 1.25 * prec * rec / (0.25 * prec + rec))
+    }
+  } else {
+    precision <- recall <- f05 <- NA
+  }
+}
+save_toFile <- function(f05) {
+  write.csv(f05, "C:\home\users\documents\f05forzimbabwe.csv")
 }
