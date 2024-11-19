@@ -28,16 +28,18 @@ ff_structurecheck <- function(shape, folder_path, check_date = NULL, error_on_is
   }
 
   # Check main folders
-  cat("Checking main folder\n")
+  ff_cat("Checking main folder\n",verbose = silent_on_pass)
   main_folders <- c("preprocessed", "models", "predictions")
+  all_correct = T
   for (folder in main_folders) {
     if (!dir.exists(file.path(folder_path, folder))) {
+      all_correct = F
       print_result(paste("No", folder, "folder present\n"), color = "red")
     } else {
       print_result(paste(folder, "folder present"), color = "green", verbose = !silent_on_pass)
     }
   }
-  if (any(!dir.exists(main_folders)) && error_on_issue){
+  if (!all_correct && error_on_issue){
     stop("some main folders are missing.
          Fix issues as printed above and try again")
   }
@@ -124,7 +126,11 @@ ff_structurecheck <- function(shape, folder_path, check_date = NULL, error_on_is
         print_result(paste(".model file present for group", group, "\n"), color = "green",silent_on_pass = silent_on_pass)
       }
       if (!file.exists(rda_file)) {
+        if (file.exists(model_file)){
         print_result(paste("No .rda file for group", group, "\n"), color = "red",error_on_issue = error_on_issue)
+        }else{
+          print_result(paste("No .rda file for group", group, "\n"), color = "yellow")
+        }
       } else {
         print_result(paste(".rda file present for group", group, "\n"), color = "green",silent_on_pass = silent_on_pass)
       }
