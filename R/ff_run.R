@@ -84,6 +84,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
                    validation = FALSE) {
   fixed_sample_size <- 6e6
   sample_size <- 0.3
+
   if (!hasvalue(shape) && !hasvalue(country)) {
     stop("either input shape or country should be given")
   }
@@ -96,6 +97,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     countries <- terra::vect(countries)
     shape <- countries[which(countries$iso3 == country), ]
   }
+
   # check if all the function parameters have values in the right format
   if (hasvalue(validation_dates)) {
     validation <- FALSE
@@ -128,17 +130,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   }
 
 
-  if (!terra::is.lonlat(shape)) {
-    shape <- terra::project(shape, "epsg:4326")
-  }
-  data(gfw_tiles, envir = environment())
-  tiles <- terra::vect(gfw_tiles)[shape, ]$tile_id
+  tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))$tile_id
 
-
-  prep_folder <- file.path(ff_folder, "preprocessed")
-  if (!dir.exists(prep_folder)) {
-    stop(paste(prep_folder, "does not exist"))
-  }
+  shape = check_spatvector(shape)
+  ff_structurecheck(shape = shape,folder_path = ff_folder,
+                    check_date = if (hasvalue(train_dates)) {train_dates[1]}else{prediction_dates[1]},
+                    error_on_issue = TRUE, silent_on_pass = TRUE)
 
 
 
@@ -148,8 +145,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     # ff prep to determine the sample size
     if (autoscale_sample && hasvalue(fltr_condition)) {
       if (verbose) {
-        ff_cat("Finding optimal sample size based on filter condition\n", color = "green")
+        ff_cat("Finding optimal sample size based on filter condition", color = "green")
       }
+      prep_folder <- file.path(ff_folder,"preprocessed")
       ff_prep_params_original <- list(
         datafolder = prep_folder, shape = shape, dates = train_dates,
         fltr_condition = fltr_condition, fltr_features = fltr_features,
@@ -323,7 +321,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
         }
       } else {
 
-        ff_cat("no analysis is done because no groundtruth is available\n", color = "green", verbose = verbose)
+        ff_cat("no analysis is done because no groundtruth is available", color = "green", verbose = verbose)
 
       }
     }
