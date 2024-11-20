@@ -11,6 +11,7 @@
 #' @param error_on_issue Logical. Whether the function should return an error if critical
 #' issues are not handled correctly
 #' @param silent_on_pass Logical. Whether correct checks should not be output
+#' @param groundtruth_pattern pattern for groundtruth. Default is groundtruth6m for 6 months
 #'
 #' @return Invisible NULL. The function is called for its side effects (printing).
 #'
@@ -22,7 +23,8 @@ ff_structurecheck <- function(shape,
                               folder_path,
                               check_date = NULL,
                               error_on_issue = FALSE,
-                              silent_on_pass = FALSE) {
+                              silent_on_pass = FALSE,
+                              groundtruth_pattern = "groundtruth6m") {
   # Get info from shape
   info <- getinfo(shape, verbose = FALSE)
 
@@ -32,7 +34,10 @@ ff_structurecheck <- function(shape,
   }
 
   check_main_folders(folder_path, error_on_issue, silent_on_pass)
-  check_preprocessed_folders(folder_path, info, check_date, error_on_issue, silent_on_pass)
+  check_preprocessed_folders(folder_path, info, check_date, error_on_issue,
+    silent_on_pass,
+    groundtruth_pattern = groundtruth_pattern
+  )
   check_models_folder(folder_path, info, error_on_issue, silent_on_pass)
   check_predictions_folder(folder_path, info, error_on_issue, silent_on_pass)
 
@@ -63,17 +68,17 @@ check_main_folders <- function(folder_path, error_on_issue, silent_on_pass) {
   }
 }
 
-check_tile_files <- function(folder, tile, subfolder, check_date, silent_on_pass) {
+check_tile_files <- function(folder, tile, subfolder, check_date, silent_on_pass, groundtruth_pattern) {
   files <- list.files(file.path(folder, tile), pattern = "\\.tif$")
   if (length(files) == 0) {
     print_result("No tif files in", subfolder, "for tile", tile,
       color = "red", error_on_issue = TRUE
     )
-    return()
+    invisible(NULL)
   }
 
   check_file_naming(files, tile, subfolder, silent_on_pass)
-  check_date_files(files, tile, check_date, subfolder, silent_on_pass)
+  check_date_files(files, tile, check_date, subfolder, silent_on_pass, groundtruth_pattern = groundtruth_pattern)
 }
 
 check_file_naming <- function(files, tile, subfolder, silent_on_pass) {
@@ -99,13 +104,17 @@ check_file_naming <- function(files, tile, subfolder, silent_on_pass) {
   }
 }
 
-check_date_files <- function(files, tile, check_date, subfolder, silent_on_pass) {
+check_date_files <- function(files, tile, check_date, subfolder, silent_on_pass, groundtruth_pattern) {
   has_check_date <- any(grepl(paste0("^", tile, "_", check_date, "_lastsixmonths.tif$"), files))
 
   if (subfolder != "groundtruth") {
     check_ews_features(has_check_date, check_date, subfolder, tile, silent_on_pass)
   } else {
-    check_groundtruth(files, tile, check_date, silent_on_pass)
+    check_groundtruth(
+      files = files, tile = tile,
+      check_date = check_date, silent_on_pass = silent_on_pass,
+      groundtruth_pattern = groundtruth_pattern
+    )
   }
 }
 
@@ -126,23 +135,23 @@ check_ews_features <- function(has_check_date, check_date, subfolder, tile, sile
   }
 }
 
-check_groundtruth <- function(files, tile, check_date, silent_on_pass) {
-  has_groundtruth6m <- any(grepl(paste0("^", tile, "_", check_date, "_groundtruth6m\\.tif$"), files))
-  if (!has_groundtruth6m) {
+check_groundtruth <- function(files, tile, check_date, silent_on_pass, groundtruth_pattern) {
+  has_groundtruth <- any(grepl(paste0("^", tile, "_", check_date, paste0("_", groundtruth_pattern, "\\.tif$")), files))
+  if (!has_groundtruth) {
     print_result(paste(
-      "No groundtruth6m file for check date", check_date,
+      "No", groundtruth_pattern, "file for check date", check_date,
       "in groundtruth for tile", tile, "\n"
     ), color = "yellow")
   } else {
     print_result(
-      "Groundtruth6m file present for check date", check_date,
-      "in groundtruth for tile", tile, "\n",
+      groundtruth_pattern, "file present for check date", check_date,
+      "in groundtruth for tile", tile,
       color = "green", silent_on_pass = silent_on_pass
     )
   }
 }
 
-check_preprocessed_folders <- function(folder_path, info, check_date, error_on_issue, silent_on_pass) {
+check_preprocessed_folders <- function(folder_path, info, check_date, error_on_issue, silent_on_pass, groundtruth_pattern) {
   ff_cat("\nChecking preprocessed folder")
   prep_subfolders <- c("input", "groundtruth")
 
@@ -157,12 +166,13 @@ check_preprocessed_folders <- function(folder_path, info, check_date, error_on_i
         color = "green",
         verbose = !silent_on_pass
       )
-      check_tile_subfolders(folder, info, subfolder, check_date, error_on_issue, silent_on_pass)
+      check_tile_subfolders(folder, info, subfolder, check_date, error_on_issue, silent_on_pass, groundtruth_pattern = groundtruth_pattern)
     }
   }
 }
 
-check_tile_subfolders <- function(folder, info, subfolder, check_date, error_on_issue, silent_on_pass) {
+check_tile_subfolders <- function(folder, info, subfolder, check_date,
+                                  error_on_issue, silent_on_pass, groundtruth_pattern) {
   for (tile in info$tile_ids) {
     if (!dir.exists(file.path(folder, tile))) {
       print_result("No subfolder for tile", tile, "in", subfolder,
@@ -174,7 +184,9 @@ check_tile_subfolders <- function(folder, info, subfolder, check_date, error_on_
         color = "green",
         verbose = !silent_on_pass
       )
-      check_tile_files(folder, tile, subfolder, check_date, silent_on_pass)
+      check_tile_files(folder, tile, subfolder, check_date, silent_on_pass,
+        groundtruth_pattern = groundtruth_pattern
+      )
     }
     cat("\n")
   }
@@ -194,7 +206,7 @@ check_model_group <- function(folder_path, group, error_on_issue, silent_on_pass
       color = "red",
       error_on_issue = error_on_issue
     )
-    return()
+    invisible(NULL)
   }
 
   print_result("Subfolder for group", group, "present in models",
@@ -256,7 +268,7 @@ check_country_predictions <- function(folder_path, cname, error_on_issue, silent
       color = "red",
       error_on_issue = error_on_issue
     )
-    return()
+    invisible(NULL)
   }
 
   print_result(paste("Subfolder for ISO3 code", iso3, "present in predictions"),
@@ -273,7 +285,7 @@ check_prediction_files <- function(iso3_folder, iso3, error_on_issue, silent_on_
     print_result(paste("No tif files in predictions for ISO3 code", iso3),
       color = "yellow"
     )
-    return()
+    invisible(NULL)
   }
 
   correct_name <- all(grepl(paste0("^", iso3, "_\\d{4}-\\d{2}-01\\.tif$"), files))
