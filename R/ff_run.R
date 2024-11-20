@@ -88,6 +88,10 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   if (!hasvalue(shape) && !hasvalue(country)) {
     stop("either input shape or country should be given")
   }
+  if (hasvalue(shape)) {
+    ForestForesight::check_spatvector(shape,
+                                      check_size = hasvalue(train_dates))
+  }
   if (!hasvalue(shape)) {
     data(countries, envir = environment())
     countries <- terra::vect(countries)
