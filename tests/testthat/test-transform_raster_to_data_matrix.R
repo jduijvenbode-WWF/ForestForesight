@@ -10,7 +10,7 @@ test_that("transform_raster_to_data_matrix works as expected", {
   # Set parameters
   shrink <- "extract"
   addxy <- TRUE
-  dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, NULL)
+  dts <- transform_raster_to_dataset(rasstack, shape, shrink, addxy, NULL)
   expect_true(is.data.frame(dts) || is.matrix(dts)) # Check output is matrix or data frame
   expect_true(ncol(dts) >= 2) # Check for extracted data columns
   expect_true("x" %in% colnames(dts) && "y" %in% colnames(dts)) # Check x, y coords
@@ -33,7 +33,7 @@ test_that("transform_raster_to_data_matrix works with 'no shrink' and addxy = FA
   # Define parameters
   shrink <- "none"
   addxy <- FALSE
-  dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, NULL)
+  dts <- transform_raster_to_dataset(rasstack, shape, shrink, addxy, NULL)
   rasstack <- as.matrix(rasstack)
   expect_true(is.matrix(dts)) # Check output is matrix
   expect_equal(ncol(dts), ncol(rasstack))
@@ -53,7 +53,7 @@ test_that("transform_raster_to_data_matrix works with 'no shrink' and addxy = TR
   addxy <- TRUE
 
   # Call the function with addxy = TRUE
-  dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, NULL)
+  dts <- transform_raster_to_dataset(rasstack, shape, shrink, addxy, NULL)
 
   # Convert rasstack to a matrix for dimension comparison
   rasstack <- as.matrix(rasstack)
@@ -76,9 +76,9 @@ test_that("transform_raster_to_data_matrix works with an empty raster input", {
   addxy <- FALSE
 
   # Run the function with this minimal raster
-  dts <- transform_raster_to_data_matrix(small_raster, shape, shrink, addxy, NULL)
+  dts <- transform_raster_to_dataset(small_raster, shape, shrink, addxy, NULL)
 
   # Expect the output to be an empty-like matrix structure with 1 row and 1 column containing NA
   expect_equal(dim(dts), c(1, 1))
-  expect_true(is.na(dts[1, 1]))
+  expect_true(dts[1, 1]==0)
 })

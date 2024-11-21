@@ -13,6 +13,9 @@
 #' hasvalue(NULL)
 #'
 hasvalue <- function(x) {
+  if (length(x) > 1) {
+    return(TRUE)
+  }
   if (is.null(x)) {
     return(FALSE)
   }
@@ -23,6 +26,9 @@ hasvalue <- function(x) {
   }
   if (class(x) == "character") {
     if (length(x) == 0) {
+      return(FALSE)
+    }
+    if (x == ""){
       return(FALSE)
     }
   }
