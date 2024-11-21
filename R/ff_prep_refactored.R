@@ -180,8 +180,8 @@ check_pre_conditions <- function(dates, country, shape, tiles, shrink, inc_featu
   if (!hasvalue(tiles) && !hasvalue(country) && !hasvalue(shape)) {
     stop("Unknown what to process since no tiles, country, or shape were given")
   }
-  if (hasvalue(shape) && !inherits(shape, "SpatVector")) {
-    stop("Shape should be of class SpatVector")
+  if (hasvalue(shape)) {
+    check_spatvector(shape)
   }
   if (!hasvalue(country) && !hasvalue(shape) && shrink != "none") {
     stop("Shrink parameter must be 'none' when neither country nor shape are provided")
