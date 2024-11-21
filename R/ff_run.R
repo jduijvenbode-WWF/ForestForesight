@@ -90,7 +90,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   }
   if (hasvalue(shape)) {
     ForestForesight::check_spatvector(shape,
-                                      check_size = hasvalue(train_dates))
+      check_size = hasvalue(train_dates)
+    )
   }
   if (!hasvalue(shape)) {
     data(countries, envir = environment())
@@ -132,10 +133,16 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
 
   tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))$tile_id
 
-  shape = check_spatvector(shape)
-  ff_structurecheck(shape = shape,folder_path = ff_folder,
-                    check_date = if (hasvalue(train_dates)) {train_dates[1]}else{prediction_dates[1]},
-                    error_on_issue = TRUE, silent_on_pass = TRUE)
+  shape <- check_spatvector(shape)
+  ff_structurecheck(
+    shape = shape, folder_path = ff_folder,
+    check_date = if (hasvalue(train_dates)) {
+      train_dates[1]
+    } else {
+      prediction_dates[1]
+    },
+    error_on_issue = TRUE, silent_on_pass = TRUE
+  )
 
 
 
@@ -149,7 +156,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
         datafolder = ff_folder, shape = shape, dates = train_dates,
         filter_conditions = filter_conditions, filter_features = filter_features,
         sample_size = 1, shrink = "extract",
-        groundtruth_pattern = "groundtruth6m", label_threshold = 1
+        groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), label_threshold = 1
       )
       ff_prep_params_combined <- merge_lists(default = ff_prep_params_original, user = ff_prep_params)
       ff_prep_params_combined <- merge_lists(
@@ -177,7 +184,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       datafolder = ff_folder, shape = shape, dates = train_dates,
       filter_conditions = filter_conditions, filter_features = filter_features,
       sample_size = sample_size, verbose = verbose, shrink = "extract",
-      groundtruth_pattern = "groundtruth6m", label_threshold = 1
+      groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), label_threshold = 1
     )
     if (validation) {
       ff_prep_params_original <- c(ff_prep_params_original, list("validation_sample" = 0.25))
@@ -237,9 +244,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     for (tile in tiles) {
       # run the predict function if a model was not built but was provided by the function
       ff_prep_params_original <- list(
-        datafolder = ff_folder, tiles = tile, dates = prediction_date,
-        verbose = verbose, filter_features = filter_features,
-        filter_conditions = filter_conditions, groundtruth_pattern = "groundtruth6m",
+        datafolder = prep_folder, tiles = tile, dates = prediction_date,
+        verbose = verbose, fltr_features = fltr_features,
+        fltr_condition = fltr_condition, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"),
         sample_size = 1, label_threshold = 1, shrink = "crop"
       )
       ff_prep_params_combined <- merge_lists(ff_prep_params_original, ff_prep_params)
