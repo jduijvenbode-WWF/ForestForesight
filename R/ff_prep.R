@@ -53,8 +53,8 @@
 #' @return A list containing:
 #'   \item{feature_dataset}{A list with features and labels for training}
 #'   \item{validation_matrix}{A list with features and labels for validation (if validation_sample > 0)}
-#'   \item{testindices}{Indices of the filtered samples}
-#'   \item{groundtruthraster}{A SpatRaster of the ground truth}
+#'   \item{test_indices}{Indices of the filtered samples}
+#'   \item{groundtruth_raster}{A SpatRaster of the ground truth}
 #'   \item{features}{A vector of feature names}
 #'   \item{has_groundtruth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
 #'
@@ -186,7 +186,7 @@ check_pre_conditions <- function(dates, country, shape, tiles, shrink, inc_featu
     stop("Unknown what to process since no tiles, country, or shape were given")
   }
   if (hasvalue(shape)) {
-    check_spatvector(shape)
+    shape <- check_spatvector(shape)
   }
   if (!hasvalue(country) && !hasvalue(shape) && shrink != "none") {
     stop("Shrink parameter must be 'none' when neither country nor shape are provided")
