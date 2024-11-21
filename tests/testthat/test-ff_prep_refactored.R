@@ -10,10 +10,10 @@ test_that("refactored ff_prep has the same output as the original", {
   # sample_size=1 in order to remove randomness
   # running on tiles
   tiles <- c("10N_110E")
-  tile_prepped_ref <- ff_prep_refactored(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
+  tile_prepped_ref <- ff_prep_refactored(datafolder = download_folder, tiles = tiles, sample_size = 1, inc_features = features)
   tile_prepped <- ff_prep(datafolder = data_folder, tiles = tiles, sample_size = 1, inc_features = features)
 
-  tile_hash_ref <- digest::digest(tile_prepped_ref$data_matrix, algo = "md5")
+  tile_hash_ref <- digest::digest(tile_prepped_ref$feature_dataset, algo = "md5")
   cat("tile hash ", tile_hash_ref, "\n")
 
   tile_hash <- digest::digest(tile_prepped$data_matrix, algo = "md5")
@@ -21,24 +21,24 @@ test_that("refactored ff_prep has the same output as the original", {
 
   # running on country
   country_prepped <- ff_prep(datafolder = data_folder, country = identifier, sample_size = 1, inc_features = features)
-  country_prepped_ref <- ff_prep_refactored(datafolder = data_folder, country = identifier, sample_size = 1, inc_features = features)
+  country_prepped_ref <- ff_prep_refactored(datafolder = download_folder, country = identifier, sample_size = 1, inc_features = features)
 
   country_hash <- digest::digest(country_prepped$data_matrix, algo = "md5")
   cat("Country hash", country_hash, "\n")
 
-  country_hash_ref <- digest::digest(country_prepped_ref$data_matrix, algo = "md5")
+  country_hash_ref <- digest::digest(country_prepped_ref$feature_dataset, algo = "md5")
   cat("Country hash", country_hash_ref, "\n")
 
   ## running on shape
   countries <- vect(get(data("countries")))
   shape <- countries[countries$iso3 == "BRN"]
   shape_prepped <- ff_prep(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
-  shape_prepped_ref <- ff_prep_refactored(datafolder = data_folder, shape = shape, sample_size = 1, inc_features = features)
+  shape_prepped_ref <- ff_prep_refactored(datafolder = download_folder, shape = shape, sample_size = 1, inc_features = features)
 
   shape_hash <- digest::digest(shape_prepped$data_matrix, algo = "md5")
   cat("Shape hash", shape_hash, "\n")
 
-  shape_hash_ref <- digest::digest(shape_prepped_ref$data_matrix, algo = "md5")
+  shape_hash_ref <- digest::digest(shape_prepped_ref$feature_dataset, algo = "md5")
   cat("Shape hash", shape_hash_ref, "\n")
 
   combined_tiles <- paste(tiles, collapse = ", ")
@@ -77,5 +77,5 @@ test_that("refactored ff_prep has the same output as the original", {
   df_original <- read.csv(file_location_original)
   df_refactored <- read.csv(file_location_refactored)
 
-  expect_equal(df_original, df_refactored)
+  testthat::expect_equal(hash_matrix, hash_matrix_ref)
 })
