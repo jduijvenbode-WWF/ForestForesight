@@ -66,6 +66,9 @@ ff_prep <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, gro
                     inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
                     adddate = T, verbose = T, shrink = "none", window = NA, label_threshold = 1, addxy = F) {
   ######## quality check########
+  if (hasvalue(shape)) {
+    check_spatvector(shape)
+  }
   if (as.Date(min(dates)) < as.Date("2021-01-01")) {
     stop("the earliest date available is 2021-01-01")
   }

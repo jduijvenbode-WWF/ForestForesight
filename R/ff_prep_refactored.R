@@ -2,42 +2,61 @@
 #'
 #' This function prepares data for the ForestForesight training and predicting algorithm based on specified parameters.
 #'
-#' @param datafolder Path to the main data directory, which should contain the "input" and "groundtruth" subdirectories.
-#' These subdirectories must include the respective degree folders.Default is the system variable ff_datafolder.
-#' @param country ISO3 code of the country or countries for which the data is prepared. Optional if either shape or tiles is given.
-#' @param shape SpatVector for which the data is prepared. Optional if either country or tiles is given.
-#' @param tiles Vector of tiles in the syntax of e.g., "10N_080W" for which the data is prepared. Optional if either shape or country is given.
-#' @param groundtruth_pattern Pattern to identify ground truth files. Default is "groundtruth6m" (set in config.json, groundtruth of future six months in binary format).
+#' @param datafolder Path to the main data directory,
+#' which should contain the "input" and "groundtruth" subdirectories.
+#' These subdirectories must include the respective degree folders.
+#' Default is the system variable ff_datafolder.
+#' @param country ISO3 code of the country or countries for which the data is prepared.
+#' Optional if either shape or tiles is given.
+#' @param shape SpatVector for which the data is prepared.
+#' Optional if either country or tiles is given.
+#' @param tiles Vector of tiles in the syntax of e.g., "10N_080W" for which the data is prepared.
+#' Optional if either shape or country is given.
+#' @param groundtruth_pattern Pattern to identify ground truth files.
+#' Default is "groundtruth6m" (set in config.json, groundtruth of future six months in binary format).
 #' @param dates vector of dates in the format "YYYY-MM-DD". Default is "2021-01-01".
 #' @param inc_features Vector of features to exclusively include in the data preparation.
 #' @param exc_features Vector of features to exclude from the data preparation.
-#' @param fltr_features Vector of features for filtering data. Default is NULL. Example: 'initialforestcover'.
-#' @param fltr_condition Vector of conditions corresponding to `fltr_features`. Each entry should consist of an operator and a value.
-#' Should be of the same length as `fltr_features`. Default is NULL. Example: '>0'.
-#' @param validation_sample Float between 0 and 1 indicating how much of the training dataset should be used for validation. Default is 0. Advised not to set above 0.3.
+#' @param filter_features Vector of features for filtering data. Default is NULL.
+#' Example: 'initialforestcover'.
+#' @param filter_conditions Vector of conditions corresponding to `filter_features`.
+#' Each entry should consist of an operator and a value.
+#' Should be of the same length as `filter_features`. Default is NULL. Example: '>0'.
+#' @param validation_sample Float between 0 and 1 indicating how much of the
+#' training dataset should be used for validation. Default is 0.
+#' Advised not to set above 0.3.
 #' @param sample_size Fraction size of the random sample. Should be > 0 and <= 1. Default is 0.3.
-#' @param adddate Boolean indicating whether to add date-related features ("sinmonth", "month","monthssince2019"). Default is TRUE.
+#' @param add_date Boolean indicating whether to add date-related features
+#' ("sinmonth", "month","monthssince2019"). Default is TRUE.
 #' @param verbose Boolean indicating whether to display progress messages. Default is TRUE.
-#' @param shrink Option to modify the input area when a country is selected. This parameter determines how the spatial extent of the data is adjusted based on the selected country.
+#' @param shrink Option to modify the input area when a country is selected.
+#' This parameter determines how the spatial extent of the data is
+#' adjusted based on the selected country.
 #' Options are:
 #' \describe{
 #'   \item{"none"}{No modification to the input area. The entire extent is used as-is. (Default)}
-#'   \item{"crop"}{Crops the input area to the boundaries of the selected country using the exact extent of the country's shape.}
-#'   \item{"crop-deg"}{Similar to "crop", but the resulting extent is adjusted to the nearest whole degree (latitude/longitude). This ensures the extent aligns with whole degree boundaries.}
-#'   \item{"extract"}{Extracts data only within the boundaries of the selected country. The data is limited to the exact extent of the country's shape, and the function `terra::extract` is used to retrieve the data within this area.}
+#'   \item{"crop"}{Crops the input area to the boundaries of the selected country
+#'   using the exact extent of the country's shape.}
+#'   \item{"crop-deg"}{Similar to "crop", but the resulting extent is adjusted
+#'   to the nearest whole degree (latitude/longitude). This ensures the extent aligns with whole degree boundaries.}
+#'   \item{"extract"}{Extracts data only within the boundaries of the selected country.
+#'   The data is limited to the exact extent of the country's shape,
+#'   and the function `terra::extract` is used to retrieve the data within this area.}
 #' }
 #' @param window Set the extent on which to process. Default is NA to derive it from the data.
-#' @param label_threshold Threshold for labeling the ground truth. Default is 1, meaning a pixel is labeled as deforested if at least one deforestation event has occurred.
-#' If `label_threshold = NA`, the ground truth will represent the total number of deforestation events rather than a binary label.
-#' @param addxy Boolean indicating whether to add x and y coordinates as features. Default is FALSE.
+#' @param label_threshold Threshold for labeling the ground truth.
+#' Default is 1, meaning a pixel is labeled as deforested if at least one deforestation event has occurred.
+#' If `label_threshold = NA`, the ground truth will represent the total number of
+#' deforestation events rather than a binary label.
+#' @param add_xy Boolean indicating whether to add x and y coordinates as features. Default is FALSE.
 #'
 #' @return A list containing:
-#'   \item{data_matrix}{A list with features and labels for training}
+#'   \item{feature_dataset}{A list with features and labels for training}
 #'   \item{validation_matrix}{A list with features and labels for validation (if validation_sample > 0)}
 #'   \item{testindices}{Indices of the filtered samples}
 #'   \item{groundtruthraster}{A SpatRaster of the ground truth}
 #'   \item{features}{A vector of feature names}
-#'   \item{hasgroundtruth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
+#'   \item{has_groundtruth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
 #'
 #' @export
 #'
@@ -51,8 +70,8 @@
 #'   datafolder = "path/to/data",
 #'   country = "BRA",
 #'   dates = ForestForesight::daterange("2022-01-01", "2022-12-31"),
-#'   fltr_features = "initialforestcover",
-#'   fltr_condition = ">0"
+#'   filter_features = "initialforestcover",
+#'   filter_conditions = ">0"
 #' )
 #' }
 #'
@@ -62,207 +81,199 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
-ff_prep_refactored <- function(datafolder = NA, country = NA, shape = NA, tiles = NULL, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), dates = "2023-01-01",
-                               inc_features = NA, exc_features = NA, fltr_features = NULL, fltr_condition = NULL, sample_size = 0.3, validation_sample = 0,
-                               adddate = TRUE, verbose = TRUE, shrink = "none", window = NA, label_threshold = 1, addxy = FALSE) {
-  ######## quality check########
-  quality_result <- quality_check(dates, country, shape, tiles, datafolder, shrink)
-
-  datafolder <- quality_result$datafolder
-  shrink <- quality_result$shrink
-
-  hasgroundtruth <- FALSE
-  ######## preprocess for by-country processing########
-  data(gfw_tiles, envir = environment())
-  tilesvect <- terra::vect(gfw_tiles)
-
-  result <- preprocess_by_shape_or_country(country, shape, tilesvect, tiles, verbose)
-
-  shape <- result$shape
-  tiles <- result$tiles
-
-  ########## list files and exclude features######
-
-  allfiles <- list_and_filter_tile_files(datafolder = datafolder, tiles, groundtruth_pattern, verbose)
-
-  # remove features that are not wanted
-  allfiles <- filter_files_by_features(allfiles, exc_features, inc_features, groundtruth_pattern, verbose)
-
-  if (length(tiles) > 1) {
-    if (verbose) {
-      cat("No groundtruth raster will be returned because multiple tiles are processed together \n")
-    }
+ff_prep_refactored <- function(datafolder = Sys.getenv("DATA_FOLDER"), country = NA, shape = NA, tiles = NULL,
+                               groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), dates = "2023-01-01",
+                               inc_features = NA, exc_features = NA, filter_features = NULL,
+                               filter_conditions = NULL, sample_size = 0.3, validation_sample = 0,
+                               add_date = TRUE, verbose = TRUE, shrink = "none", window = NA,
+                               label_threshold = 1, add_xy = FALSE) {
+  ######## pre-conditions check########
+  if (!hasvalue(groundtruth_pattern)) {
+    ff_cat("no environment variable for DEFAULT_GROUNDTRUTH, reverting to groundtruth6m",
+           color = "yellow", verbose = verbose)
+    groundtruth_pattern <- "groundtruth6m"
   }
+  check_pre_conditions(dates, country, shape, tiles, shrink,
+                       inc_features, exc_features, datafolder, verbose = verbose)
 
-  # Process tiles and dates
-  ####### load raster data as matrix#########
-  process_result <- process_tile_data(
-    tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate,
-    fdts, sample_size, allindices, fltr_features, fltr_condition
+  ######## Get tiles and shape based on country or custom geometry ########
+  tiles_vector <- terra::vect(get(data("gfw_tiles",envir = environment())))
+  tile_and_shape <- get_tiles_and_shape(country, shape, tiles_vector, tiles, verbose)
+  shape <- tile_and_shape$shape
+  tiles <- tile_and_shape$tiles
+
+  ########## list files and filter features######
+  list_of_feature_files <- list_and_filter_tile_files(datafolder = datafolder, tiles, groundtruth_pattern, verbose)
+
+  # filter out the features based on inc_features and exc_features
+  list_of_feature_files <- filter_files_by_features(
+    list_of_feature_files,
+    exc_features, inc_features, groundtruth_pattern, verbose
   )
 
-  fdts <- process_result$fdts
-  allindices <- process_result$allindices
-  groundtruth_raster <- process_result$groundtruth_raster
-  hasgroundtruth <- process_result$hasgroundtruth
+  if (length(tiles) > 1) {
+    ff_cat("No groundtruth raster will be returned because multiple tiles are processed together",
+           verbose = verbose)
+  }
 
-  ###### filter data based on features#######
-  # filter training data on features that have been declared
+  ####### load raster data as matrix#########
+  raw_tile_data <- process_tile_data(
+    tiles, list_of_feature_files, shape, shrink, window, verbose,
+    dates, groundtruth_pattern,
+    has_groundtruth = FALSE, add_xy, add_date,
+    sample_size, filter_features, filter_conditions
+  )
 
-  ####### create groundtruth data#######
+  feature_dataset <- raw_tile_data$feature_dataset
+  pixel_indices <- raw_tile_data$pixel_indices
+  groundtruth_raster <- raw_tile_data$groundtruth_raster
+  has_groundtruth <- raw_tile_data$has_groundtruth
+
+
   # split data into feature data and label data
 
-  split_result <- split_feature_and_label_data(fdts, groundtruth_pattern, label_threshold, groundtruth_raster, verbose)
-  fdts <- split_result$fdts
+  split_result <- split_feature_and_label_data(feature_dataset, groundtruth_pattern, label_threshold, groundtruth_raster, verbose)
+  feature_dataset <- split_result$feature_dataset
   data_label <- split_result$data_label
   groundtruth_raster <- split_result$groundtruth_raster
 
-  # make sure that label data is binary
   ########## create validation sample#######
 
-  validation_result <- create_validation_sample(fdts, data_label, validation_sample)
-  data_matrix <- validation_result$data_matrix
+  validation_result <- create_validation_sample(feature_dataset, data_label, validation_sample)
+  feature_dataset <- validation_result$feature_dataset
   validation_matrix <- validation_result$validation_matrix
-
-  ########## output data####
-  if (hasvalue(data_matrix$label)) {
-    if (sum(data_matrix$label) == 0 && verbose) {
-      ff_cat("Data contains no actuals, all labels are 0", color = "yellow")
-    }
+  ########## return data from prep function to main function####
+  if (hasvalue(feature_dataset$label) && sum(feature_dataset$label) == 0) {
+    ff_cat("Data contains no actuals, all labels are 0", color = "yellow", verbose = verbose)
   }
 
   return(list(
-    "data_matrix" = data_matrix,
+    "feature_dataset" = feature_dataset,
     "validation_matrix" = validation_matrix,
-    "testindices" = allindices,
+    "testindices" = pixel_indices,
     "groundtruthraster" = groundtruth_raster,
-    "features" = colnames(fdts),
-    "hasgroundtruth" = hasgroundtruth
+    "features" = colnames(feature_dataset$features),
+    "has_groundtruth" = has_groundtruth
   ))
 }
 
-quality_check <- function(dates, country, shape, tiles, datafolder, shrink) {
+check_pre_conditions <- function(dates, country, shape, tiles, shrink, inc_features, exc_features, verbose, datafolder) {
+  ff_cat("Checking ff_prep function input", verbose = verbose)
+  if (!hasvalue(datafolder)){
+    stop("no environment variable for DATA_FOLDER found and no other option given")
+  }
+  # Check date validity
   if (!hasvalue(dates) || any(is.na(dates)) || dates == "") {
     stop("No dates were given")
   }
-
-  if (as.Date(min(dates)) < as.Date(Sys.getenv("EARLIEST_DATA_DATE"))) {
-    stop(paste0("The earliest date available is ", Sys.getenv("EARLIEST_DATA_DATE")))
+  earliest_date <- Sys.getenv("EARLIEST_DATA_DATE")
+  if (!hasvalue(earliest_date)) {
+    ff_cat("no environment variable for EARLIEST_DATA_DATE, reverting to 2021-01-01",
+           color = "yellow", verbose = verbose)
+    earliest_date <- "2021-01-01"
+  }
+  if (as.Date(min(dates)) < as.Date(earliest_date)) {
+    stop(paste0("The earliest date available is ", earliest_date))
   }
 
-  if (!hasvalue(country) & !hasvalue(shape)) {
-    shrink <- "none"
-  }
-
-  if (!hasvalue(tiles) & !hasvalue(country) & !hasvalue(shape)) {
+  # Check input parameters validity
+  if (!hasvalue(tiles) && !hasvalue(country) && !hasvalue(shape)) {
     stop("Unknown what to process since no tiles, country, or shape were given")
   }
-
-  if (hasvalue(shape) & !inherits(shape, "SpatVector")) {
-    stop("Shape should be of class SpatVector")
+  if (hasvalue(shape)) {
+    check_spatvector(shape)
   }
-
-  if (!hasvalue(datafolder)) {
-    datafolder <- Sys.getenv("ff_datafolder")
+  if (!hasvalue(country) && !hasvalue(shape) && shrink != "none") {
+    stop("Shrink parameter must be 'none' when neither country nor shape are provided")
   }
-
-  if (datafolder == "") {
-    stop("No environment variable for ff_datafolder and no datafolder parameter set")
+  if (all(c(hasvalue(inc_features), hasvalue(exc_features)))) {
+    stop("Only supply either inc_features or exc_features, not both")
   }
-
-  return(list(datafolder = datafolder, shrink = shrink))
 }
 
-preprocess_by_shape_or_country <- function(country, shape, tilesvect, tiles, verbose) {
+get_tiles_and_shape <- function(country, shape, tiles_vector, tiles, verbose) {
   if (hasvalue(country)) {
-    if (verbose) {
-      cat("Selecting based on country\n")
-    }
-    data(countries, envir = environment())
-    countries <- terra::vect(countries)
+    ff_cat("Selecting based on country", verbose = verbose)
+    countries <- terra::vect(get(data("countries", envir = environment())))
     shape <- countries[which(countries$iso3 %in% country)]
-    tilesvect <- tilesvect[shape]$tile_id
+    tiles_vector <- tiles_vector[shape]$tile_id
     if (is.null(tiles)) {
-      tiles <- tilesvect
+      tiles <- tiles_vector
     }
-    cat(paste("Country contains the following tiles that will be processed:", paste(tiles, collapse = ", "), "\n"))
+    ff_cat("Processing tiles:", paste(tiles, collapse = ", "), verbose = verbose)
   } else if (hasvalue(shape)) {
     if (!terra::is.lonlat(shape)) {
       shape <- terra::project(shape, "epsg:4326")
     }
-    if (verbose) {
-      cat("Selecting based on shape\n")
-    }
-    tiles <- tilesvect[shape]$tile_id
-    if (verbose) {
-      cat("Processing tiles:", paste(tiles, collapse = ", "), "\n")
-    }
-  }
 
+    tiles <- tiles_vector[shape]$tile_id
+
+    ff_cat("Selecting based on shape\nProcessing tiles:", paste(tiles, collapse = ", "), verbose = verbose)
+  }
   return(list(shape = shape, tiles = tiles))
 }
 
 list_and_filter_tile_files <- function(datafolder = NA, tiles, groundtruth_pattern, verbose) {
-  inputdatafolder <- file.path(datafolder, "input")
-  groundtruthdatafolder <- file.path(datafolder, "groundtruth")
+  input_datafolder <- file.path(datafolder,"preprocessed", "input")
+  groundtruth_datafolder <- file.path(datafolder,"preprocessed", "groundtruth")
 
-  if (verbose) {
-    cat("Searching", inputdatafolder, "for tiles", paste(tiles, collapse = ", "), "\n")
-  }
+
+  ff_cat("Searching", input_datafolder, "for tiles", paste(tiles, collapse = ", "), verbose = verbose)
+
 
   # List all files from the input and ground truth directories
-  allfiles <- as.character(unlist(sapply(tiles, function(x) {
+  list_of_feature_files <- as.character(unlist(sapply(tiles, function(x) {
     list.files(
-      path = file.path(inputdatafolder, x), full.names = TRUE, recursive = TRUE,
+      path = file.path(input_datafolder, x), full.names = TRUE, recursive = TRUE,
       pattern = "tif$"
     )
   })))
-  allgroundtruth <- as.character(unlist(sapply(tiles, function(x) {
+  groundtruth_files <- as.character(unlist(sapply(tiles, function(x) {
     list.files(
-      path = file.path(groundtruthdatafolder, x), full.names = TRUE,
-      recursive = TRUE, pattern = "tif$"
+      path = file.path(groundtruth_datafolder, x), full.names = TRUE,
+      recursive = TRUE, pattern = paste0(groundtruth_pattern, ".tif$")
     )
   })))
 
-  # Filter ground truth files
-  allgroundtruth <- allgroundtruth[endsWith(gsub(".tif", "", allgroundtruth), groundtruth_pattern)]
-  allfiles <- c(allfiles, allgroundtruth)
+  list_of_feature_files <- c(list_of_feature_files, groundtruth_files)
 
   # Error handling if no files are found
-  if (length(allfiles) == 0) {
+  if (length(list_of_feature_files) == 0) {
     stop(paste("No folders with tif-files found that correspond to the given tile IDs:", paste(tiles, collapse = ",")))
+  }else{
+    ff_cat("found tif files for",paste(tiles, collapse = ","),verbose = verbose)
   }
 
-  return(allfiles)
+  return(list_of_feature_files)
 }
 
-filter_files_by_features <- function(allfiles, exc_features, inc_features, groundtruth_pattern, verbose) {
-  if (!is.na(exc_features[1])) {
-    if (verbose) {
-      cat("Excluding features\n")
-    }
+filter_files_by_features <- function(list_of_feature_files, exc_features, inc_features, groundtruth_pattern, verbose) {
+  if (hasvalue(exc_features)) {
+    ff_cat("Excluding features", verbose = verbose)
+    # Find indices of files that end its basename with a feature in exc_features
     exc_indices <- unique(unlist(sapply(exc_features, function(x) {
-      which(endsWith(gsub(".tif", "", basename(allfiles)), x))
+      which(endsWith(gsub(".tif", "", basename(list_of_feature_files)), x))
     })))
     if (length(exc_indices) > 0) {
-      allfiles <- allfiles[-exc_indices]
+      list_of_feature_files <- list_of_feature_files[-exc_indices]
     }
   }
 
-  if (!is.na(inc_features[1])) {
+  if (hasvalue(inc_features)) {
+    # Find indices of files that end its basename with a feature in inc_features
     inc_indices <- unique(unlist(sapply(c(inc_features, groundtruth_pattern), function(x) {
-      which(endsWith(gsub(".tif", "", basename(allfiles)), x))
+      which(endsWith(gsub(".tif", "", basename(list_of_feature_files)), x))
     })))
     if (length(inc_indices) > 0) {
-      allfiles <- allfiles[inc_indices]
+      list_of_feature_files <- list_of_feature_files[inc_indices]
     }
   }
 
-  if (length(allfiles) == 0) {
+  if (length(list_of_feature_files) == 0) {
     stop("After including and excluding the requested variables there are no files left")
   }
 
-  return(allfiles)
+  return(list_of_feature_files)
 }
 
 prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, verbose) {
@@ -292,44 +303,31 @@ prepare_raster_data_by_tile <- function(selected_files, shape, shrink, window, v
   }
 
   # TODO: check if !is.null(extent) && is.numeric(extent) doesnt affect much, added to pass unit test
-  if (verbose && !is.null(extent) && is.numeric(extent)) {
-    cat(paste("with extent", round(extent[1], 5), round(extent[2], 5), round(extent[3], 5), round(extent[4], 5), "\n"))
+  if (!is.null(extent) && is.numeric(extent)) {
+    ff_cat("with extent", round(extent[1], 5), round(extent[2], 5), round(extent[3], 5), round(extent[4], 5), verbose = verbose)
   }
-
   rasstack <- terra::rast(sapply(selected_files, function(x) terra::rast(x, win = extent)))
   return(list(extent = extent, rasstack = rasstack))
 }
 
-load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth) {
-  if (first) {
+load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first_loop_iteration, verbose, extent, has_groundtruth) {
+  if (first_loop_iteration) {
     if (length(grep(groundtruth_pattern, selected_files)) > 0) {
-      hasgroundtruth <- TRUE
-      gtfile <- selected_files[grep(groundtruth_pattern, selected_files)]
-      groundtruth_raster <- terra::rast(gtfile, win = extent)
+      has_groundtruth <- TRUE
+      groundtruth_file <- selected_files[grep(groundtruth_pattern, selected_files)]
+      groundtruth_raster <- terra::rast(groundtruth_file, win = extent)
     } else {
-      if (verbose) {
-        cat("no groundtruth raster was found, first regular raster selected as a template raster.\n")
-      }
+      ff_cat("no groundtruth raster was found, first regular raster selected as a template raster.", verbose = verbose)
       groundtruth_raster <- terra::rast(selected_files[1], win = extent)
       groundtruth_raster[] <- 0
     }
   }
-  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth, first = first)
+  list_gt_raster <- list(groundtruth_raster = groundtruth_raster, has_groundtruth = has_groundtruth, first_loop_iteration = first_loop_iteration)
   return(list_gt_raster)
 }
 
-initialize_shape_from_borders <- function(shape, shrink, files, borders) {
-  if (!hasvalue(shape) & (shrink == "extract")) {
-    if (!exists("countries", inherits = FALSE)) {
-      data(countries, envir = environment())
-      borders <- terra::vect(countries)
-    }
-    shape <- terra::union(terra::intersect(terra::as.polygons(terra::ext(terra::rast(files[1]))), borders))
-  }
-  return(shape)
-}
 
-filter_files_by_date_and_groundtruth <- function(date, files, groundtruth_pattern) {
+filter_files_by_date <- function(date, files, groundtruth_pattern) {
   selected_files <- select_files_date(date, files)
   # Remove groundtruth if it is not of the same month
   if (!(grep(groundtruth_pattern, selected_files) %in% grep(date, selected_files))) {
@@ -339,97 +337,81 @@ filter_files_by_date_and_groundtruth <- function(date, files, groundtruth_patter
   return(selected_files)
 }
 
-transform_raster_to_data_matrix <- function(rasstack, shape, shrink, addxy, dts) {
+transform_raster_to_dataset <- function(rasstack, shape, shrink, add_xy, feature_dataset) {
   if (shrink == "extract") {
-    dts <- terra::extract(rasstack, shape, raw = TRUE, ID = FALSE, xy = addxy)
+    feature_dataset <- terra::extract(rasstack, shape, raw = TRUE, ID = FALSE, xy = add_xy)
   } else {
-    dts <- as.matrix(rasstack)
-    if (addxy) {
+    feature_dataset <- as.matrix(rasstack)
+    if (add_xy) {
       coords <- terra::xyFromCell(rasstack, seq(ncol(rasstack) * nrow(rasstack)))
-      dts <- cbind(dts, coords)
+      feature_dataset <- cbind(feature_dataset, coords)
     }
   }
-  return(dts)
+  # replace  NA with 0's because XGBoost cannot handle NA
+  feature_dataset[is.na(feature_dataset)] <- 0
+  return(feature_dataset)
 }
 
-append_date_based_features <- function(dts, date) {
-  dts <- cbind(
-    dts, rep(sin((2 * pi * as.numeric(format(as.Date(date), "%m"))) / 12), nrow(dts)),
-    rep(as.numeric(format(as.Date(date), "%m")), nrow(dts)),
-    # add the months since 2019
-    rep(round(as.numeric(lubridate::as.period(as.Date(date) - as.Date("2019-01-01"), "months"), "months")), nrow(dts))
-  )
-  return(dts)
+append_date_based_features <- function(feature_dataset, date) {
+  feature_dataset <- as.data.frame(feature_dataset)
+  feature_dataset$sinmonth <- sin((2 * pi * as.numeric(format(as.Date(date), "%m"))) / 12)
+  feature_dataset$month <- as.numeric(format(as.Date(date), "%m"))
+  feature_dataset$monthssince2019 <- round(as.numeric(lubridate::as.period(as.Date(date) - as.Date("2019-01-01"), "months"), "months"))
+  return(as.matrix(feature_dataset))
 }
 
-finalize_column_names_and_data_matrix <- function(dts, selected_files, addxy, adddate) {
-  dts[is.na(dts)] <- 0
-  newcolnames <- gsub(".tif", "", sapply(basename(selected_files), function(x) strsplit(x, "_")[[1]][4]))
-  if (addxy) {
-    newcolnames <- c(newcolnames, "x", "y")
-  }
-  if (adddate) {
-    newcolnames <- c(newcolnames, "sinmonth", "month", "monthssince2019")
-  }
-
-  colnames(dts) <- newcolnames
-  dts <- dts[, order(colnames(dts))]
-  return(list(dts = dts, newcolnames = newcolnames))
-}
-
-sample_and_combine_data <- function(date, dts, fdts, sf_indices, sample_size, first, allindices) {
+sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices) {
   # take a random sample if that was applied
-
   if (sample_size < 1) {
-    sample_indices <- sample(seq(nrow(dts)), max(round(nrow(dts) * sample_size), 1))
-    dts <- dts[sample_indices, ]
-    sf_indices <- sf_indices[sample_indices]
+    sample_indices <- sample(seq_len(nrow(current_tile_feature_dataset)), max(round(nrow(current_tile_feature_dataset) * sample_size), 1))
+    current_tile_feature_dataset <- current_tile_feature_dataset[sample_indices, ]
+    filtered_indices <- filtered_indices[sample_indices]
   }
 
-  if (hasvalue(dim(dts))) {
-    if (first) {
-      fdts <- dts
-      allindices <- sf_indices
+  if (hasvalue(dim(current_tile_feature_dataset))) {
+    if (first_loop_iteration) {
+      feature_dataset <- current_tile_feature_dataset
+      pixel_indices <- filtered_indices
     } else {
-      allindices <- c(allindices, sf_indices + length(allindices))
-      common_cols <- intersect(colnames(dts), colnames(fdts))
-      notin1 <- colnames(dts)[which(!(colnames(dts) %in% common_cols))]
-      notin2 <- colnames(fdts)[which(!(colnames(fdts) %in% common_cols))]
+      pixel_indices <- c(pixel_indices, filtered_indices + length(pixel_indices))
+      common_cols <- intersect(colnames(current_tile_feature_dataset), colnames(feature_dataset))
+      notin1 <- colnames(current_tile_feature_dataset)[which(!(colnames(current_tile_feature_dataset) %in% common_cols))]
+      notin2 <- colnames(feature_dataset)[which(!(colnames(feature_dataset) %in% common_cols))]
       if (length(c(notin1, notin2)) > 0) {
         ff_cat(paste(date, ": the following columns are dropped because they are not present in the entire time series: ", paste(c(notin1, notin2),
           collapse = ", "
-        )), color = "yellow")
+        )), color = "yellow", verbose = verbose)
       }
 
       # Subset matrices based on common column names
       # Merge matrices by column names
-      fdts <- rbind(fdts[, common_cols, drop = FALSE], dts[, common_cols, drop = FALSE])
+      feature_dataset <- rbind(feature_dataset[, common_cols, drop = FALSE], current_tile_feature_dataset[, common_cols, drop = FALSE])
     }
-    fdts <- fdts[, order(colnames(fdts))]
-    first <- FALSE
+    feature_dataset <- feature_dataset[, order(colnames(feature_dataset))]
+    first_loop_iteration <- FALSE
   }
 
-  return(list(fdts = fdts, allindices = allindices, first = first))
+  return(list(feature_dataset = feature_dataset, pixel_indices = pixel_indices, first_loop_iteration = first_loop_iteration))
 }
 
-create_validation_sample <- function(fdts, data_label, validation_sample) {
+create_validation_sample <- function(feature_dataset, data_label, validation_sample) {
   if (validation_sample > 0) {
-    sample_indices <- sample(seq(nrow(fdts)), round(validation_sample * nrow(fdts)))
-    data_matrix <- list(features = fdts[-sample_indices, ], label = data_label[-sample_indices])
-    validation_matrix <- list(features = fdts[sample_indices, ], label = data_label[sample_indices])
+    sample_indices <- sample(seq_len(nrow(feature_dataset)), round(validation_sample * nrow(feature_dataset)))
+    feature_dataset <- list(features = feature_dataset[-sample_indices, ], label = data_label[-sample_indices])
+    validation_matrix <- list(features = feature_dataset[sample_indices, ], label = data_label[sample_indices])
   } else {
-    data_matrix <- list(features = fdts, label = data_label)
+    feature_dataset <- list(features = feature_dataset, label = data_label)
     validation_matrix <- NA
   }
 
-  return(list(data_matrix = data_matrix, validation_matrix = validation_matrix))
+  return(list(feature_dataset = feature_dataset, validation_matrix = validation_matrix))
 }
 
-split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_threshold, groundtruth_raster, verbose) {
-  groundtruth_index <- which(colnames(fdts) == groundtruth_pattern)
+split_feature_and_label_data <- function(feature_dataset, groundtruth_pattern, label_threshold, groundtruth_raster, verbose) {
+  groundtruth_index <- which(colnames(feature_dataset) == groundtruth_pattern)
 
   if (length(groundtruth_index) == 1) {
-    data_label <- fdts[, groundtruth_index]
+    data_label <- feature_dataset[, groundtruth_index]
 
     if (hasvalue(label_threshold)) {
       data_label <- as.numeric(data_label >= label_threshold)
@@ -437,102 +419,89 @@ split_feature_and_label_data <- function(fdts, groundtruth_pattern, label_thresh
         groundtruth_raster <- as.numeric(groundtruth_raster >= label_threshold)
       }
     }
-
-    fdts <- fdts[, -groundtruth_index] # Remove groundtruth column from features
+    # Remove groundtruth column from features
+    feature_dataset <- feature_dataset[, -groundtruth_index]
   } else {
-    if (verbose) {
-      ff_cat("No groundtruth rasters found", color = "yellow")
-    }
+    ff_cat("No groundtruth rasters found", color = "yellow", verbose = verbose)
     data_label <- NA
   }
 
-  return(list(fdts = fdts, data_label = data_label, groundtruth_raster = groundtruth_raster))
+  return(list(feature_dataset = feature_dataset, data_label = data_label, groundtruth_raster = groundtruth_raster))
 }
 
-process_tile_data <- function(tiles, allfiles, shape, shrink, window, borders, verbose, dates, groundtruth_pattern, hasgroundtruth, addxy, adddate, fdts,
-                              sample_size, allindices, fltr_features, fltr_condition) {
-  first <- TRUE
+process_tile_data <- function(tiles, list_of_feature_files, shape,
+                              shrink, window, verbose, dates,
+                              groundtruth_pattern, has_groundtruth, add_xy,
+                              add_date, sample_size, filter_features, filter_conditions) {
+  first_loop_iteration <- TRUE
+  pixel_indices <- NULL
+  feature_dataset <- NA
   ####### load raster data as matrix#########
   for (tile in tiles) {
-    if (exists("extent", inherits = FALSE)) {
-      rm(extent)
-    }
+    current_tile_files <- list_of_feature_files[grep(tile, list_of_feature_files)]
 
-    files <- allfiles[grep(tile, allfiles)]
-    shape <- initialize_shape_from_borders(shape, shrink, files, borders)
-
-    result <- process_tile_dates(
-      tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size,
-      allindices, hasgroundtruth, fltr_features, fltr_condition
+    raw_extracted_data <- process_tile_dates(
+      tiles, tile, current_tile_files, shape, shrink, window,
+      groundtruth_pattern, dates, verbose, add_xy, add_date,
+      first_loop_iteration, feature_dataset, sample_size,
+      pixel_indices, has_groundtruth, filter_features, filter_conditions
     )
 
-    fdts <- result$fdts
-    allindices <- result$allindices
-    first <- result$first
-    groundtruth_raster <- result$groundtruth_raster
-    newcolnames <- result$newcolnames
-    hasgroundtruth <- result$hasgroundtruth
+    feature_dataset <- raw_extracted_data$feature_dataset
+    pixel_indices <- raw_extracted_data$pixel_indices
+    first_loop_iteration <- raw_extracted_data$first_loop_iteration
+    groundtruth_raster <- raw_extracted_data$groundtruth_raster
+    feature_names <- raw_extracted_data$feature_names
+    has_groundtruth <- raw_extracted_data$has_groundtruth
 
-    if (verbose) {
-      cat(paste("loading finished, features:", paste(newcolnames, collapse = ", "), "\n"))
-    }
+
+    ff_cat("loading finished, features:", paste(feature_names, collapse = ", "), verbose = verbose)
   }
-  return(list(fdts = fdts, allindices = allindices, groundtruth_raster = groundtruth_raster, hasgroundtruth = hasgroundtruth))
+  return(list(feature_dataset = feature_dataset, pixel_indices = pixel_indices, groundtruth_raster = groundtruth_raster, has_groundtruth = has_groundtruth))
 }
 
-process_tile_dates <- function(tiles, tile, files, shape, shrink, window, groundtruth_pattern, dates, verbose, addxy, adddate, first, fdts, sample_size,
-                               allindices, hasgroundtruth, fltr_features, fltr_condition) {
+process_tile_dates <- function(tiles, tile, current_tile_files, shape, shrink, window, groundtruth_pattern,
+                               dates, verbose, add_xy, add_date, first_loop_iteration, feature_dataset, sample_size,
+                               pixel_indices, has_groundtruth, filter_features, filter_conditions) {
   for (date in dates) {
-    if (exists("dts", inherits = FALSE)) {
-      rm(dts)
-    }
-
-    if (verbose) {
-      cat(paste("loading tile data from", tile, "for", date, " "))
-    }
-
-    selected_files <- filter_files_by_date_and_groundtruth(date, files, groundtruth_pattern)
-    result <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
-    extent <- result$extent
-    rasstack <- result$rasstack
+    ff_cat("loading tile data from", tile, "for", date, verbose = verbose)
+    selected_files <- filter_files_by_date(date, current_tile_files, groundtruth_pattern)
+    raw_extracted_data <- prepare_raster_data_by_tile(selected_files, shape, shrink, window, verbose)
+    extent <- raw_extracted_data$extent
+    rasstack <- raw_extracted_data$rasstack
 
     if (length(tiles) > 1) {
       groundtruth_raster <- NA
     } else {
-      groundtruth_result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first, verbose, extent, hasgroundtruth)
+      groundtruth_result <- load_groundtruth_raster(selected_files, groundtruth_pattern, first_loop_iteration, verbose, extent, has_groundtruth)
       groundtruth_raster <- groundtruth_result$groundtruth_raster
-      hasgroundtruth <- groundtruth_result$hasgroundtruth
-      first <- groundtruth_result$first
+      has_groundtruth <- groundtruth_result$has_groundtruth
+      first_loop_iteration <- groundtruth_result$first_loop_iteration
     }
-    # Process raster data
-    dts <- transform_raster_to_data_matrix(rasstack, shape, shrink, addxy, dts) # the most memory consumptive function
-
-    gc() # garbabe collection: to free up memory usage
+    current_tile_feature_dataset <- transform_raster_to_dataset(rasstack, shape, shrink, add_xy, current_tile_feature_dataset) # the most memory consumptive function
+    gc() # garbage collection: to free up memory usage
     # Add date features if necessary
-    if (adddate) {
-      dts <- append_date_based_features(dts, date)
+    feature_names <- feature_names <- gsub(".tif", "", sapply(basename(selected_files), function(x) strsplit(x, "_")[[1]][4]))
+    colnames(current_tile_feature_dataset)[seq_along(feature_names)] <- feature_names
+    if (add_date) {
+      current_tile_feature_dataset <- append_date_based_features(current_tile_feature_dataset, date)
     }
-
-    result <- finalize_column_names_and_data_matrix(dts, selected_files, addxy, adddate)
-    dts <- result$dts
-    newcolnames <- result$newcolnames
-
     # filter on filter conditions
-    filterresult <- filter_by_feature(fltr_features, fltr_condition, dts, verbose = verbose)
-    dts <- filterresult$filtered_matrix
-    sf_indices <- filterresult$filtered_indices
 
-    # take a random sample if that was applied
-    #
-    # Subset matrices based on common column names
-    # Merge matrices by column names
-    combine_result <- sample_and_combine_data(date, dts, fdts, sf_indices, sample_size, first, allindices)
-    fdts <- combine_result$fdts
-    allindices <- combine_result$allindices
-    first <- combine_result$first
+    feature_filter_result <- filter_by_feature(filter_features, filter_conditions, current_tile_feature_dataset, verbose = verbose)
+    current_tile_feature_dataset <- feature_filter_result$filtered_matrix
+    filtered_indices <- feature_filter_result$filtered_indices
+
+    combine_result <- sample_and_combine_data(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices)
+    feature_dataset <- combine_result$feature_dataset
+    pixel_indices <- combine_result$pixel_indices
+    first_loop_iteration <- combine_result$first_loop_iteration
   }
   return(list(
-    fdts = fdts, allindices = allindices, first = first, groundtruth_raster = groundtruth_raster, newcolnames = newcolnames,
-    hasgroundtruth = hasgroundtruth
+    feature_dataset = feature_dataset, pixel_indices = pixel_indices,
+    first_loop_iteration = first_loop_iteration,
+    groundtruth_raster = groundtruth_raster,
+    feature_names = colnames(feature_dataset),
+    has_groundtruth = has_groundtruth
   ))
 }
