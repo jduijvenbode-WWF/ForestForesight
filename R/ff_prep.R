@@ -154,8 +154,8 @@ ff_prep <- function(datafolder = Sys.getenv("DATA_FOLDER"), country = NA, shape 
   return(list(
     "feature_dataset" = feature_dataset,
     "validation_matrix" = validation_matrix,
-    "testindices" = pixel_indices,
-    "groundtruthraster" = groundtruth_raster,
+    "test_indices" = pixel_indices,
+    "groundtruth_raster" = groundtruth_raster,
     "features" = colnames(feature_dataset$features),
     "has_groundtruth" = has_groundtruth
   ))
