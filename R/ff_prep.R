@@ -167,7 +167,7 @@ check_pre_conditions <- function(dates, country, shape, tiles, shrink, inc_featu
     stop("no environment variable for DATA_FOLDER found and no other option given")
   }
   # Check date validity
-  if (!hasvalue(dates) || any(is.na(dates)) || dates == "") {
+  if (!hasvalue(dates) || any(is.na(dates)) || any(dates == "")) {
     stop("No dates were given")
   }
   earliest_date <- Sys.getenv("EARLIEST_DATA_DATE")
@@ -326,6 +326,8 @@ load_groundtruth_raster <- function(selected_files, groundtruth_pattern, first_l
       groundtruth_raster <- terra::rast(selected_files[1], win = extent)
       groundtruth_raster[] <- 0
     }
+  } else {
+    groundtruth_raster <- NA
   }
   list_gt_raster <- list(groundtruth_raster = groundtruth_raster, has_groundtruth = has_groundtruth, first_loop_iteration = first_loop_iteration)
   return(list_gt_raster)
@@ -402,14 +404,14 @@ sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_
 create_validation_sample <- function(feature_dataset, data_label, validation_sample) {
   if (validation_sample > 0) {
     sample_indices <- sample(seq_len(nrow(feature_dataset)), round(validation_sample * nrow(feature_dataset)))
-    feature_dataset <- list(features = feature_dataset[-sample_indices, ], label = data_label[-sample_indices])
+    train_matrix <- list(features = feature_dataset[-sample_indices, ], label = data_label[-sample_indices])
     validation_matrix <- list(features = feature_dataset[sample_indices, ], label = data_label[sample_indices])
   } else {
-    feature_dataset <- list(features = feature_dataset, label = data_label)
+    train_matrix <- list(features = feature_dataset, label = data_label)
     validation_matrix <- NA
   }
 
-  return(list(feature_dataset = feature_dataset, validation_matrix = validation_matrix))
+  return(list(feature_dataset = train_matrix, validation_matrix = validation_matrix))
 }
 
 split_feature_and_label_data <- function(feature_dataset, groundtruth_pattern, label_threshold, groundtruth_raster, verbose) {
