@@ -90,7 +90,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   }
   if (hasvalue(shape)) {
     ForestForesight::check_spatvector(shape,
-                                      check_size = hasvalue(train_dates))
+      check_size = hasvalue(train_dates)
+    )
   }
   if (!hasvalue(shape)) {
     data(countries, envir = environment())
@@ -132,10 +133,16 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
 
   tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))$tile_id
 
-  shape = check_spatvector(shape)
-  ff_structurecheck(shape = shape,folder_path = ff_folder,
-                    check_date = if (hasvalue(train_dates)) {train_dates[1]}else{prediction_dates[1]},
-                    error_on_issue = TRUE, silent_on_pass = TRUE)
+  shape <- check_spatvector(shape)
+  ff_structurecheck(
+    shape = shape, folder_path = ff_folder,
+    check_date = if (hasvalue(train_dates)) {
+      train_dates[1]
+    } else {
+      prediction_dates[1]
+    },
+    error_on_issue = TRUE, silent_on_pass = TRUE
+  )
 
 
 
