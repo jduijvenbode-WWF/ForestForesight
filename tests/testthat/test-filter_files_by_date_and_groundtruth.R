@@ -10,7 +10,7 @@ test_that("filter_files_by_date_and_groundtruth selects files based on date and 
   date <- "2023-01-01"
 
   # Apply the function
-  selected_files <- filter_files_by_date_and_groundtruth(date, files, groundtruth_pattern)
+  selected_files <- filter_files_by_date(date, files, groundtruth_pattern)
 
   # Expectations
   expect_true("tile_2023-01-01_groundtruth6m.tif" %in% selected_files) # Should be included
