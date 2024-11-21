@@ -2,8 +2,8 @@
 #'
 #' This function filters a matrix based on specified features and conditions.
 #'
-#' @param fltr_features A character vector specifying the features to filter.
-#' @param fltr_condition A character vector specifying the conditions for each feature.
+#' @param filter_features A character vector specifying the features to filter.
+#' @param filter_conditions A character vector specifying the conditions for each feature.
 #' @param matrix The input matrix to filter.
 #' @param verbose Logical indicating whether to display verbose output (default is TRUE).
 #'
@@ -11,60 +11,56 @@
 #'
 #' @examples
 #' filter_by_feature(
-#'   fltr_features = c("landpercentage", "forestmask"),
-#'   fltr_condition = c(">100", ">0"),
+#'   filter_features = c("landpercentage", "forestmask"),
+#'   filter_conditions = c(">100", ">0"),
 #'   matrix = my_matrix
 #' )
 #'
 #' @export
-filter_by_feature <- function(fltr_features, fltr_condition, matrix, verbose = TRUE) {
-  sfa_indices <- c()
-  if (length(fltr_features) > 0) {
-    if (verbose) {
-      cat(paste("filtering features\n"))
-    }
-    for (i in seq_along(fltr_features)) {
-      operator <- gsub("[[:alnum:]]", "", fltr_condition[i])
-      value <- as.numeric(gsub("[^0-9]", "", fltr_condition[i]))
-      filtercolumn <- which(colnames(matrix) == fltr_features[i])
+filter_by_feature <- function(filter_features, filter_conditions, matrix, verbose = TRUE) {
+  merged_spatial_indices <- c()
+  if (length(filter_features) > 0) {
+    ff_cat("filtering features", verbose = verbose)
+    for (i in seq_along(filter_features)) {
+      operator <- gsub("[[:alnum:]]", "", filter_conditions[i])
+      value <- as.numeric(gsub("[^0-9]", "", filter_conditions[i]))
+      filtercolumn <- which(colnames(matrix) == filter_features[i])
       if (length(filtercolumn) == 0) {
-        ff_cat("The feature", fltr_features[i], "was not found, skipping filtering for this feature", color = "yellow")
-        sf_indices <- seq(dim(matrix)[1])
+        ff_cat("The feature", filter_features[i], "was not found, skipping filtering for this feature", color = "yellow")
+        spatial_indices <- seq(dim(matrix)[1])
       } else {
-        if (verbose) {
-          cat(paste("filtering feature", fltr_features[i], "on", fltr_condition[i], "\n"))
-        }
+        ff_cat("filtering feature", filter_features[i], "on", filter_conditions[i], verbose = verbose)
         if (operator == ">") {
-          sf_indices <- which(matrix[, filtercolumn] > value)
+          spatial_indices <- which(matrix[, filtercolumn] > value)
         }
         if (operator == "<") {
-          sf_indices <- which(matrix[, filtercolumn] < value)
+          spatial_indices <- which(matrix[, filtercolumn] < value)
         }
         if (operator == "==") {
-          sf_indices <- which(matrix[, filtercolumn] == value)
+          spatial_indices <- which(matrix[, filtercolumn] == value)
         }
         if (operator == "!=") {
-          sf_indices <- which(matrix[, filtercolumn] != value)
+          spatial_indices <- which(matrix[, filtercolumn] != value)
         }
         if (operator == ">=") {
-          sf_indices <- which(matrix[, filtercolumn] >= value)
+          spatial_indices <- which(matrix[, filtercolumn] >= value)
         }
         if (operator == "<=") {
-          sf_indices <- which(matrix[, filtercolumn] <= value)
+          spatial_indices <- which(matrix[, filtercolumn] <= value)
         }
       }
-      if (length(sfa_indices) == 0) {
-        sfa_indices <- c(sfa_indices, sf_indices)
+      if (length(merged_spatial_indices) == 0) {
+        merged_spatial_indices <- c(merged_spatial_indices, spatial_indices)
       } else {
-        sfa_indices <- intersect(sfa_indices, sf_indices)
+        merged_spatial_indices <- intersect(merged_spatial_indices, spatial_indices)
       }
     }
-    sf_indices <- unique(sfa_indices)
+    spatial_indices <- unique(merged_spatial_indices)
   } else {
-    sf_indices <- NULL
+    spatial_indices <- NULL
   }
-  if (length(sf_indices) > 0) {
-    matrix <- matrix[sf_indices, ]
+  if (length(spatial_indices) > 0) {
+    matrix <- matrix[spatial_indices, ]
   }
-  return(list("filtered_matrix" = matrix, "filtered_indices" = sf_indices))
+  return(list("filtered_matrix" = matrix, "filtered_indices" = spatial_indices))
 }
