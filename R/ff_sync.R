@@ -203,6 +203,7 @@ get_tiles <- function(identifier) {
   if (class(identifier) == "character" && nchar(identifier) == 8 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
     tiles <- identifier
   } else if (inherits(identifier, "SpatVector")) {
+    check_spatvector(identifier, check_size = FALSE)
     identifier <- terra::buffer(identifier, width = -1)
     # Load necessary data sets
     countries <- terra::vect(get(data("countries")))
