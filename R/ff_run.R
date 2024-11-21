@@ -122,17 +122,16 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       train_dates <- as.character(lubridate::ymd(min(prediction_dates)) %m-% months(6, abbreviate = FALSE))
     }
 
-    if (lubridate::ymd(max(train_dates)) > lubridate::ymd(prediction_dates[1])) {
+    if (max(lubridate::ymd(train_dates)) > min(lubridate::ymd(prediction_dates))) {
       ff_cat("(some) training dates are after prediction dates", color = "yellow")
     }
-    if ((lubridate::ymd(prediction_dates[1]) - lubridate::ymd(max(train_dates))) < 170) {
+    if ((min(lubridate::ymd(prediction_dates)) - max(lubridate::ymd(train_dates))) < 170) {
       ff_cat("There should be at least 6 months between training and testing/predicting", color = "yellow")
     }
   }
 
 
-  tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))$tile_id
-
+  tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))[shape,]$tile_id
   shape <- check_spatvector(shape)
   ff_structurecheck(
     shape = shape, folder_path = ff_folder,
@@ -244,10 +243,10 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     for (tile in tiles) {
       # run the predict function if a model was not built but was provided by the function
       ff_prep_params_original <- list(
-        datafolder = prep_folder, tiles = tile, dates = prediction_date,
+        datafolder = ff_folder, tiles = tile, dates = prediction_date,
         verbose = verbose, filter_features = filter_features,
         filter_conditions = filter_conditions, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"),
-        sample_size = 1, label_threshold = 1, shrink = "crop"
+        sample_size = 1, label_threshold = 1, shrink = "none"
       )
       ff_prep_params_combined <- merge_lists(ff_prep_params_original, ff_prep_params)
       if (class(trained_model) == "character") {
@@ -275,7 +274,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       for (i in seq_along(filter_features)) {
         filename <- get_raster(
           tile = tile, date = prediction_date,
-          datafolder = paste0(prep_folder, "/input/"),
+          datafolder = file.path(ff_folder,"preprocessed" ,"input"),
           feature = filter_features[i]
         )
         if (!hasvalue(filename)) {
