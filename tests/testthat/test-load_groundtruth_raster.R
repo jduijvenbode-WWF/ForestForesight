@@ -9,7 +9,7 @@ test_that("load_groundtruth_raster handles no groundtruth file of the correct da
   message("\ndatafolder: ")
   message(datafolder)
   allfiles <- list_and_filter_tile_files(datafolder = datafolder, tiles, groundtruth_pattern, verbose)
-  selected_files <- filter_files_by_date_and_groundtruth(date, allfiles, groundtruth_pattern)
+  selected_files <- filter_files_by_date(date, allfiles, groundtruth_pattern)
   extent <- terra::ext(terra::rast(selected_files[1]))
   first <- TRUE
   verbose <- FALSE
