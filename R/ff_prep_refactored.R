@@ -90,14 +90,17 @@ ff_prep_refactored <- function(datafolder = Sys.getenv("DATA_FOLDER"), country =
   ######## pre-conditions check########
   if (!hasvalue(groundtruth_pattern)) {
     ff_cat("no environment variable for DEFAULT_GROUNDTRUTH, reverting to groundtruth6m",
-           color = "yellow", verbose = verbose)
+      color = "yellow", verbose = verbose
+    )
     groundtruth_pattern <- "groundtruth6m"
   }
   check_pre_conditions(dates, country, shape, tiles, shrink,
-                       inc_features, exc_features, datafolder, verbose = verbose)
+    inc_features, exc_features, datafolder,
+    verbose = verbose
+  )
 
   ######## Get tiles and shape based on country or custom geometry ########
-  tiles_vector <- terra::vect(get(data("gfw_tiles",envir = environment())))
+  tiles_vector <- terra::vect(get(data("gfw_tiles", envir = environment())))
   tile_and_shape <- get_tiles_and_shape(country, shape, tiles_vector, tiles, verbose)
   shape <- tile_and_shape$shape
   tiles <- tile_and_shape$tiles
@@ -113,7 +116,8 @@ ff_prep_refactored <- function(datafolder = Sys.getenv("DATA_FOLDER"), country =
 
   if (length(tiles) > 1) {
     ff_cat("No groundtruth raster will be returned because multiple tiles are processed together",
-           verbose = verbose)
+      verbose = verbose
+    )
   }
 
   ####### load raster data as matrix#########
@@ -159,7 +163,7 @@ ff_prep_refactored <- function(datafolder = Sys.getenv("DATA_FOLDER"), country =
 
 check_pre_conditions <- function(dates, country, shape, tiles, shrink, inc_features, exc_features, verbose, datafolder) {
   ff_cat("Checking ff_prep function input", verbose = verbose)
-  if (!hasvalue(datafolder)){
+  if (!hasvalue(datafolder)) {
     stop("no environment variable for DATA_FOLDER found and no other option given")
   }
   # Check date validity
@@ -169,7 +173,8 @@ check_pre_conditions <- function(dates, country, shape, tiles, shrink, inc_featu
   earliest_date <- Sys.getenv("EARLIEST_DATA_DATE")
   if (!hasvalue(earliest_date)) {
     ff_cat("no environment variable for EARLIEST_DATA_DATE, reverting to 2021-01-01",
-           color = "yellow", verbose = verbose)
+      color = "yellow", verbose = verbose
+    )
     earliest_date <- "2021-01-01"
   }
   if (as.Date(min(dates)) < as.Date(earliest_date)) {
@@ -214,8 +219,8 @@ get_tiles_and_shape <- function(country, shape, tiles_vector, tiles, verbose) {
 }
 
 list_and_filter_tile_files <- function(datafolder = NA, tiles, groundtruth_pattern, verbose) {
-  input_datafolder <- file.path(datafolder,"preprocessed", "input")
-  groundtruth_datafolder <- file.path(datafolder,"preprocessed", "groundtruth")
+  input_datafolder <- file.path(datafolder, "preprocessed", "input")
+  groundtruth_datafolder <- file.path(datafolder, "preprocessed", "groundtruth")
 
 
   ff_cat("Searching", input_datafolder, "for tiles", paste(tiles, collapse = ", "), verbose = verbose)
@@ -240,8 +245,8 @@ list_and_filter_tile_files <- function(datafolder = NA, tiles, groundtruth_patte
   # Error handling if no files are found
   if (length(list_of_feature_files) == 0) {
     stop(paste("No folders with tif-files found that correspond to the given tile IDs:", paste(tiles, collapse = ",")))
-  }else{
-    ff_cat("found tif files for",paste(tiles, collapse = ","),verbose = verbose)
+  } else {
+    ff_cat("found tif files for", paste(tiles, collapse = ","), verbose = verbose)
   }
 
   return(list_of_feature_files)
