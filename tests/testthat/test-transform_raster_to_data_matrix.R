@@ -80,5 +80,5 @@ test_that("transform_raster_to_data_matrix works with an empty raster input", {
 
   # Expect the output to be an empty-like matrix structure with 1 row and 1 column containing NA
   expect_equal(dim(dts), c(1, 1))
-  expect_true(dts[1, 1]==0)
+  expect_true(dts[1, 1] == 0)
 })
