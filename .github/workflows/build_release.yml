@@ -2,14 +2,13 @@ name: Build and release
 
 on:
   pull_request:
-    types: [closed] 
-    branches: 
-      - "develop" # we can delete this later
+    types: [closed]
+    branches:
       - "main"
 jobs:
   Build-release-package:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true 
+    if: github.event.pull_request.merged == true
     steps:
       - uses: actions/checkout@v2
 
@@ -35,10 +34,10 @@ jobs:
             echo "Error: Could not extract MAJOR or MINOR version from DESCRIPTION file"
             exit 1
           fi
-          
+
           # Output MAJOR and MINOR to GitHub environment
           echo "MAJOR=$MAJOR" >> $GITHUB_ENV
-          echo "MINOR=$MINOR" >> $GITHUB_ENV    
+          echo "MINOR=$MINOR" >> $GITHUB_ENV
           echo "The version from DESCRIPTION: $MAJOR.$MINOR"
 
       - name: Get latest PATCH version from GitHub releases
@@ -46,19 +45,19 @@ jobs:
         run: |
           # Get the list of existing releases
           releases=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases")
-      
+
           # Find the latest release with the same MAJOR.MINOR version
           latest_patch=$(echo "$releases" | jq -r --arg MAJOR "$MAJOR" --arg MINOR "$MINOR" '
             [
               .[] | select(.tag_name | startswith("\($MAJOR).\($MINOR).")) | .tag_name
             ] | map(split(".")[2] | tonumber) | max // -1
           ')
-      
+
           # Increment the PATCH version
           PATCH=$((latest_patch + 1))
-      
+
           # Output PATCH to the GitHub environment
-          echo "PATCH=$PATCH" >> $GITHUB_ENV    
+          echo "PATCH=$PATCH" >> $GITHUB_ENV
           echo "New Patch number: $PATCH"
 
       # Combine the version components
@@ -68,7 +67,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "New version is $VERSION"
       ### END OF RELEASE VERSION SECTION ###
-      
+
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
@@ -80,7 +79,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev        
+          sudo apt-get install -y libcurl4-openssl-dev
           sudo apt-get install -y libharfbuzz-dev libfribidi-dev libfreetype6-dev
           sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
           sudo apt-get install -y pkg-config
@@ -97,7 +96,7 @@ jobs:
           echo "Checking parent directory after build:"
           ls -l ..
         shell: bash
-        
+
       - name: Verify package tarball exists
         id: verify_tarball
         run: |
