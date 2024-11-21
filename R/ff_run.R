@@ -17,7 +17,7 @@
 #' If NULL, a new model will be trained. Default is NULL.
 #' @param ff_prep_params List of parameters for data preprocessing. See `ff_prep` function for details.
 #' @param ff_train_params List of parameters for model training. See `ff_train` function for details.
-#' @param threshold Probability threshold for binary classififf_cation. Default is 0.5.
+#' @param threshold Probability threshold for binary classification. Default is 0.5.
 #' @param filter_features Feature dataset used for pre-filtering for training.
 #' Default is initialforestcover. Can be more than one
 #' @param filter_conditions The condition with value that is used to filter the training dataset based on mask features.
@@ -151,7 +151,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     sample_size <- 0.3
     # ff prep to determine the sample size
     if (autoscale_sample && hasvalue(filter_conditions)) {
-      ff_cat("Finding optimal sample size based on filter condition", color = "green", verbose = verbose)
+      ff_cat("Finding optimal sample size based on filter conditions", color = "green", verbose = verbose)
       ff_prep_params_original <- list(
         datafolder = ff_folder, shape = shape, dates = train_dates,
         filter_conditions = filter_conditions, filter_features = filter_features,
@@ -168,11 +168,11 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       )
       traindata <- do.call(ff_prep, ff_prep_params_combined)
       if (validation) {
-        sample_size <- min(1, 1.33 * fixed_sample_size / length(traindata$data_matrix$features))
+        sample_size <- min(1, 1.33 * fixed_sample_size / length(traindata$feature_dataset$features))
 
         ff_cat("adding validation matrix", color = "green", verbose = verbose)
       } else {
-        sample_size <- min(1, fixed_sample_size / length(traindata$data_matrix$features))
+        sample_size <- min(1, fixed_sample_size / length(traindata$feature_dataset$features))
       }
 
       ff_cat("Autoscaled sample size:", round(sample_size, 2), color = "green", verbose = verbose)
@@ -204,20 +204,20 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
         extra_features <- which(!valdata$features %in% traindata$features)
         if (length(extra_features) > 0) {
           valdata$features <- valdata$features[-extra_features]
-          valdata$data_matrix$features <- valdata$data_matrix$features[, -extra_features]
+          valdata$feature_dataset$features <- valdata$feature_dataset$features[, -extra_features]
         }
       } else {
         extra_features <- which(!traindata$features %in% valdata$features)
         if (length(extra_features) > 0) {
           traindata$features <- traindata$features[-extra_features]
-          traindata$data_matrix$features <- traindata$data_matrix$features[, -extra_features]
+          traindata$feature_dataset$features <- traindata$feature_dataset$features[, -extra_features]
         }
       }
-      traindata$validation_matrix <- valdata$data_matrix
+      traindata$validation_matrix <- valdata$feature_dataset
     }
 
     ff_train_params_original <- list(
-      train_matrix = traindata$data_matrix, verbose = verbose,
+      train_matrix = traindata$feature_dataset, verbose = verbose,
       modelfilename = save_path
     )
     if (validation || hasvalue(validation_dates)) {
@@ -245,8 +245,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       # run the predict function if a model was not built but was provided by the function
       ff_prep_params_original <- list(
         datafolder = prep_folder, tiles = tile, dates = prediction_date,
-        verbose = verbose, fltr_features = fltr_features,
-        fltr_condition = fltr_condition, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"),
+        verbose = verbose, filter_features = filter_features,
+        filter_conditions = filter_conditions, groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"),
         sample_size = 1, label_threshold = 1, shrink = "crop"
       )
       ff_prep_params_combined <- merge_lists(ff_prep_params_original, ff_prep_params)
@@ -265,9 +265,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       predset <- do.call(ff_prep, ff_prep_params_combined)
 
       prediction <- ff_predict(
-        model = trained_model, test_matrix = predset$data_matrix,
-        indices = predset$testindices,
-        templateraster = predset$groundtruthraster,
+        model = trained_model, test_matrix = predset$feature_dataset,
+        indices = predset$test_indices,
+        templateraster = predset$groundtruth_raster,
         verbose = verbose, certainty = TRUE
       )
       raslist[[tile]] <- prediction$predicted_raster
@@ -301,10 +301,10 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       if (!hasvalue(forestras)) {
         forestras <- NULL
       }
-      if (predset$hasgroundtruth) {
+      if (predset$has_groundtruth) {
         analysis_polygons <- terra::intersect(terra::vect(get(data("degree_polygons"))), terra::aggregate(shape))
         pols <- ff_analyze(prediction$predicted_raster > threshold,
-          groundtruth = predset$groundtruthraster,
+          groundtruth = predset$groundtruth_raster,
           csvfile = accuracy_csv, tile = tile, date = prediction_date,
           return_polygons = verbose, append = TRUE, country = country,
           verbose = verbose, forestmask = forestras, analysis_polygons = analysis_polygons
