@@ -5,15 +5,14 @@ test_that("list_and_filter_tile_files function works as expected", {
 
   # Create a temporary folder structure and files for testing
   temp_datafolder <- tempdir()
-
-  dir.create(file.path(temp_datafolder, "input", tiles[1]), recursive = TRUE, showWarnings = FALSE)
-  dir.create(file.path(temp_datafolder, "input", tiles[2]), recursive = TRUE, showWarnings = FALSE)
-  dir.create(file.path(temp_datafolder, "groundtruth", tiles[1]), recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path(temp_datafolder,"preprocessed", "input", tiles[1]), recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path(temp_datafolder,"preprocessed", "input", tiles[2]), recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path(temp_datafolder,"preprocessed", "groundtruth", tiles[1]), recursive = TRUE, showWarnings = FALSE)
 
   # Create mock files for input and groundtruth
-  input_file1 <- file.path(temp_datafolder, "input", tiles[1], "input_file1.tif")
-  input_file2 <- file.path(temp_datafolder, "input", tiles[2], "input_file2.tif")
-  groundtruth_file1 <- file.path(temp_datafolder, "groundtruth", tiles[1], "groundtruth6m.tif")
+  input_file1 <- file.path(temp_datafolder,"preprocessed", "input", tiles[1], "input_file1.tif")
+  input_file2 <- file.path(temp_datafolder,"preprocessed", "input", tiles[2], "input_file2.tif")
+  groundtruth_file1 <- file.path(temp_datafolder,"preprocessed", "groundtruth", tiles[1], "groundtruth6m.tif")
 
   file.create(input_file1)
   file.create(input_file2)
