@@ -29,8 +29,8 @@ test_that("list_and_filter_tile_files function works as expected", {
   # Case 2: Empty data folder, expect error
   empty_datafolder <- tempdir() # Create a new empty temporary directory
 
-  unlink(list.files(file.path(empty_datafolder, "input"), full.names = TRUE), recursive = TRUE)
-  unlink(list.files(file.path(empty_datafolder, "groundtruth"), full.names = TRUE), recursive = TRUE)
+  unlink(list.files(file.path(empty_datafolder,"preprocessed", "input"), full.names = TRUE), recursive = TRUE)
+  unlink(list.files(file.path(empty_datafolder,"preprocessed", "groundtruth"), full.names = TRUE), recursive = TRUE)
 
   # Test error when no files are found
   expect_error(
