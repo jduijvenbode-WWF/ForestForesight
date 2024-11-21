@@ -144,7 +144,7 @@ ff_prep_refactored <- function(datafolder = Sys.getenv("DATA_FOLDER"), country =
   validation_matrix <- validation_result$validation_matrix
   ########## return data from prep function to main function####
   if (hasvalue(feature_dataset$label) && sum(feature_dataset$label) == 0) {
-    ff_cat("Data contains no actuals, all labels are 0", color = "yellow")
+    ff_cat("Data contains no actuals, all labels are 0", color = "yellow", verbose = verbose)
   }
 
   return(list(
@@ -362,7 +362,6 @@ append_date_based_features <- function(feature_dataset, date) {
 
 sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices) {
   # take a random sample if that was applied
-
   if (sample_size < 1) {
     sample_indices <- sample(seq_len(nrow(current_tile_feature_dataset)), max(round(nrow(current_tile_feature_dataset) * sample_size), 1))
     current_tile_feature_dataset <- current_tile_feature_dataset[sample_indices, ]
@@ -381,7 +380,7 @@ sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_
       if (length(c(notin1, notin2)) > 0) {
         ff_cat(paste(date, ": the following columns are dropped because they are not present in the entire time series: ", paste(c(notin1, notin2),
           collapse = ", "
-        )), color = "yellow")
+        )), color = "yellow", verbose = verbose)
       }
 
       # Subset matrices based on common column names
@@ -420,8 +419,8 @@ split_feature_and_label_data <- function(feature_dataset, groundtruth_pattern, l
         groundtruth_raster <- as.numeric(groundtruth_raster >= label_threshold)
       }
     }
-
-    feature_dataset <- feature_dataset[, -groundtruth_index] # Remove groundtruth column from features
+    # Remove groundtruth column from features
+    feature_dataset <- feature_dataset[, -groundtruth_index]
   } else {
     ff_cat("No groundtruth rasters found", color = "yellow", verbose = verbose)
     data_label <- NA
