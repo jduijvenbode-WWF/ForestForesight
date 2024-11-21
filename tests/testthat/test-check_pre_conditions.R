@@ -40,6 +40,6 @@ test_that("check_pre_conditions works as expected", {
   # Test shape is not SpatVector
   expect_error(
     check_pre_conditions(dates, country, "invalid_shape", tiles, shrink, verbose = T, datafolder = datafolder, inc_features = NA, exc_features = NA),
-    "Shape should be of class SpatVector"
+    "Input must be a SpatVector object, received "
   )
 })
