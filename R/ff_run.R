@@ -131,7 +131,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   }
 
 
-  tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))[shape,]$tile_id
+  tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))[shape, ]$tile_id
   shape <- check_spatvector(shape)
   ff_structurecheck(
     shape = shape, folder_path = ff_folder,
@@ -274,7 +274,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       for (i in seq_along(filter_features)) {
         filename <- get_raster(
           tile = tile, date = prediction_date,
-          datafolder = file.path(ff_folder,"preprocessed" ,"input"),
+          datafolder = file.path(ff_folder, "preprocessed", "input"),
           feature = filter_features[i]
         )
         if (!hasvalue(filename)) {
