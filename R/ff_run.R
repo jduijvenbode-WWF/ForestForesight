@@ -49,7 +49,7 @@
 #' plot(prediction)
 #' }
 #'
-#' @importFrom lubridate ymd months %m-%
+#' @importFrom lubridate ymd %m-%
 #' @importFrom terra project mask crop vect merge
 #' @export
 #'
