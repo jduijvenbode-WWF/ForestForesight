@@ -193,7 +193,7 @@ check_tile_subfolders <- function(folder, info, subfolder, check_date,
 }
 
 check_models_folder <- function(folder_path, info, error_on_issue, silent_on_pass) {
-  ff_cat("Checking models folder",verbose = silent_on_pass)
+  ff_cat("Checking models folder", verbose = silent_on_pass)
   for (group in info$country_groups) {
     check_model_group(folder_path, group, error_on_issue, silent_on_pass)
   }
@@ -252,7 +252,7 @@ check_model_files <- function(group_folder, group, error_on_issue, silent_on_pas
 }
 
 check_predictions_folder <- function(folder_path, info, error_on_issue, silent_on_pass) {
-  ff_cat("Checking predictions folder",verbose = silent_on_pass)
+  ff_cat("Checking predictions folder", verbose = silent_on_pass)
   for (cname in info$overlapping_countries) {
     check_country_predictions(folder_path, cname, error_on_issue, silent_on_pass)
   }
