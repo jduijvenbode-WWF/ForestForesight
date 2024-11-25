@@ -62,7 +62,7 @@ ff_train <- function(train_matrix,
     save_model(xgbmodel, modelfilename, verbose)
   }
 
-  xgbmodel
+  return(xgbmodel)
 }
 
 #' Convert input matrix to XGBoost DMatrix format
