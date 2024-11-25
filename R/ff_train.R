@@ -41,9 +41,9 @@ ff_train <- function(train_matrix,
   )
 
   # Train model
-  if("eval" %in% names(watchlist)){
+  if ("eval" %in% names(watchlist)) {
     ff_cat("Starting training with validation matrix", verbose = verbose)
-  }else{
+  } else {
     ff_cat("Starting training without validation matrix", verbose = verbose)
   }
   xgbmodel <- train_model(
@@ -91,7 +91,6 @@ create_watchlist <- function(dtrain, validation_matrix) {
 
   deval <- convert_to_dmatrix(validation_matrix)
   return(list(train = dtrain, eval = deval))
-
 }
 
 #' Create parameter list for XGBoost training
