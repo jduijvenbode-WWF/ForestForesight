@@ -1,9 +1,12 @@
 # Contributing to ForestForesight
 
-This workflow guides contributors on how to address **[confirmed]** issues in alignment with our branching, testing, and styling strategies.
+This workflow guides contributors on how to address issues in alignment with our branching, testing, and styling strategies.
 
 ## Table of Contents
-1. [Valid Issues](#valid-issues)
+1. [Issue Management](#issue-management)
+   - [1. Check Existing Issues](#1-check-existing-issues)
+   - [2. Create a New Issue](#2-create-a-new-issue)
+   - [3. Labeling Issues](#3-labeling-issues)
 2. [Workflow](#workflow)
    - [1. Assign the Issue](#1-assign-the-issue)
    - [2. Fork the Repository](#2-fork-the-repository)
@@ -11,11 +14,28 @@ This workflow guides contributors on how to address **[confirmed]** issues in al
    - [4. Create a Pull Request (PR)](#4-create-a-pull-request-pr)
    - [5. Review and Respond](#5-review-and-respond)
    - [6. Approval and Merge](#6-approval-and-merge)
+3. [List of Maintainers](#list-of-maintainers)
 
 ---
 
-## Valid Issues
-Only issues with the label **[confirmed]** are guaranteed to be merged. If you have a suggestion for a new feature or bug fix, please check whether it is a duplicate before creating an issue. After issue creation a maintainer will determine whether it gets the **[confirmed]** label.
+## Issue Management
+
+This section is for when you find a bug in the package or you want to request a feature.
+
+### 1. Check Existing Issues
+- Search in the [issues](https://github.com/ForestForesight/ForestForesight/issues) to ensure the bug or feature request has not already been reported or suggested.
+- Use keywords to search for similar issues.
+- If a similar issue exists but lacks detail or resolution, you may contribute to it instead of creating a new issue.
+
+### 2. Create a New Issue
+- If no relevant issue exists, create a new one using the appropriate template:
+  - **Bug Report**: Use the bug report template to describe the bug clearly, including steps to reproduce, expected behavior, and any relevant screenshots or context.
+  - **Feature Request**: Use the feature request template to describe the problem, the solution provided, and any alternatives you've considered. Include any relevant context or screenshots.
+- Mention a maintainer in the issue (e.g., @jduijvenbode-WWF), you can find the list of [maintainers](#list-of-maintainers) below.
+
+### 3. Labeling Issues
+- Maintainers will review the issue and determine if it is valid by assigning it a **[confirmed]** label.
+- Only issues with the **[confirmed]** label are guaranteed to be merged in the repository.
 
 ## Workflow
 
@@ -47,6 +67,12 @@ Only issues with the label **[confirmed]** are guaranteed to be merged. If you h
 ### 6. Approval and Merge
    - Once your PR is approved, a maintainer will merge it into the `develop` branch in the main repository.
    - After merging, the issue will be closed, and your contribution will become part of the project.
+
+
+## List of Maintainers
+
+- @jduijvenbode-WWF 
+- @ZillahCalle
 
 Thank you for contributing and helping us improve this project! Please ensure all contributions align with our guidelines to maintain quality and consistency across the codebase. 
 **Note:** Our guidelines are continually being improved, so please check back regularly for any updates.

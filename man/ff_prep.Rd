@@ -89,7 +89,7 @@ This function prepares data for the ForestForesight training and predicting algo
 prepared_data <- ff_prep(
   datafolder = "path/to/data",
   country = "BRA",
-  dates = ForestForesight::daterange("2022-01-01","2022-12-31"),
+  dates = ForestForesight::daterange("2022-01-01", "2022-12-31"),
   fltr_features = "initialforestcover",
   fltr_condition = ">0"
 )

@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 *.xlsx#
+*.tar.gz
 .idea/

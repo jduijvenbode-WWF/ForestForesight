@@ -1,0 +1,135 @@
+name: Build and release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - "main"
+jobs:
+  Build-release-package:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - uses: actions/checkout@v2
+
+      ### RELEASE VERSION SECTION ###
+      - name: Get current version (MAJOR.MINOR) from DESCRIPTION file
+        id: get_version
+        run: |
+          # Extract version from DESCRIPTION file
+          VERSION=$(grep '^Version:' DESCRIPTION | awk '{print $2}')
+
+          # Check if version was extracted
+          if [[ -z "$VERSION" ]]; then
+            echo "Error: Could not extract version from DESCRIPTION file"
+            exit 1
+          fi
+
+          # Extract MAJOR and MINOR versions
+          MAJOR=$(echo $VERSION | cut -d '.' -f 1)
+          MINOR=$(echo $VERSION | cut -d '.' -f 2)
+
+          # Check if MAJOR and MINOR were extracted correctly
+          if [[ -z "$MAJOR" || -z "$MINOR" ]]; then
+            echo "Error: Could not extract MAJOR or MINOR version from DESCRIPTION file"
+            exit 1
+          fi
+
+          # Output MAJOR and MINOR to GitHub environment
+          echo "MAJOR=$MAJOR" >> $GITHUB_ENV
+          echo "MINOR=$MINOR" >> $GITHUB_ENV
+          echo "The version from DESCRIPTION: $MAJOR.$MINOR"
+
+      - name: Get latest PATCH version from GitHub releases
+        id: get_latest_patch
+        run: |
+          # Get the list of existing releases
+          releases=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases")
+
+          # Find the latest release with the same MAJOR.MINOR version
+          latest_patch=$(echo "$releases" | jq -r --arg MAJOR "$MAJOR" --arg MINOR "$MINOR" '
+            [
+              .[] | select(.tag_name | startswith("\($MAJOR).\($MINOR).")) | .tag_name
+            ] | map(split(".")[2] | tonumber) | max // -1
+          ')
+
+          # Increment the PATCH version
+          PATCH=$((latest_patch + 1))
+
+          # Output PATCH to the GitHub environment
+          echo "PATCH=$PATCH" >> $GITHUB_ENV
+          echo "New Patch number: $PATCH"
+
+      # Combine the version components
+      - name: Set and display new release version
+        run: |
+          VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "New version is $VERSION"
+      ### END OF RELEASE VERSION SECTION ###
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'latest'
+
+      - name: Print R version
+        run: R --version
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev
+          sudo apt-get install -y libharfbuzz-dev libfribidi-dev libfreetype6-dev
+          sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+          sudo apt-get install -y pkg-config
+
+      - name: Build package
+        run: |
+          R CMD build . --no-build-vignettes --no-manual
+        shell: bash
+
+      - name: Check build directory (post-build)
+        run: |
+          echo "Checking current directory after build:"
+          ls -l .
+          echo "Checking parent directory after build:"
+          ls -l ..
+        shell: bash
+
+      - name: Verify package tarball exists
+        id: verify_tarball
+        run: |
+          tarball=$(ls ./ForestForesight_*.tar.gz)
+          if [ -f "$tarball" ]; then
+            echo "Package tarball found: $tarball"
+            echo "TARBALL_PATH=$tarball" >> $GITHUB_ENV
+          else
+            echo "Package tarball NOT found!"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Get PR Info
+        id: get_pr_info
+        run: echo "::set-output name=title::$(echo ${{ github.event.pull_request.title }})"
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: ForestForesight ${{ env.VERSION }}
+          body: |
+            This release is based on "${{ steps.get_pr_info.outputs.title }}" or PR #${{ github.event.pull_request.number }} (click to see more detail)
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Final directory listing (post-upload)
+        run: |
+          echo "Final check of directories:"
+          ls -l .
+          ls -l ..
+        shell: bash

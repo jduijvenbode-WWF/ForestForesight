@@ -16,7 +16,7 @@
 #' @param download_data Logical. Whether to download the preprocessed input data. Default is TRUE.
 #' @param download_groundtruth Logical. Whether to download the groundtruth data as well.
 #' This should be turned off when you want to use your own data as groundtruth. Default is TRUE.
-#' @parm groundtruth_pattern The pattern to search for.
+#' @param groundtruth_pattern The pattern to search for.
 #' This is normally groundtruth6m for 6 months but can be set to groundtruth1m, groundtruth3m or groundtruth12m for one, three or twelve months respectively
 #' @param download_predictions Logical. Whether to download the prediction data.
 #' Only works when downloading for entire countries. Default is FALSE.
@@ -42,10 +42,9 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
                     date_start = NULL, date_end = NULL,
                     download_model = FALSE, download_data = TRUE,
                     download_predictions = FALSE, download_groundtruth = TRUE,
-                    groundtruth_pattern="groundtruth6m",
-                    bucket = "forestforesight-public", region = "eu-west-1",
+                    groundtruth_pattern = "groundtruth6m",
+                    bucket = Sys.getenv("AWS_BUCKET_NAME"), region = Sys.getenv("AWS_BUCKET_REGION"),
                     verbose = TRUE, sync_verbose = FALSE) {
-
   # Validate and process dates
   current_month <- format(Sys.Date(), "%Y-%m-01")
 
@@ -58,11 +57,11 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
     if (!grepl("-01$", date_start)) {
       stop("date_start must be the first day of a month")
     }
-    if (date_start < "2021-01-01") {
-      stop("date_start cannot be before 2021-01-01")
+    if (date_start < Sys.getenv("EARLIEST_DATA_DATE")) {
+      stop(paste0("date start cannot be before ", Sys.getenv("EARLIEST_DATA_DATE")))
     }
   } else if (!is.null(date_end)) {
-    date_start <- "2021-01-01"
+    date_start <- Sys.getenv("EARLIEST_DATA_DATE")
   }
 
   if (!is.null(date_end)) {
@@ -83,8 +82,8 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
 
   # Determine if identifier is a tile, country code, or SpatVector
   identifier_lookup <- get_tiles(identifier)
-  tiles = identifier_lookup$tiles
-  country_codes = identifier_lookup$country_codes
+  tiles <- identifier_lookup$tiles
+  country_codes <- identifier_lookup$country_codes
 
   # Generate date range if dates are provided
   dates_to_check <- NULL
@@ -93,7 +92,7 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
   }
   # Download model if requested
   if (download_model) {
-    model_downloader(ff_folder,country_codes,bucket,region,verbose,sync_verbose)
+    model_downloader(ff_folder, country_codes, bucket, region, verbose, sync_verbose)
   }
   # Sync input and ground truth data for each tile
   if (download_data || download_groundtruth) {
@@ -101,13 +100,12 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
     for (tile in tiles) {
       # Handle input data
       if (download_data) {
-        data_downloader(ff_folder = ff_folder,tile = tile,feature_list = feature_list,dates_to_check = dates_to_check,bucket = bucket,region = region, verbose = verbose)
+        data_downloader(ff_folder = ff_folder, tile = tile, feature_list = feature_list, dates_to_check = dates_to_check, bucket = bucket, region = region, verbose = verbose)
       }
 
       # Handle ground truth data (unchanged)
       if (download_groundtruth) {
-        groundtruth_downloader(ff_folder = ff_folder,tile = tile,dates_to_check = dates_to_check, bucket = bucket,region = region,verbose = verbose,groundtruth_pattern = groundtruth_pattern)
-
+        groundtruth_downloader(ff_folder = ff_folder, tile = tile, dates_to_check = dates_to_check, bucket = bucket, region = region, verbose = verbose, groundtruth_pattern = groundtruth_pattern)
       }
     }
   }
@@ -116,12 +114,12 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
 
   # Download predictions if requested
   if (download_predictions) {
-    prediction_downloader(ff_folder = ff_folder,country_codes = country_codes,dates_to_check = dates_to_check, bucket = bucket,region = region,verbose = verbose,sync_verbose = sync_verbose)
+    prediction_downloader(ff_folder = ff_folder, country_codes = country_codes, dates_to_check = dates_to_check, bucket = bucket, region = region, verbose = verbose, sync_verbose = sync_verbose)
   }
 
   invisible(NULL)
 }
-ff_sync_get_features = function(features,ff_folder){
+ff_sync_get_features <- function(features, ff_folder) {
   feature_list <- NULL
   if (is.character(features)) {
     features <- tolower(features)
@@ -129,22 +127,25 @@ ff_sync_get_features = function(features,ff_folder){
       if (features == "small model") {
         # Find and load small model RDA files
         model_files <- list.files(file.path(ff_folder, "models"),
-                                  pattern = "small\\.rda$",
-                                  recursive = TRUE,
-                                  full.names = TRUE)
-        if(length(model_files)==0){stop("no models were found. Either change download_model to TRUE or choose another option for features")}
+          pattern = "small\\.rda$",
+          recursive = TRUE,
+          full.names = TRUE
+        )
+        if (length(model_files) == 0) {
+          stop("no models were found. Either change download_model to TRUE or choose another option for features")
+        }
         feature_list <- unique(unlist(lapply(model_files, function(f) {
           get(load(f))
         })))
       } else if (features %in% c("highest", "high", "medium", "low", "everything")) {
         # Load feature metadata
-        feature_metadata <- get(data("feature_metadata",envir=environment()))
+        feature_metadata <- get(data("feature_metadata", envir = environment()))
         importance_levels <- switch(features,
-                                    "highest" = c("Highest"),
-                                    "high" = c("Highest", "High"),
-                                    "medium" = c("Highest", "High", "Medium"),
-                                    "low" = c("Highest", "High", "Medium", "Low"),
-                                    "everything" = unique(feature_metadata$importance)
+          "highest" = c("Highest"),
+          "high" = c("Highest", "High"),
+          "medium" = c("Highest", "High", "Medium"),
+          "low" = c("Highest", "High", "Medium", "Low"),
+          "everything" = unique(feature_metadata$importance)
         )
         feature_list <- feature_metadata$name[feature_metadata$importance %in% importance_levels]
       } else {
@@ -155,7 +156,7 @@ ff_sync_get_features = function(features,ff_folder){
       feature_metadata <- get("feature_metadata")
       if (!all(features %in% feature_metadata$name)) {
         missing_features <- features[!features %in% feature_metadata$name]
-        stop("The following features are not valid: ", paste(missing_features, collapse = ", "),"available features are:",paste(feature_metadata$name,collapse="\n"))
+        stop("The following features are not valid: ", paste(missing_features, collapse = ", "), "available features are:", paste(feature_metadata$name, collapse = "\n"))
       }
       feature_list <- features
     }
@@ -163,11 +164,11 @@ ff_sync_get_features = function(features,ff_folder){
   return(feature_list)
 }
 
-groundtruth_downloader <- function(ff_folder,tile,dates_to_check,bucket,region,verbose,groundtruth_pattern){
+groundtruth_downloader <- function(ff_folder, tile, dates_to_check, bucket, region, verbose, groundtruth_pattern) {
   groundtruth_folder <- file.path(ff_folder, "preprocessed", "groundtruth", tile)
   dir.create(groundtruth_folder, recursive = TRUE, showWarnings = FALSE)
   prefix <- paste0("preprocessed/groundtruth/", tile)
-  s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region,max = Inf)
+  s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region, max = Inf)
 
   groundtruth_pattern <- paste0("_", groundtruth_pattern, "\\.tif$")
   matching_files <- grep(groundtruth_pattern, sapply(s3_files, function(x) x$Key), value = TRUE)
@@ -183,20 +184,22 @@ groundtruth_downloader <- function(ff_folder,tile,dates_to_check,bucket,region,v
     } else {
       ff_cat("no predictions found in daterange, downloading latest available")
       # If no files within date range, get the latest available
-      matching_files <- select_files_date(given_date = min(dates_to_check),listed_files = matching_files)
+      matching_files <- select_files_date(given_date = min(dates_to_check), listed_files = matching_files)
     }
   }
 
   # Sync matched files
   for (file in matching_files) {
     if (!file.exists(file.path(ff_folder, file))) {
-      aws.s3::save_object(file, bucket = bucket, region = region,
-                          file = file.path(ff_folder, file),verbose = verbose)
+      aws.s3::save_object(file,
+        bucket = bucket, region = region,
+        file = file.path(ff_folder, file), verbose = verbose
+      )
     }
   }
 }
 
-get_tiles <- function(identifier){
+get_tiles <- function(identifier) {
   if (class(identifier) == "character" && nchar(identifier) == 8 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
     tiles <- identifier
   } else if (inherits(identifier, "SpatVector")) {
@@ -221,38 +224,40 @@ get_tiles <- function(identifier){
     # Filter country and get tiles
     country_shape <- countries[countries$iso3 == identifier, ]
     if (nrow(country_shape) == 0) stop("Invalid country code")
-    country_codes = identifier
+    country_codes <- identifier
     tiles <- terra::intersect(gfw_tiles, country_shape)
     tiles <- tiles$tile_id
   }
-  return(list(tiles = tiles,country_codes = country_codes))
+  return(list(tiles = tiles, country_codes = country_codes))
 }
 
-model_downloader <- function(ff_folder,country_codes,bucket,region,verbose,sync_verbose){
+model_downloader <- function(ff_folder, country_codes, bucket, region, verbose, sync_verbose) {
   countries <- terra::vect(get(data("countries")))
   groups <- countries$group[countries$iso3 == country_codes]
   for (group in groups) {
-    prefix = file.path("models",group)
-    s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region,max = Inf)
-    s3_files <- sapply(s3_files,function(x) x$Key)
+    prefix <- file.path("models", group)
+    s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region, max = Inf)
+    s3_files <- sapply(s3_files, function(x) x$Key)
     model_folder <- file.path(ff_folder, "models", group)
     ff_cat("Downloading model to", model_folder, verbose = verbose)
     if (!dir.exists(model_folder)) dir.create(model_folder, recursive = TRUE)
     for (file in s3_files) {
       ff_cat(file, verbose = verbose)
-      aws.s3::save_object(file, bucket = bucket, region = region,
-                          file = file.path(ff_folder, file),verbose = F)
+      aws.s3::save_object(file,
+        bucket = bucket, region = region,
+        file = file.path(ff_folder, file), verbose = F
+      )
     }
   }
 }
 
-data_downloader <- function(ff_folder,tile,feature_list,dates_to_check,bucket,region, verbose){
+data_downloader <- function(ff_folder, tile, feature_list, dates_to_check, bucket, region, verbose) {
   input_folder <- file.path(ff_folder, "preprocessed", "input", tile)
   dir.create(input_folder, recursive = TRUE, showWarnings = FALSE)
 
   # List available files in S3
   prefix <- paste0("preprocessed/input/", tile)
-  s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region,max = Inf)
+  s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region, max = Inf)
 
   for (feature in feature_list) {
     feature_pattern <- paste0("_", feature, "\\.tif$")
@@ -269,30 +274,31 @@ data_downloader <- function(ff_folder,tile,feature_list,dates_to_check,bucket,re
         matching_files <- matching_files[date_matches]
       } else {
         # If no files within date range, get the latest available
-        matching_files <- select_files_date(given_date = min(dates_to_check),listed_files = matching_files)
+        matching_files <- select_files_date(given_date = min(dates_to_check), listed_files = matching_files)
       }
     }
 
     # Sync matched files
     for (file in matching_files) {
-
-      if(!file.exists(file.path(ff_folder, file))){
+      if (!file.exists(file.path(ff_folder, file))) {
         ff_cat(file, verbose = verbose)
-        aws.s3::save_object(file, bucket = bucket, region = region,
-                            file = file.path(ff_folder, file), verbose = F)
+        aws.s3::save_object(file,
+          bucket = bucket, region = region,
+          file = file.path(ff_folder, file), verbose = F
+        )
       }
     }
   }
 }
 
-prediction_downloader <- function(ff_folder,country_codes,dates_to_check,bucket,region,verbose,sync_verbose){
+prediction_downloader <- function(ff_folder, country_codes, dates_to_check, bucket, region, verbose, sync_verbose) {
   for (country_code in country_codes) {
     pred_folder <- file.path(ff_folder, "predictions", country_code)
-    ff_cat("Downloading predictions to", pred_folder,verbose = verbose)
+    ff_cat("Downloading predictions to", pred_folder, verbose = verbose)
     if (!dir.exists(pred_folder)) dir.create(pred_folder, recursive = TRUE)
-    prefix = file.path("predictions",country_code)
-    s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region,max = Inf)
-    s3_files <- as.character(sapply(s3_files,function(x) x$Key))
+    prefix <- file.path("predictions", country_code)
+    s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region, max = Inf)
+    s3_files <- as.character(sapply(s3_files, function(x) x$Key))
     if (!is.null(dates_to_check)) {
       # Filter by dates
       date_matches <- sapply(s3_files, function(f) {
@@ -304,15 +310,16 @@ prediction_downloader <- function(ff_folder,country_codes,dates_to_check,bucket,
         s3_files <- s3_files[date_matches]
       } else {
         # If no files within date range, get the latest available
-        s3_files <- select_files_date(given_date = min(dates_to_check),listed_files = s3_files)
+        s3_files <- select_files_date(given_date = min(dates_to_check), listed_files = s3_files)
       }
     }
     for (file in s3_files) {
-
-      if (!file.exists(file.path(ff_folder, file))){
+      if (!file.exists(file.path(ff_folder, file))) {
         ff_cat(file, verbose = verbose)
-        aws.s3::save_object(file, bucket = bucket, region = region,
-                            file = file.path(ff_folder, file), verbose = F)
+        aws.s3::save_object(file,
+          bucket = bucket, region = region,
+          file = file.path(ff_folder, file), verbose = F
+        )
       }
     }
   }
