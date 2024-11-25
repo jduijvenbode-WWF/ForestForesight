@@ -26,8 +26,8 @@ ff_train <- function(train_matrix,
   validate_inputs(train_matrix)
 
   # Convert matrices to DMatrix format
-  dtrain <- convert_to_dmatrix(train_matrix)
-  watchlist <- create_watchlist(dtrain, validation_matrix)
+  train_dataset <- convert_to_dmatrix(train_matrix)
+  watchlist <- create_watchlist(train_dataset, validation_matrix)
 
   # Set up training parameters
   params <- create_params(
@@ -48,7 +48,7 @@ ff_train <- function(train_matrix,
   }
   xgbmodel <- train_model(
     params = params,
-    dtrain = dtrain,
+    dtrain = train_dataset,
     watchlist = watchlist,
     nrounds = nrounds,
     early_stopping_rounds = early_stopping_rounds,
@@ -81,16 +81,16 @@ convert_to_dmatrix <- function(matrix) {
 }
 
 #' Create watchlist for model training
-#' @param dtrain Training DMatrix
+#' @param train_dataset Training DMatrix
 #' @param validation_matrix Validation matrix or NULL
 #' @return Named list of matrices for monitoring
-create_watchlist <- function(dtrain, validation_matrix) {
+create_watchlist <- function(train_dataset, validation_matrix) {
   if (is.null(validation_matrix)) {
-    return(list(train = dtrain))
+    return(list(train = train_dataset))
   }
 
-  deval <- convert_to_dmatrix(validation_matrix)
-  return(list(train = dtrain, eval = deval))
+  evaluation_dataset <- convert_to_dmatrix(validation_matrix)
+  return(list(train = train_dataset, eval = evaluation_dataset))
 }
 
 #' Create parameter list for XGBoost training
@@ -108,10 +108,10 @@ create_params <- function(...) {
 #' @param dtrain Training data
 #' @param ... Additional parameters passed to xgb.train
 #' @return Trained XGBoost model
-train_model <- function(params, dtrain, ...) {
+train_model <- function(params, train_dataset, ...) {
   xgboost::xgb.train(
     params = params,
-    data = dtrain,
+    data = train_dataset,
     ...
   )
 }
