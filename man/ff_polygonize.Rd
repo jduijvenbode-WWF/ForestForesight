@@ -11,15 +11,16 @@ ff_polygonize(
   threshold = 0.5,
   window_size = 7,
   smoothness = 2,
-  verbose = F,
-  calc_max = F,
+  verbose = FALSE,
+  calc_max = FALSE,
   contain_polygons = NA
 )
 }
 \arguments{
 \item{raster}{Character or SpatRaster. Path to the input raster file or a SpatRaster.}
 
-\item{output_file}{Character. File path to save shapefiles. Default is NA and means the polygons are returned and not written.}
+\item{output_file}{Character. File path to save shapefiles.
+Default is NA and means the polygons are returned and not written.}
 
 \item{min_pixel}{Numeric. Base pixel count to filter on. Default is 5}
 
@@ -38,9 +39,11 @@ Options are:
 
 \item{verbose}{Logical. Whether the automatically detected threshold should be plotted}
 
-\item{calc_max}{Logical. If this is set to True a reasonable amount of polygons will be outputted depending on the area size}
+\item{calc_max}{Logical.
+If this is set to True a reasonable amount of polygons will be outputted depending on the area size}
 
-\item{contain_polygons}{Logical. If calc_max is enabled, only polygons will be created that lie within the SpatVector contain_polygons}
+\item{contain_polygons}{Logical.
+If calc_max is enabled, only polygons will be created that lie within the SpatVector contain_polygons}
 }
 \value{
 A SpatVector object containing the processed and simplified polygons.

@@ -9,13 +9,17 @@ test_feature_model_match(model, feature_names = NULL)
 \arguments{
 \item{model}{Either a character string representing the path to the XGBoost model file, or an `xgb.Booster` object.}
 
-\item{feature_names}{A character vector of feature names. This parameter should be provided if `model` is an `xgb.Booster` object. If `model` is a file path, the function will look for a corresponding `.rda` file with feature names in the same directory.}
+\item{feature_names}{A character vector of feature names.
+This parameter should be provided if `model` is an `xgb.Booster` object.
+If `model` is a file path, the function will look for the `.rda` file with feature names in the same directory.}
 }
 \value{
 A logical value: `TRUE` if the feature names match the features in the model, `FALSE` otherwise.
 }
 \description{
-This function tests whether the provided feature names match the features in the given XGBoost model. It checks if the model file and the corresponding feature names file exist, and if so, loads them. It then attempts to generate the importance matrix to validate the match.
+This function tests whether the provided feature names match the features in the given XGBoost model.
+It checks if the model file and the corresponding feature names file exist, and if so, loads them.
+It then attempts to generate the importance matrix to validate the match.
 }
 \examples{
 \dontrun{

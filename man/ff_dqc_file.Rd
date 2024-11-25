@@ -4,7 +4,7 @@
 \alias{ff_dqc_file}
 \title{summary data aspects of a raster}
 \usage{
-ff_dqc_file(raster, return_values = T)
+ff_dqc_file(raster, return_values = TRUE)
 }
 \arguments{
 \item{raster}{path to raster.}

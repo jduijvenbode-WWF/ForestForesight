@@ -11,8 +11,11 @@ ff_cat(
   fill = FALSE,
   labels = NULL,
   append = FALSE,
-  file = "",
-  style = NULL
+  style = NULL,
+  verbose = FALSE,
+  logfile = NULL,
+  timestamp = FALSE,
+  auto_newline = TRUE
 )
 }
 \arguments{
@@ -29,10 +32,16 @@ Must be a valid crayon color (e.g., "red", "blue", "green").}
 
 \item{append}{Logical. If TRUE, output will be appended to the file.}
 
-\item{file}{A connection, or a character string naming the file to print to.}
-
 \item{style}{Character string specifying additional style to apply.
 Must be a valid crayon style (e.g., "bold", "underline").}
+
+\item{logfile}{Character. Path to a logfile that should be printed to.}
+
+\item{timestamp}{Logical. Whether a timestamp should be added}
+
+\item{auto_newline}{Logical. Whether a newline should be added}
+
+\item{verbose.}{Logical. Whether the ff_cat function should print. Is always overridden by logfile if that is set}
 }
 \value{
 No return value, called for side effects.

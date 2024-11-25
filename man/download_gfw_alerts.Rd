@@ -7,7 +7,7 @@
 download_gfw_alerts(
   output_dir,
   country = NA,
-  separate_folders = F,
+  separate_folders = FALSE,
   basename = NA
 )
 }
@@ -18,7 +18,8 @@ download_gfw_alerts(
 
 \item{separate_folders}{Logical. If TRUE, data is saved in separate folders based on tile_id. Default is FALSE.}
 
-\item{basename}{An optional parameter to specify a basename for the downloaded files. Applicable only when separate_folders is TRUE. Default is NA.}
+\item{basename}{An optional parameter to specify a basename for the downloaded files.
+Applicable only when separate_folders is TRUE. Default is NA.}
 }
 \value{
 locations of the created output tif-files.
