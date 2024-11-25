@@ -41,7 +41,11 @@ ff_train <- function(train_matrix,
   )
 
   # Train model
-  ff_cat("Starting training", verbose = verbose)
+  if("eval" %in% names(watchlist)){
+    ff_cat("Starting training with validation matrix", verbose = verbose)
+  }else{
+    ff_cat("Starting training without validation matrix", verbose = verbose)
+  }
   xgbmodel <- train_model(
     params = params,
     dtrain = dtrain,
