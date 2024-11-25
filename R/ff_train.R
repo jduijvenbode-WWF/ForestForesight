@@ -48,7 +48,7 @@ ff_train <- function(train_matrix,
   }
   xgbmodel <- train_model(
     params = params,
-    dtrain = train_dataset,
+    train_dataset = train_dataset,
     watchlist = watchlist,
     nrounds = nrounds,
     early_stopping_rounds = early_stopping_rounds,
