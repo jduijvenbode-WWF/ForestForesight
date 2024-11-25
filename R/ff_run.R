@@ -133,8 +133,10 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
         lubridate::ymd(min(prediction_dates)) %m-%
           months(months_back, abbreviate = FALSE)
       )
-      ff_cat("No train dates were given though a training was wanted, model will be trained on"
-             , train_dates ,color = "yellow")
+      ff_cat("No train dates were given though a training was wanted, model will be trained on",
+        train_dates,
+        color = "yellow"
+      )
     }
 
     if (max(lubridate::ymd(train_dates)) > min(lubridate::ymd(prediction_dates))) {
@@ -208,7 +210,8 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     if (hasvalue(validation_dates)) {
       ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n",
-             color = "green", verbose = verbose)
+        color = "green", verbose = verbose
+      )
 
       ff_prep_params_combined["dates"] <- validation_dates
       ff_prep_params_combined["sample_size"] <- 1 / 3 * sample_size
