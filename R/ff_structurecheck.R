@@ -307,7 +307,7 @@ print_result <- function(...,
                          silent_on_pass = FALSE,
                          error_on_issue = FALSE) {
   statement <- paste(..., sep = " ")
-  if (silent_on_pass && color %in% c("green","black")) {
+  if (silent_on_pass && color %in% c("green", "black")) {
     invisible(NULL)
   } else {
     if (color == "red" && error_on_issue) {
