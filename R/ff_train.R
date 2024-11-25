@@ -67,12 +67,13 @@ ff_train <- function(train_matrix,
 convert_to_dmatrix <- function(matrix) {
   if (inherits(matrix, "xgb.DMatrix")) {
     return(matrix)
+  } else {
+    if (inherits(matrix, "character")) {
+      return(xgboost::xgb.DMatrix(matrix$features, label = matrix$label))
+    } else {
+      stop("the input train_matrix is not of class list or xgb.DMatrix")
+    }
   }
-
-  xgboost::xgb.DMatrix(
-    matrix$features,
-    label = matrix$label
-  )
 }
 
 #' Create watchlist for model training
