@@ -86,7 +86,8 @@ create_watchlist <- function(dtrain, validation_matrix) {
   }
 
   deval <- convert_to_dmatrix(validation_matrix)
-  list(train = dtrain, eval = deval)
+  return(list(train = dtrain, eval = deval))
+
 }
 
 #' Create parameter list for XGBoost training
