@@ -7,12 +7,16 @@
 ff_sync(
   ff_folder,
   identifier,
+  features = "Everything",
+  date_start = NULL,
+  date_end = NULL,
   download_model = FALSE,
   download_data = TRUE,
   download_predictions = FALSE,
   download_groundtruth = TRUE,
-  bucket = "forestforesight-public",
-  region = "eu-west-1",
+  groundtruth_pattern = "groundtruth6m",
+  bucket = Sys.getenv("AWS_BUCKET_NAME"),
+  region = Sys.getenv("AWS_BUCKET_REGION"),
   verbose = TRUE,
   sync_verbose = FALSE
 )
@@ -20,15 +24,29 @@ ff_sync(
 \arguments{
 \item{ff_folder}{Character. Local folder to sync data to.}
 
-\item{identifier}{Character or SpatVector. When a character it should be either a tile ID (e.g., "00N_000E") or a country ISO3 code.}
+\item{identifier}{Character or SpatVector.
+When a character it should be either a tile ID (e.g., "00N_000E") or a country ISO3 code.}
 
-\item{download_model}{Logical. Whether to download the corresponding model. Only works when downloading for entire countries. Default is FALSE.}
+\item{features}{Vector or Character. Either a vector of feature names or one of "Highest", "High",
+"Medium", "Low", "Everything" (default), or "Small Model" (case-insensitive).}
+
+\item{date_start}{Character. Start date in format "YYYY-MM-DD". Must be first of month and not before 2021-01-01.}
+
+\item{date_end}{Character. End date in format "YYYY-MM-DD". Must be first of month and not after current month.}
+
+\item{download_model}{Logical. Whether to download the corresponding model.
+Only works when downloading for entire countries. Default is FALSE.}
 
 \item{download_data}{Logical. Whether to download the preprocessed input data. Default is TRUE.}
 
-\item{download_predictions}{Logical. Whether to download the prediction data.Only works when downloading for entire countries. Default is FALSE.}
+\item{download_predictions}{Logical. Whether to download the prediction data.
+Only works when downloading for entire countries. Default is FALSE.}
 
-\item{download_groundtruth}{Logical. Whether to download the groundtruth data as well. This should be turned off when you want to use your own data as groundtruth. Default is TRUE.}
+\item{download_groundtruth}{Logical. Whether to download the groundtruth data as well.
+This should be turned off when you want to use your own data as groundtruth. Default is TRUE.}
+
+\item{groundtruth_pattern}{The pattern to search for.
+This is normally groundtruth6m for 6 months but can be set to groundtruth1m, groundtruth3m or groundtruth12m for one, three or twelve months respectively}
 
 \item{bucket}{Character. Name of the S3 bucket. Default is "forestforesight-public".}
 
@@ -49,7 +67,8 @@ and optionally model data.
 \examples{
 \dontrun{
 ff_sync("path/to/local/folder", "00N_000E")
-ff_sync("path/to/local/folder", "BRA", download_model = TRUE)
+ff_sync("path/to/local/folder", "BRA", features = "High", date_start = "2021-01-01")
+ff_sync("path/to/local/folder", "BRA", features = c("feature1", "feature2"))
 }
 
 }

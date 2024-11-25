@@ -10,12 +10,13 @@ get_raster(
   feature,
   tile = NULL,
   shape = NULL,
-  return_raster = F,
-  verbose = F
+  return_raster = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
-\item{datafolder}{A character string specifying the path to the data folder where raster files are stored.This should be in the preprocessed folder of Forest Foresight.}
+\item{datafolder}{A character string specifying the path to the data folder where raster files are stored.
+This should be in the preprocessed folder of Forest Foresight.}
 
 \item{date}{A Date object representing the date for which raster files are to be retrieved.}
 
