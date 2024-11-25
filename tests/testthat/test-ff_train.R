@@ -10,4 +10,5 @@ test_that("tests for ff_train", {
   testthat::expect_error(ff_train(train_matrix = input_data2$feature_dataset, nrounds = 10, verbose = T))
   input_data2$feature_dataset$label <- NA
   testthat::expect_error(ff_train(train_matrix = input_data2$feature_dataset, nrounds = 10, verbose = T))
+  testthat::expect_message()
 })
