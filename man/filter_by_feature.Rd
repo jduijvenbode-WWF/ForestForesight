@@ -4,12 +4,12 @@
 \alias{filter_by_feature}
 \title{Filter matrix by feature}
 \usage{
-filter_by_feature(fltr_features, fltr_condition, matrix, verbose = T)
+filter_by_feature(filter_features, filter_conditions, matrix, verbose = TRUE)
 }
 \arguments{
-\item{fltr_features}{A character vector specifying the features to filter.}
+\item{filter_features}{A character vector specifying the features to filter.}
 
-\item{fltr_condition}{A character vector specifying the conditions for each feature.}
+\item{filter_conditions}{A character vector specifying the conditions for each feature.}
 
 \item{matrix}{The input matrix to filter.}
 
@@ -23,8 +23,8 @@ This function filters a matrix based on specified features and conditions.
 }
 \examples{
 filter_by_feature(
-  fltr_features = c("landpercentage", "forestmask"),
-  fltr_condition = c(">100", ">0"),
+  filter_features = c("landpercentage", "forestmask"),
+  filter_conditions = c(">100", ">0"),
   matrix = my_matrix
 )
 

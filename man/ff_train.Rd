@@ -16,7 +16,7 @@ ff_train(
   gamma = NULL,
   maximize = NULL,
   min_child_weight = 1,
-  verbose = F,
+  verbose = FALSE,
   xgb_model = NULL,
   modelfilename = NULL,
   objective = "binary:logistic"
@@ -25,7 +25,8 @@ ff_train(
 \arguments{
 \item{train_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for training.}
 
-\item{validation_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for validation. Default is NA.}
+\item{validation_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for validation.
+Default is NA.}
 
 \item{nrounds}{Number of boosting rounds. Default is 200.}
 
@@ -41,15 +42,18 @@ ff_train(
 
 \item{gamma}{Minimum loss reduction required to make a further partition. Default is NULL.}
 
-\item{maximize}{Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.}
+\item{maximize}{Boolean indicating whether to maximize the evaluation metric.
+Required for custom metrics.}
 
 \item{min_child_weight}{Minimum sum of instance weight needed in a child. Default is 1.}
 
 \item{verbose}{Boolean indicating whether to display training progress. Default is FALSE.}
 
-\item{xgb_model}{Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.}
+\item{xgb_model}{Previously trained model to continue training from.
+Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.}
 
-\item{modelfilename}{String specifying where to save the model. Should end with ".model" extension.}
+\item{modelfilename}{String specifying where to save the model.
+Should end with ".model" extension.}
 
 \item{objective}{Learning objective. Default is "binary:logistic".}
 }
@@ -57,7 +61,8 @@ ff_train(
 A trained XGBoost model (xgb.Booster object).
 }
 \description{
-This function trains an XGBoost model with optimized default parameters derived from worldwide data analysis.
+This function trains an XGBoost model with optimized default
+parameters derived from worldwide data analysis.
 }
 \examples{
 \dontrun{

@@ -11,8 +11,8 @@ ff_predict(
   groundtruth = NA,
   indices = NA,
   templateraster = NA,
-  verbose = F,
-  certainty = F
+  verbose = FALSE,
+  certainty = FALSE
 )
 }
 \arguments{
@@ -20,7 +20,8 @@ ff_predict(
 
 \item{train_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for training.}
 
-\item{validation_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for validation. Default is NA.}
+\item{validation_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for validation.
+Default is NA.}
 
 \item{nrounds}{Number of boosting rounds. Default is 200.}
 
@@ -42,7 +43,8 @@ ff_predict(
 
 \item{min_child_weight}{Minimum sum of instance weight needed in a child. Default is 1.}
 
-\item{xgb_model}{Previously trained model to continue training from. Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.}
+\item{xgb_model}{Previously trained model to continue training from.
+Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.}
 
 \item{modelfilename}{String specifying where to save the model. Should end with ".model" extension.}
 

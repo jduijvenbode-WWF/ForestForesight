@@ -26,7 +26,7 @@ ff_structurecheck <- function(shape,
                               silent_on_pass = FALSE,
                               groundtruth_pattern = "groundtruth6m") {
   # Get info from shape
-  info <- getinfo(shape, verbose = FALSE)
+  info <- get_info(shape, verbose = FALSE)
 
   # Set check_date if not provided
   if (is.null(check_date)) {
