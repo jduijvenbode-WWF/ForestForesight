@@ -45,14 +45,14 @@ ff_structurecheck <- function(shape,
 }
 
 check_main_folders <- function(folder_path, error_on_issue, silent_on_pass) {
-  ff_cat("Checking main folder\n", verbose = !silent_on_pass)
+  ff_cat("Checking main folder", verbose = !silent_on_pass)
   main_folders <- c("preprocessed", "models", "predictions")
   all_correct <- TRUE
 
   for (folder in main_folders) {
     if (!dir.exists(file.path(folder_path, folder))) {
       all_correct <- FALSE
-      print_result(paste("No", folder, "folder present\n"),
+      print_result(paste("No", folder, "folder present"),
         color = "red"
       )
     } else {
@@ -152,7 +152,7 @@ check_groundtruth <- function(files, tile, check_date, silent_on_pass, groundtru
 }
 
 check_preprocessed_folders <- function(folder_path, info, check_date, error_on_issue, silent_on_pass, groundtruth_pattern) {
-  ff_cat("\nChecking preprocessed folder")
+  ff_cat("Checking preprocessed folder", verbose = !silent_on_pass)
   prep_subfolders <- c("input", "groundtruth")
 
   for (subfolder in prep_subfolders) {
@@ -193,7 +193,7 @@ check_tile_subfolders <- function(folder, info, subfolder, check_date,
 }
 
 check_models_folder <- function(folder_path, info, error_on_issue, silent_on_pass) {
-  ff_cat("Checking models folder", verbose = silent_on_pass)
+  ff_cat("Checking models folder", verbose = !silent_on_pass)
   for (group in info$country_groups) {
     check_model_group(folder_path, group, error_on_issue, silent_on_pass)
   }
@@ -303,11 +303,11 @@ check_prediction_files <- function(iso3_folder, iso3, error_on_issue, silent_on_
 }
 
 print_result <- function(...,
-                         color,
+                         color = "black",
                          silent_on_pass = FALSE,
                          error_on_issue = FALSE) {
   statement <- paste(..., sep = " ")
-  if (silent_on_pass && color == "green") {
+  if (silent_on_pass && color %in% c("green", "black")) {
     invisible(NULL)
   } else {
     if (color == "red" && error_on_issue) {
