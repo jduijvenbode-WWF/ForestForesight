@@ -4,7 +4,7 @@
 #'
 #' @param prediction A vector of predictions (numeric).
 #' @param groundtruth A vector of ground truth values (binary).
-#' @param optimize_function The evaluation function to optimize. Default is getFscore.
+#' @param optimize_function The evaluation function to optimize. Default is get_f_score.
 #' @param a Initial guess for the lower bound of threshold search.
 #' @param b Initial guess for the upper bound of threshold search.
 #' @param tol Tolerance for convergence.

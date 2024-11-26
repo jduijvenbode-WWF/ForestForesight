@@ -20,7 +20,7 @@ find_best_threshold(
 
 \item{groundtruth}{A vector of ground truth values (binary).}
 
-\item{optimize_function}{The evaluation function to optimize. Default is getFscore.}
+\item{optimize_function}{The evaluation function to optimize. Default is get_f_score.}
 
 \item{a}{Initial guess for the lower bound of threshold search.}
 
