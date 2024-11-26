@@ -32,11 +32,11 @@
 #' @examples
 #' \dontrun{
 #' # Using an ISO code
-#' result_iso <- getinfo("BRA", ff_dir = "/path/to/ForestForesight", verbose = TRUE)
+#' result_iso <- get_info("BRA", ff_dir = "/path/to/ForestForesight", verbose = TRUE)
 #'
 #' # Using a SpatVector object
 #' my_shape <- vect(your_shapefile_path)
-#' result_shape <- getinfo(my_shape, ff_dir = "/path/to/ForestForesight", verbose = TRUE)
+#' result_shape <- get_info(my_shape, ff_dir = "/path/to/ForestForesight", verbose = TRUE)
 #'
 #' # Accessing results
 #' num_tiles <- result_shape$num_tiles
@@ -49,7 +49,7 @@
 #' @importFrom tools file_path_sans_ext
 #'
 #' @export
-getinfo <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
+get_info <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
   extract_feature_name <- function(filename) {
     parts <- strsplit(filename, "_")[[1]]
     last_part <- parts[length(parts)]

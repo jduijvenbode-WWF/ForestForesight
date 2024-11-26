@@ -10,14 +10,14 @@ ff_analyze_amounts(
   forestmask = NULL,
   csvfile = NULL,
   country = NULL,
-  append = T,
+  append = TRUE,
   analysis_polygons = NULL,
-  return_polygons = T,
-  remove_empty = T,
+  return_polygons = TRUE,
+  remove_empty = TRUE,
   date = NULL,
   tile = NULL,
   method = NA,
-  verbose = F
+  verbose = FALSE
 )
 }
 \arguments{
@@ -29,7 +29,8 @@ ff_analyze_amounts(
 
 \item{csvfile}{An optional CSV file to which the results will be written.}
 
-\item{country}{Character. If NULL all the overlapping polygons will be processed. Otherwise the ISO3 code should be given and the analysis_polygons dataset should contain a column called iso3}
+\item{country}{Character. If NULL all the overlapping polygons will be processed.
+Otherwise the ISO3 code should be given and the analysis_polygons dataset should contain a column called iso3}
 
 \item{append}{Logical. If TRUE, results will be appended to the existing CSV file.}
 
@@ -39,11 +40,14 @@ ff_analyze_amounts(
 
 \item{remove_empty}{Logical. If TRUE, empty rows (with all scores being zero) will be removed from the output.}
 
-\item{date}{character. should be in format (YYYY-MM-DD). Optional if either groundtruth or predictions is a character to the tiffile.}
+\item{date}{character. should be in format (YYYY-MM-DD).
+Optional if either groundtruth or predictions is a character to the tiffile.}
 
-\item{tile}{character. should be in format AA{N-S}_BBB{W-E}. Optional if either groundtruth or predictions is a character to the tiffile with a directory name.}
+\item{tile}{character. should be in format AA{N-S}_BBB{W-E}.
+Optional if either groundtruth or predictions is a character to the tiffile with a directory name.}
 
-\item{method}{character. the shorthand for the method used, which should also be included in the separate csv file for storing methods}
+\item{method}{character. the shorthand for the method used,
+which should also be included in the separate csv file for storing methods}
 
 \item{verbose}{Logical. Whether the steps taken in the function should be verbose.}
 }

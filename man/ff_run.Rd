@@ -17,13 +17,13 @@ ff_run(
   ff_prep_params = NULL,
   ff_train_params = NULL,
   threshold = 0.5,
-  fltr_features = "initialforestcover",
-  fltr_condition = ">0",
+  filter_features = "initialforestcover",
+  filter_conditions = ">0",
   accuracy_csv = NULL,
   importance_csv = NA,
-  verbose = T,
-  autoscale_sample = F,
-  validation = F
+  verbose = TRUE,
+  autoscale_sample = FALSE,
+  validation = FALSE
 )
 }
 \arguments{
@@ -35,25 +35,30 @@ ff_run(
 
 \item{ff_folder}{Directory containing the input data.}
 
-\item{train_dates}{The dates for which you want to create the training data. dates should be a vector with the format YYYY-MM-DD with DD being 01}
+\item{train_dates}{The dates for which you want to create the training data.
+dates should be a vector with the format YYYY-MM-DD with DD being 01}
 
-\item{validation_dates}{The dates for which you want to create a distinct validation matrix (if any, select validation = T to make a subsample of the same dates as the training data).}
+\item{validation_dates}{The dates for which you want to create a distinct validation matrix
+(if any, select validation = T to make a subsample of the same dates as the training data).}
 
 \item{save_path}{Path to save the trained model (with extension ".model"). Default is NULL.}
 
 \item{save_path_predictions}{Path to save the predictions (with extension ".tif"). Default is NULL.}
 
-\item{trained_model}{Pre-trained model object or path to saved model. If NULL, a new model will be trained. Default is NULL.}
+\item{trained_model}{Pre-trained model object or path to saved model.
+If NULL, a new model will be trained. Default is NULL.}
 
 \item{ff_prep_params}{List of parameters for data preprocessing. See `ff_prep` function for details.}
 
 \item{ff_train_params}{List of parameters for model training. See `ff_train` function for details.}
 
-\item{threshold}{Probability threshold for binary classififf_cation. Default is 0.5.}
+\item{threshold}{Probability threshold for binary classification. Default is 0.5.}
 
-\item{fltr_features}{Feature dataset used for pre-filtering for training. Default is initialforestcover. Can be more than one}
+\item{filter_features}{Feature dataset used for pre-filtering for training.
+Default is initialforestcover. Can be more than one}
 
-\item{fltr_condition}{The condition with value that is used to filter the training dataset based on mask features. Default is ">0". Can be more than one}
+\item{filter_conditions}{The condition with value that is used to filter the training dataset based on mask features.
+Default is ">0". Can be more than one}
 
 \item{accuracy_csv}{Path to save accuracy metrics in CSV format. Default is NA (no CSV output).}
 
@@ -61,12 +66,15 @@ ff_run(
 
 \item{verbose}{Logical; whether to display progress messages. Default is TRUE.}
 
-\item{autoscale_sample}{Logical; Whether to automatically scale the number of samples based on the size of the area and the length of the training period.}
+\item{autoscale_sample}{Logical; Whether to automatically scale the number of samples
+based on the size of the area and the length of the training period.}
 
-\item{validation}{Logical; Whether to add a validation matrix based on the training data, which is set at 0.25 of the training matrix. Should not be set if validation_dates is not NULL.}
+\item{validation}{Logical; Whether to add a validation matrix based on the training data,
+which is set at 0.25 of the training matrix. Should not be set if validation_dates is not NULL.}
 }
 \value{
-A SpatRaster object containing the predicted deforestation probabilities.If multiple prediction dates are given you receive a rasterstack with a raster per date
+A SpatRaster object containing the predicted deforestation probabilities.
+If multiple prediction dates are given you receive a rasterstack with a raster per date
 }
 \description{
 This function trains an XGBoost model using historical data and then predicts deforestation
@@ -79,7 +87,7 @@ prediction <- ff_run(
   country = "BRA",
   prediction_date = "2024-01-01",
   ff_folder = "path/to/forestforesight/data",
-  train_dates = ForestForesight::daterange("2022-01-01","2023-12-31"),
+  train_dates = ForestForesight::daterange("2022-01-01", "2023-12-31"),
   save_path = "path/to/save/model.model",
   accuracy_csv = "path/to/save/accuracy.csv"
 )

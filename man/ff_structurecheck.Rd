@@ -4,7 +4,14 @@
 \alias{ff_structurecheck}
 \title{Check and Report ForestForesight File Structure}
 \usage{
-ff_structurecheck(shape, folder_path, check_date = NULL)
+ff_structurecheck(
+  shape,
+  folder_path,
+  check_date = NULL,
+  error_on_issue = FALSE,
+  silent_on_pass = FALSE,
+  groundtruth_pattern = "groundtruth6m"
+)
 }
 \arguments{
 \item{shape}{A SpatVector object representing the area of interest.}
@@ -13,6 +20,13 @@ ff_structurecheck(shape, folder_path, check_date = NULL)
 
 \item{check_date}{Character string. Date to check for in the format "YYYY-MM-DD".
 If NULL, uses the first of the current month.}
+
+\item{error_on_issue}{Logical. Whether the function should return an error if critical
+issues are not handled correctly}
+
+\item{silent_on_pass}{Logical. Whether correct checks should not be output}
+
+\item{groundtruth_pattern}{pattern for groundtruth. Default is groundtruth6m for 6 months}
 }
 \value{
 Invisible NULL. The function is called for its side effects (printing).
