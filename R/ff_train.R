@@ -53,8 +53,8 @@ ff_train <- function(train_matrix,
     nrounds = nrounds,
     early_stopping_rounds = early_stopping_rounds,
     maximize = maximize,
-    xgb_model = xgb_model,
-    verbose = verbose
+    verbose = verbose,
+    xgb_model = xgb_model
   )
 
   # Save model if filename provided
@@ -108,7 +108,7 @@ create_params <- function(...) {
 #' @param dtrain Training data
 #' @param ... Additional parameters passed to xgb.train
 #' @return Trained XGBoost model
-train_model <- function(params, train_dataset, ...) {
+train_model <- function(params, train_dataset, xgb_model = xgb_model, ...) {
   xgboost::xgb.train(
     params = params,
     data = train_dataset,
