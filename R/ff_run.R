@@ -119,7 +119,24 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
 
   if (is.null(trained_model)) {
     if (!hasvalue(train_dates)) {
-      train_dates <- as.character(lubridate::ymd(min(prediction_dates)) %m-% months(6, abbreviate = FALSE))
+      ff_cat("No train dates were given though a training was wanted")
+      # Extract the number of months from groundtruth_pattern (e.g., "6" from "groundtruth6m")
+      months_back <- as.integer(gsub("\\D", "", groundtruth_pattern))
+
+      # Fallback to 6 months if pattern is invalid or missing
+      if (is.na(months_back) || months_back <= 0) {
+        months_back <- 6
+        warning("Invalid or missing groundtruth_pattern. Defaulting to 6 months.")
+      }
+
+      train_dates <- as.character(
+        lubridate::ymd(min(prediction_dates)) %m-%
+          months(months_back, abbreviate = FALSE)
+      )
+      ff_cat("No train dates were given though a training was wanted, model will be trained on",
+        train_dates,
+        color = "yellow"
+      )
     }
 
     if (max(lubridate::ymd(train_dates)) > min(lubridate::ymd(prediction_dates))) {
@@ -192,7 +209,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
 
     traindata <- do.call(ff_prep, ff_prep_params_combined)
     if (hasvalue(validation_dates)) {
-      ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n", color = "green", verbose = verbose)
+      ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n",
+        color = "green", verbose = verbose
+      )
 
       ff_prep_params_combined["dates"] <- validation_dates
       ff_prep_params_combined["sample_size"] <- 1 / 3 * sample_size
