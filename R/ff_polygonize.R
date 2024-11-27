@@ -34,8 +34,9 @@
 #'
 #' # Save output with custom threshold
 #' ff_polygonize("input.tif",
-#'               output_file = "risk_areas.shp",
-#'               threshold = "high")
+#'   output_file = "risk_areas.shp",
+#'   threshold = "high"
+#' )
 #' }
 #'
 #' @export
@@ -48,48 +49,57 @@ ff_polygonize <- function(input_raster,
                           verbose = FALSE,
                           calculate_max_count = FALSE,
                           contain_polygons = NA) {
-
   # Validate inputs and load raster
   input_raster <- load_and_validate_raster(input_raster)
   validate_threshold(threshold)
 
   # Process raster and determine threshold
   processed <- process_raster(input_raster, threshold, window_size, verbose)
-  if (is.null(processed)) return(NULL)
+  if (is.null(processed)) {
+    return(NULL)
+  }
 
   # Generate polygons
-  generation_result <- generate_polygons(processed$smoothed_raster,
-                                minimum_pixel_count,
-                                input_raster,
-                                smoothness)
+  generation_result <- generate_polygons(
+    processed$smoothed_raster,
+    minimum_pixel_count,
+    input_raster,
+    smoothness
+  )
   polygons <- generation_result$focus_polygons
   minimum_pixel_area <- generation_result$minimum_pixel_area
   # Apply maximum count filtering if requested
   if (calculate_max_count) {
-    polygons <- apply_max_count_filter(polygons,
-                                       input_raster,
-                                       contain_polygons,
-                                       threshold,
-                                       minimum_pixel_area,
-                                       verbose)
+    polygons <- apply_max_count_filter(
+      polygons,
+      input_raster,
+      contain_polygons,
+      threshold,
+      minimum_pixel_area,
+      verbose
+    )
   }
 
   # Check if any polygons were generated
   if (length(polygons) == 0) {
     ff_cat("Based on the chosen threshold no polygons were generated.
            Lower the threshold to get polygons for this area",
-           color = "yellow")
+      color = "yellow"
+    )
     return(NULL)
   }
 
   # Add attributes and write output
-  result <- add_polygon_attributes(polygons,
-                                   input_raster,
-                                   processed$final_threshold)
+  result <- add_polygon_attributes(
+    polygons,
+    input_raster,
+    processed$final_threshold
+  )
 
   if (!is.na(output_file)) {
     ff_cat("writing", length(result), "polygons to", output_file,
-           verbose = verbose)
+      verbose = verbose
+    )
     terra::writeVector(x = result, filename = output_file, overwrite = TRUE)
   }
 
@@ -112,8 +122,10 @@ load_and_validate_raster <- function(input_raster) {
 #' @noRd
 validate_threshold <- function(threshold) {
   valid_chars <- c("medium", "high", "very high")
-  if (!any(inherits(threshold, "numeric"),
-           inherits(threshold, "character") && threshold %in% valid_chars)) {
+  if (!any(
+    inherits(threshold, "numeric"),
+    inherits(threshold, "character") && threshold %in% valid_chars
+  )) {
     stop("threshold must be numeric or one of: medium, high, very high")
   }
 }
@@ -129,27 +141,33 @@ process_raster <- function(input_raster, threshold, window_size, verbose) {
     ff_cat("no values in this raster above 0.5 were found,
            which is the minimum threshold of predictions FF provides when using auto-thresholding.
            Use a value as threshold if you still want polygons",
-           color = "yellow")
+      color = "yellow"
+    )
     return(NULL)
   }
 
   # Apply focal mean
   smoothed_raster <- terra::focal(input_raster,
-                                  w = window_size,
-                                  fun = "mean",
-                                  na.policy = "omit",
-                                  na.rm = TRUE)
+    w = window_size,
+    fun = "mean",
+    na.policy = "omit",
+    na.rm = TRUE
+  )
 
   # Determine final threshold
-  final_threshold <- determine_threshold(threshold,
-                                         smoothed_raster,
-                                         raster_stats,
-                                         verbose)
+  final_threshold <- determine_threshold(
+    threshold,
+    smoothed_raster,
+    raster_stats,
+    verbose
+  )
 
   smoothed_raster <- smoothed_raster > final_threshold
 
-  return(list(smoothed_raster = smoothed_raster,
-              final_threshold = final_threshold))
+  return(list(
+    smoothed_raster = smoothed_raster,
+    final_threshold = final_threshold
+  ))
 }
 
 #' Calculate raster statistics
@@ -157,38 +175,50 @@ process_raster <- function(input_raster, threshold, window_size, verbose) {
 calculate_raster_stats <- function(input_raster) {
   list(
     raster_average = as.numeric(terra::global(input_raster < 0.5,
-                                              fun = "mean",
-                                              na.rm = TRUE)),
-    high_threshold = as.numeric(terra::global(input_raster <
-                                                quantile(input_raster[input_raster > 0.5], 0.5),
-                                              fun = "mean",
-                                              na.rm = TRUE)),
-    highest_threshold = as.numeric(terra::global(input_raster <
-                                                   quantile(input_raster[input_raster > 0.5], 0.75),
-                                                 fun = "mean",
-                                                 na.rm = TRUE))
+      fun = "mean",
+      na.rm = TRUE
+    )),
+    high_threshold = as.numeric(terra::global(
+      input_raster <
+        quantile(input_raster[input_raster > 0.5], 0.5),
+      fun = "mean",
+      na.rm = TRUE
+    )),
+    highest_threshold = as.numeric(terra::global(
+      input_raster <
+        quantile(input_raster[input_raster > 0.5], 0.75),
+      fun = "mean",
+      na.rm = TRUE
+    ))
   )
 }
 
 #' Determine threshold value based on input
 #' @noRd
 determine_threshold <- function(threshold, smoothed_raster, raster_stats, verbose) {
-  if (!is.character(threshold)) return(threshold)
+  if (!is.character(threshold)) {
+    return(threshold)
+  }
 
   final_threshold <- switch(threshold,
-                            "medium" = quantile(as.matrix(smoothed_raster),
-                                                probs = raster_stats$raster_average,
-                                                na.rm = TRUE),
-                            "high" = quantile(as.matrix(smoothed_raster),
-                                              probs = raster_stats$high_threshold,
-                                              na.rm = TRUE),
-                            "very high" = quantile(as.matrix(smoothed_raster),
-                                                   probs = raster_stats$highest_threshold,
-                                                   na.rm = TRUE))
+    "medium" = quantile(as.matrix(smoothed_raster),
+      probs = raster_stats$raster_average,
+      na.rm = TRUE
+    ),
+    "high" = quantile(as.matrix(smoothed_raster),
+      probs = raster_stats$high_threshold,
+      na.rm = TRUE
+    ),
+    "very high" = quantile(as.matrix(smoothed_raster),
+      probs = raster_stats$highest_threshold,
+      na.rm = TRUE
+    )
+  )
 
   ff_cat("automatically determined threshold is",
-         round(final_threshold, 4),
-         verbose = verbose)
+    round(final_threshold, 4),
+    verbose = verbose
+  )
 
   return(final_threshold)
 }
@@ -199,28 +229,33 @@ generate_polygons <- function(smoothed_raster,
                               minimum_pixel_count,
                               input_raster,
                               smoothness) {
-  minimum_pixel_area <- minimum_pixel_count * (terra::res(input_raster)[1]*110000)^2
+  minimum_pixel_area <- minimum_pixel_count * (terra::res(input_raster)[1] * 110000)^2
 
   clumped_raster <- terra::patches(smoothed_raster,
-                                   directions = 8,
-                                   zeroAsNA = TRUE)
+    directions = 8,
+    zeroAsNA = TRUE
+  )
 
   focus_polygons <- terra::as.polygons(clumped_raster,
-                                       values = FALSE,
-                                       aggregate = TRUE,
-                                       round = FALSE)
+    values = FALSE,
+    aggregate = TRUE,
+    round = FALSE
+  )
 
   suppressWarnings({
     focus_polygons <- smoothr::fill_holes(focus_polygons,
-                                          threshold = 5 * minimum_pixel_area)
+      threshold = 5 * minimum_pixel_area
+    )
     focus_polygons <- smoothr::smooth(focus_polygons,
-                                      method = "ksmooth",
-                                      smoothness = smoothness)
+      method = "ksmooth",
+      smoothness = smoothness
+    )
   })
 
   focus_polygons <- terra::disagg(focus_polygons)
   focus_polygons <- focus_polygons[order(terra::expanse(focus_polygons),
-                                         decreasing = TRUE)]
+    decreasing = TRUE
+  )]
   return(list(focus_polygons = focus_polygons, minimum_pixel_area = minimum_pixel_area))
 }
 
@@ -236,8 +271,10 @@ apply_max_count_filter <- function(polygons,
     polygons <- polygons[contain_polygons, ]
   }
 
-  percentage_covered <- as.numeric(terra::global(!is.na(input_raster),
-                                                 "mean"))
+  percentage_covered <- as.numeric(terra::global(
+    !is.na(input_raster),
+    "mean"
+  ))
   raster_area <- as.numeric(terra::expanse(input_raster)[2])
   max_polygons_count <- ceiling(sqrt(raster_area / 1e3) * percentage_covered)
 
@@ -252,17 +289,19 @@ apply_max_count_filter <- function(polygons,
     verbose = verbose
   )
 
-  return(polygons[1:max(1, min(max_polygons_count,
-                               sum(terra::expanse(polygons) >= minimum_pixel_area)))])
+  return(polygons[1:max(1, min(
+    max_polygons_count,
+    sum(terra::expanse(polygons) >= minimum_pixel_area)
+  ))])
 }
 
 #' Add attributes to polygons
 #' @noRd
 add_polygon_attributes <- function(polygons, input_raster, threshold) {
-  polygons$risk <- round(terra::extract(input_raster,
-                                        polygons,
-                                        fun = "mean",
-                                        ID = FALSE), 2)
+  polygons$risk <- round(terra::extract(
+    input_raster, polygons,
+    fun = "mean", ID = FALSE
+  ), 2)
   polygons$size <- round(terra::expanse(polygons) / 10000)
   polygons$riskfactor <- round(polygons$size * polygons$risk)
   polygons$threshold <- threshold
