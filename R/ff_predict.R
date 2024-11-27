@@ -238,4 +238,3 @@ test_feature_model_match <- function(model, feature_names = NULL) {
 
   return(result)
 }
-

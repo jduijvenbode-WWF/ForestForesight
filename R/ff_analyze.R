@@ -120,7 +120,7 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
     } else {
       if (!file.exists(csv_filename) && append && verbose) {
         ff_cat("the given file does not exist, while append was set to TRUE",
-               color = "yellow", verbose = verbose
+          color = "yellow", verbose = verbose
         )
       }
       write.csv(polygons_dataframe, csv_filename)
@@ -204,20 +204,20 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
   # Calculate statistics
   ff_cat("summarizing statistics", verbose = verbose)
   polygons$FP <- terra::extract(crosstable_raster == 1, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$FN <- terra::extract(crosstable_raster == 2, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TP <- terra::extract(crosstable_raster == 3, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TN <- terra::extract(crosstable_raster == 0, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
 
   # Calculate and print F0.5 score if verbose
@@ -228,7 +228,7 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
     recall <- sum(polygons$TP, na.rm = TRUE) /
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FN, na.rm = TRUE))
     ff_cat("F0.5 score is:", 1.25 * precision * recall / (0.25 * precision + recall),
-           verbose = verbose
+      verbose = verbose
     )
   }
 
