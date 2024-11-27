@@ -323,9 +323,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
         analysis_polygons <- terra::intersect(terra::vect(get(data("degree_polygons"))), terra::aggregate(shape))
         pols <- ff_analyze(prediction$predicted_raster > threshold,
           groundtruth = predset$groundtruth_raster,
-          csvfile = accuracy_csv, tile = tile, date = prediction_date,
-          return_polygons = verbose, append = TRUE, country = country,
-          verbose = verbose, forestmask = forestras, analysis_polygons = analysis_polygons
+          csv_filename = accuracy_csv, tile = tile, date = prediction_date,
+          append = TRUE, country = country,
+          verbose = verbose, forest_mask = forestras, analysis_polygons = analysis_polygons
         )
         if (verbose) {
           if (tile == tiles[1]) {
@@ -335,7 +335,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
           }
         }
       } else {
-        ff_cat("no analysis is done because no groundtruth is available\n", color = "green", verbose = verbose)
+        ff_cat("no analysis is done because no groundtruth is available", color = "green", verbose = verbose)
       }
     }
     if (verbose && exists("allpols")) {
