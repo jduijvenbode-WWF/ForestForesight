@@ -68,6 +68,7 @@ ff_train <- function(train_matrix,
 #' Convert input matrix to XGBoost DMatrix format
 #' @param matrix Input matrix or DMatrix object
 #' @return XGBoost DMatrix object
+#' @noRd
 convert_to_dmatrix <- function(matrix) {
   if (inherits(matrix, "xgb.DMatrix")) {
     return(matrix)
@@ -84,6 +85,7 @@ convert_to_dmatrix <- function(matrix) {
 #' @param train_dataset Training DMatrix
 #' @param validation_matrix Validation matrix or NULL
 #' @return Named list of matrices for monitoring
+#' @noRd
 create_watchlist <- function(train_dataset, validation_matrix) {
   if (is.null(validation_matrix)) {
     return(list(train = train_dataset))
@@ -96,6 +98,7 @@ create_watchlist <- function(train_dataset, validation_matrix) {
 #' Create parameter list for XGBoost training
 #' @param ... Named parameters for XGBoost
 #' @return List of parameters
+#' @noRd
 create_params <- function(...) {
   params <- list(...)
 
@@ -108,6 +111,7 @@ create_params <- function(...) {
 #' @param dtrain Training data
 #' @param ... Additional parameters passed to xgb.train
 #' @return Trained XGBoost model
+#' @noRd
 train_model <- function(params, train_dataset, xgb_model = xgb_model, ...) {
   xgboost::xgb.train(
     params = params,
@@ -120,6 +124,7 @@ train_model <- function(params, train_dataset, xgb_model = xgb_model, ...) {
 #' @param model Trained XGBoost model
 #' @param filename Output filename
 #' @param verbose Whether to print progress messages
+#' @noRd
 save_model <- function(model, filename, verbose = FALSE) {
   ff_cat("Saving model to", filename, verbose = verbose)
 
@@ -146,6 +151,7 @@ save_model <- function(model, filename, verbose = FALSE) {
 #' Validate input data
 #' @param train_matrix Training data
 #' @return NULL invisibly
+#' @noRd
 validate_inputs <- function(train_matrix) {
   if (!hasvalue(train_matrix$label)) {
     stop(

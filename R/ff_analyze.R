@@ -3,7 +3,7 @@
 #' @param predictions Path to predictions file or SpatRaster object
 #' @param groundtruth Path to groundtruth file or SpatRaster object
 #' @return Character string containing the date in YYYY-MM-DD format
-#' @keywords internal
+#' @noRd
 get_date_from_files <- function(predictions, groundtruth) {
   if (inherits(predictions, "character")) {
     return(substr(basename(predictions), 10, 19))
@@ -19,7 +19,7 @@ get_date_from_files <- function(predictions, groundtruth) {
 #' @param groundtruth Path to groundtruth file or SpatRaster object
 #' @param forest_mask Optional path to forest mask file or SpatRaster object
 #' @return List containing loaded SpatRaster objects
-#' @keywords internal
+#' @noRd
 validate_and_load_data <- function(predictions, groundtruth, forest_mask = NULL) {
   if (!inherits(predictions, c("SpatRaster", "character"))) {
     stop("predictions is not a raster or path to a raster")
@@ -78,7 +78,7 @@ validate_and_load_data <- function(predictions, groundtruth, forest_mask = NULL)
 #' @param remove_empty Logical indicating whether to remove empty records
 #' @param verbose Logical indicating whether to print progress messages
 #' @return Updated SpatVector object
-#' @keywords internal
+#' @noRd
 add_metadata <- function(polygons, date, method, remove_empty = TRUE, verbose = FALSE) {
   polygons$date <- date
   polygons$method <- method
@@ -102,7 +102,7 @@ add_metadata <- function(polygons, date, method, remove_empty = TRUE, verbose = 
 #' @param add_wkt Logical indicating whether to add WKT geometry
 #' @param verbose Logical indicating whether to print progress messages
 #' @return Processed data frame
-#' @keywords internal
+#' @noRd
 process_and_write_output <- function(polygons, csv_filename = NULL, append = TRUE,
                                      add_wkt = FALSE, verbose = FALSE) {
   if (add_wkt) {
@@ -120,7 +120,7 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
     } else {
       if (!file.exists(csv_filename) && append && verbose) {
         ff_cat("the given file does not exist, while append was set to TRUE",
-          color = "yellow", verbose = verbose
+               color = "yellow", verbose = verbose
         )
       }
       write.csv(polygons_dataframe, csv_filename)
@@ -204,20 +204,20 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
   # Calculate statistics
   ff_cat("summarizing statistics", verbose = verbose)
   polygons$FP <- terra::extract(crosstable_raster == 1, polygons,
-    fun = "sum",
-    na.rm = TRUE, touches = FALSE
+                                fun = "sum",
+                                na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$FN <- terra::extract(crosstable_raster == 2, polygons,
-    fun = "sum",
-    na.rm = TRUE, touches = FALSE
+                                fun = "sum",
+                                na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TP <- terra::extract(crosstable_raster == 3, polygons,
-    fun = "sum",
-    na.rm = TRUE, touches = FALSE
+                                fun = "sum",
+                                na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TN <- terra::extract(crosstable_raster == 0, polygons,
-    fun = "sum",
-    na.rm = TRUE, touches = FALSE
+                                fun = "sum",
+                                na.rm = TRUE, touches = FALSE
   )[, 2]
 
   # Calculate and print F0.5 score if verbose
@@ -228,7 +228,7 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
     recall <- sum(polygons$TP, na.rm = TRUE) /
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FN, na.rm = TRUE))
     ff_cat("F0.5 score is:", 1.25 * precision * recall / (0.25 * precision + recall),
-      verbose = verbose
+           verbose = verbose
     )
   }
 

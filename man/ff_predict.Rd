@@ -2,12 +2,12 @@
 % Please edit documentation in R/ff_predict.R
 \name{ff_predict}
 \alias{ff_predict}
-\title{Train an XGBoost Model for ForestForesight}
+\title{Make Predictions Using a ForestForesight Model}
 \usage{
 ff_predict(
   model,
   test_matrix,
-  threshold = 0.5,
+  thresholds = 0.5,
   groundtruth = NA,
   indices = NA,
   templateraster = NA,
@@ -16,76 +16,52 @@ ff_predict(
 )
 }
 \arguments{
-\item{verbose}{Boolean indicating whether to display training progress. Default is FALSE.}
+\item{model}{An xgb.Booster object or path to a saved xgboost model file. Comes out of ff_train}
 
-\item{train_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for training.}
+\item{test_matrix}{A list containing 'features' matrix for predictions. Comes out of ff_prep}
 
-\item{validation_matrix}{An xgb.DMatrix object or a list containing 'features' and 'label' for validation.
-Default is NA.}
+\item{thresholds}{Numeric vector of classification thresholds. Default is 0.5.}
 
-\item{nrounds}{Number of boosting rounds. Default is 200.}
+\item{groundtruth}{Optional vector or SpatRaster of actual values for model evaluation.}
 
-\item{eta}{Learning rate. Default is 0.1.}
+\item{indices}{Optional vector of indices for filling a raster. Default is NA.}
 
-\item{max_depth}{Maximum tree depth. Default is 5.}
+\item{templateraster}{Optional SpatRaster template for spatial predictions. Default is NA.}
 
-\item{subsample}{Subsample ratio of the training instances. Default is 0.75.}
+\item{verbose}{Boolean indicating whether to display progress messages. Default is FALSE.}
 
-\item{eval_metric}{Evaluation metric. Default is "aucpr". Can be a custom evaluation metric.}
-
-\item{early_stopping_rounds}{Number of rounds for early stopping. Default is 10.}
-
-\item{num_class}{Number of classes for multi-class classification. Default is NULL.}
-
-\item{gamma}{Minimum loss reduction required to make a further partition. Default is NULL.}
-
-\item{maximize}{Boolean indicating whether to maximize the evaluation metric. Required for custom metrics.}
-
-\item{min_child_weight}{Minimum sum of instance weight needed in a child. Default is 1.}
-
-\item{xgb_model}{Previously trained model to continue training from.
-Can be an "xgb.Booster" object, raw data, or a file name. Default is NULL.}
-
-\item{modelfilename}{String specifying where to save the model. Should end with ".model" extension.}
-
-\item{features}{Vector of feature names used in the training dataset. Required when modelfilename is provided.}
-
-\item{objective}{Learning objective. Default is "binary:logistic".}
+\item{certainty}{Boolean indicating whether to return raw probabilities instead of binary predictions.
+Default is FALSE.}
 }
 \value{
-A trained XGBoost model (xgb.Booster object).
+A list containing:
+  \item{threshold}{The threshold(s) used for classification}
+  \item{precision_vector}{Precision values for each threshold}
+  \item{recall_vector}{Recall values for each threshold}
+  \item{F0.5}{F0.5 scores for each threshold}
+  \item{predicted_raster}{SpatRaster of predictions if templateraster was provided}
+  \item{predictions}{Raw prediction values}
 }
 \description{
-This function trains an XGBoost model with optimized default parameters derived from worldwide data analysis.
+This function makes predictions using a trained ForestForesight model and optionally
+evaluates the model performance if ground truth data is provided.
 }
 \examples{
 \dontrun{
-# Prepare your data
-train_data <- list(
-  features = matrix(runif(1000), ncol = 10),
-  label = sample(0:1, 100, replace = TRUE)
+# Load a saved model and make predictions
+predictions <- ff_predict(
+  model = "forest_model.model",
+  test_matrix = test_data,
+  thresholds = c(0.3, 0.5, 0.7)
 )
 
-# Train the model
-model <- ff_train(
-  train_matrix = train_data,
-  nrounds = 100,
-  eta = 0.05,
-  max_depth = 6,
-  modelfilename = "forest_model.model",
-  features = colnames(train_data$features)
+# Make predictions with spatial output
+predictions <- ff_predict(
+  model = model_object,
+  test_matrix = test_data,
+  templateraster = my_raster,
+  certainty = TRUE
 )
 }
 
 }
-\references{
-Jonas van Duijvenbode (2023)
-Zillah Calle (2023)
-}
-\seealso{
-\code{\link{ff_prep}} for preparing data for this function
-\code{\link{ff_predict}} for making predictions using the trained model
-}
-\keyword{forestry}
-\keyword{machine-learning}
-\keyword{xgboost}
