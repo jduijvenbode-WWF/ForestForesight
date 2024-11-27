@@ -98,6 +98,9 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
     polygons <- polygons[which(polygons$iso3 == country)]
   }
   polygons = polygons[terra::ext(crosstable_raster),]
+  if (nrow(polygons) == 0) {
+    stop("the country code is incorrect or the loaded polygons do not overlap with the area of the predictions or groundtruth")
+  }
   ff_cat("summarizing statistics", verbose = verbose)
   polygons$FP <- terra::extract(crosstable_raster == 1, polygons, fun = "sum", na.rm = TRUE, touches = FALSE)[, 2]
   polygons$FN <- terra::extract(crosstable_raster == 2, polygons, fun = "sum", na.rm = TRUE, touches = FALSE)[, 2]
