@@ -579,4 +579,3 @@ filter_by_feature <- function(filter_features, filter_conditions, matrix, verbos
   }
   return(list("filtered_matrix" = matrix, "filtered_indices" = spatial_indices))
 }
-
