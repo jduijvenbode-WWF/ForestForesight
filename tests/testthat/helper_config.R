@@ -27,7 +27,7 @@ if (file.exists(config_file_path)) {
   # List all files and directories in the parent directory
   print(list.files(parent_dir, full.names = TRUE))
 
-  
+
   parent_dir <- file.path(getwd(), ".")
   print(paste("Listing files in . from rcmdcheck testthat:", parent_dir))
   # List all files and directories in the parent directory
