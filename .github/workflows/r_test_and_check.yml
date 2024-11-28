@@ -57,7 +57,7 @@ jobs:
       - name: Check
         run: |
           tryCatch({
-            result <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "never")
+            result <- rcmdcheck::rcmdcheck(args = "--no-manual ", error_on = "error")
             cat("Errors:\n")
             print(result$errors)
             cat("Warnings:\n")
