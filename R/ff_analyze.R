@@ -40,13 +40,15 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
   crosstable_raster <- create_crosstable(predictions, groundtruth, forest_mask, verbose)
 
   # Load or process analysis polygons
-  polygons <- retrieve_analysis_polygons(analysis_polygons,predictions,country)
+  polygons <- retrieve_analysis_polygons(analysis_polygons, predictions, country)
 
 
   # Calculate statistics
   ff_cat("summarizing statistics", verbose = verbose)
-  polygons <- calculate_scores_crosstable(crosstable_raster = crosstable_raster,
-                                          polygons = polygons, verbose = verbose)
+  polygons <- calculate_scores_crosstable(
+    crosstable_raster = crosstable_raster,
+    polygons = polygons, verbose = verbose
+  )
 
   # Add metadata
   ff_cat("adding metadata", verbose = verbose)
@@ -78,7 +80,7 @@ get_date_from_files <- function(predictions, groundtruth) {
 #' @param analysis_polygons either path to SpatVector, a SpatVector or NULL/NA
 #' @return Spatvector of analysis polygons
 #' @noRd
-retrieve_analysis_polygons <- function(analysis_polygons,predictions,country){
+retrieve_analysis_polygons <- function(analysis_polygons, predictions, country) {
   if (!hasvalue(analysis_polygons)) {
     polygons <- terra::vect(get(data("degree_polygons", envir = environment())))
   } else {
@@ -109,22 +111,22 @@ retrieve_analysis_polygons <- function(analysis_polygons,predictions,country){
 #' @param verbose Whether to print statements
 #' @return Spatvector of analysis polygons with metrics embedded
 #' @noRd
-calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose){
+calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
   polygons$FP <- terra::extract(crosstable_raster == 1, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$FN <- terra::extract(crosstable_raster == 2, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TP <- terra::extract(crosstable_raster == 3, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TN <- terra::extract(crosstable_raster == 0, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
 
   # Calculate and print F0.5 score if verbose
@@ -135,7 +137,7 @@ calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose){
     recall <- sum(polygons$TP, na.rm = TRUE) /
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FN, na.rm = TRUE))
     ff_cat("F0.5 score is:", 1.25 * precision * recall / (0.25 * precision + recall),
-           verbose = verbose
+      verbose = verbose
     )
   }
   return(polygons)
@@ -149,7 +151,7 @@ calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose){
 #' @param verbose Whether to print statements
 #' @return crosstable raster of type SpatRaster
 #' @noRd
-create_crosstable <- function(predictions, groundtruth, forest_mask, verbose){
+create_crosstable <- function(predictions, groundtruth, forest_mask, verbose) {
   # Create crosstable raster
   if (hasvalue(forest_mask)) {
     ff_cat("using forest mask", verbose = verbose)
@@ -268,7 +270,7 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
     } else {
       if (!file.exists(csv_filename) && append && verbose) {
         ff_cat("the given file does not exist, while append was set to TRUE",
-               color = "yellow", verbose = verbose
+          color = "yellow", verbose = verbose
         )
       }
       write.csv(polygons_dataframe, csv_filename)
@@ -277,5 +279,3 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
 
   return(polygons_dataframe)
 }
-
-
