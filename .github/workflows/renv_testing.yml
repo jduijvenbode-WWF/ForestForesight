@@ -7,7 +7,6 @@ on:
 jobs:
   test-with-renv:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
 

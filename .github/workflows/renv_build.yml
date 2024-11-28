@@ -7,7 +7,6 @@ on:
 jobs:
   Building-testing-package:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
 
@@ -54,34 +53,31 @@ jobs:
       ### END OF RELEASE VERSION SECTION ###
 
       - name: Set up R
-        uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: 'release'
-
-      - name: Print R version
-        run: R --version
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: 'release'
 
       - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          libcurl4-openssl-dev \
-          libxml2-dev \
-          libssl-dev \
-          libudunits2-0 \
-          libudunits2-dev \
-          proj-bin \
-          libproj-dev \
-          libgdal-dev \
-          libgeos-dev \
-          libnetcdf-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcurl4-openssl-dev \
+            libxml2-dev \
+            libssl-dev \
+            libudunits2-0 \
+            libudunits2-dev \
+            proj-bin \
+            libproj-dev \
+            libgdal-dev \
+            libgeos-dev \
+            libnetcdf-dev
 
-    - name: Set up renv
-      uses: r-lib/actions/setup-renv@v2
+      - name: Set up renv
+        uses: r-lib/actions/setup-renv@v2
 
-    - name: Install packages
-      run: |
-        Rscript -e 'devtools::install()'
+      - name: Install packages
+        run: |
+          Rscript -e 'devtools::install()'
 
       - name: Build package
         run: |
