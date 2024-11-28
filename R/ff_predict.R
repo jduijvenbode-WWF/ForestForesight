@@ -59,7 +59,7 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
         color = "yellow"
       )
       test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features),
-        drop = FALSE
+                                                   drop = FALSE
       ]
     }
   }
@@ -91,9 +91,9 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
 
   if (hasvalue(metrics$accuracy_f05)) {
     ff_cat("F0.5:", metrics$accuracy_f05,
-      "precision:", metrics$precision,
-      "recall:", metrics$recall,
-      verbose = verbose
+           "precision:", metrics$precision,
+           "recall:", metrics$recall,
+           verbose = verbose
     )
   }
 
@@ -107,7 +107,16 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
   ))
 }
 
-# Helper function to load and validate model
+#' Load and Validate XGBoost Model
+#'
+#' Loads an XGBoost model from a file or validates an existing model object.
+#' If loading from a file, also attempts to load associated feature names from an RDA file.
+#'
+#' @param model Character string path to model file or xgb.Booster object
+#'
+#' @return An xgb.Booster object with optional feature names attribute
+#'
+#' @noRd
 load_model <- function(model) {
   if (is.character(model)) {
     model_filename <- model
@@ -129,7 +138,17 @@ load_model <- function(model) {
   return(model)
 }
 
-# Helper function to calculate performance metrics
+#' Calculate Performance Metrics
+#'
+#' Calculates precision, recall, and F0.5 score for model predictions against ground truth data.
+#'
+#' @param predictions Numeric vector of model predictions
+#' @param groundtruth Vector or SpatRaster of actual values
+#' @param thresholds Numeric vector of classification thresholds
+#'
+#' @return List containing precision, recall, and F0.5 scores for each threshold
+#'
+#' @noRd
 calculate_metrics <- function(predictions, groundtruth, thresholds) {
   if (inherits(groundtruth, "SpatRaster")) {
     groundtruth <- as.numeric(as.matrix(groundtruth))
@@ -153,7 +172,20 @@ calculate_metrics <- function(predictions, groundtruth, thresholds) {
   ))
 }
 
-# Helper function to fill raster with predictions
+#' Fill Raster with Predictions
+#'
+#' Creates a spatial raster from model predictions using a template raster
+#'
+#' @param templateraster SpatRaster template for spatial predictions
+#' @param predictions Numeric vector of model predictions
+#' @param indices Optional vector of indices for filling specific raster cells
+#' @param certainty Boolean indicating whether to return probabilities or binary predictions
+#' @param thresholds Numeric vector of classification thresholds
+#' @param verbose Boolean indicating whether to display progress messages
+#'
+#' @return SpatRaster containing predictions or NA if dimensions don't match
+#'
+#' @noRd
 fill_raster <- function(templateraster, predictions, indices, certainty, thresholds, verbose) {
   filed_raster <- templateraster
   filed_raster[] <- 0
@@ -185,26 +217,12 @@ fill_raster <- function(templateraster, predictions, indices, certainty, thresho
 #' It checks if the model file and the corresponding feature names file exist, and if so, loads them.
 #' It then attempts to generate the importance matrix to validate the match.
 #'
-#' @param model Either a character string representing the path to the XGBoost model file, or an `xgb.Booster` object.
+#' @param model Either a character string representing the path to the XGBoost model file, or an `xgb.Booster` object
 #' @param feature_names A character vector of feature names.
 #' This parameter should be provided if `model` is an `xgb.Booster` object.
 #' If `model` is a file path, the function will look for the `.rda` file with feature names in the same directory.
 #'
-#' @return A logical value: `TRUE` if the feature names match the features in the model, `FALSE` otherwise.
-#'
-#' @examples
-#' \dontrun{
-#' # Example with model file and feature names file
-#' model_file <- "path/to/model.model"
-#' feature_names_file <- "path/to/model.rda"
-#' load(feature_names_file)
-#' test_feature_model_match(model_file)
-#'
-#' # Example with an xgb.Booster object
-#' model <- xgboost::xgb.train(params = list(objective = "binary:logistic"), data = dtrain, nrounds = 10)
-#' feature_names <- colnames(dtrain)
-#' test_feature_model_match(model, feature_names)
-#' }
+#' @return A logical value: `TRUE` if the feature names match the features in the model, `FALSE` otherwise
 #'
 #' @noRd
 test_feature_model_match <- function(model, feature_names = NULL) {
