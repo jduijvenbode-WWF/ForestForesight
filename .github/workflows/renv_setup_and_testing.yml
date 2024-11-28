@@ -5,7 +5,7 @@ on:
     branches: [ develop ]
 
 jobs:
-  lint-and-test:
+  test-with-renv:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +16,7 @@ jobs:
       with:
         r-version: 'release'
 
-    - name: Install comprehensive system dependencies
+    - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -34,7 +34,7 @@ jobs:
     - name: Set up renv
       uses: r-lib/actions/setup-renv@v2
 
-    - name: Install package
+    - name: Install packages
       run: |
         Rscript -e 'devtools::install()'
 
