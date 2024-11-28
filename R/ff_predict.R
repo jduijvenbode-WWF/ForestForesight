@@ -45,12 +45,12 @@
 ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, indices = NA,
                        templateraster = NA, verbose = FALSE, certainty = FALSE) {
   # Load and validate model
-  model <- load_model(model)
+  loaded_model <- load_model(model)
 
   # Handle feature matching
-  if (!is.null(model$feature_names)) {
+  if (hasvalue(loaded_model$feature_names)) {
     test_features <- colnames(test_matrix$features)
-    extra_features <- setdiff(test_features, model$feature_names)
+    extra_features <- setdiff(test_features, loaded_model$feature_names)
 
     if (length(extra_features) > 0) {
       ff_cat(
@@ -65,21 +65,21 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
   }
 
   # Convert to xgb_matrix
-  xgb_matrix <- if (hasvalue(test_matrix$label)) {
-    xgboost::xgb.DMatrix(test_matrix$features, label = test_matrix$label)
+  if (hasvalue(test_matrix$label)) {
+    xgb_matrix <- xgboost::xgb.DMatrix(test_matrix$features, label = test_matrix$label)
   } else {
-    xgboost::xgb.DMatrix(test_matrix$features)
+    xgb_matrix <- xgboost::xgb.DMatrix(test_matrix$features)
   }
 
   ff_cat("calculating predictions", verbose = verbose)
-  predictions <- stats::predict(model, xgb_matrix)
+  predictions <- stats::predict(loaded_model, xgb_matrix)
 
   # Calculate metrics if groundtruth is provided
-  metrics <- if (!is.na(groundtruth[1])) {
+  metrics <- if (hasvalue(groundtruth)) {
     ff_cat("calculating scores", verbose = verbose)
     calculate_metrics(predictions, groundtruth, thresholds)
   } else {
-    list(precision = NA, recall = NA, f05 = NA)
+    list(precision = NA, recall = NA, accuracy_f05 = NA)
   }
 
   # Handle spatial predictions
@@ -89,8 +89,8 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
     NA
   }
 
-  if (hasvalue(metrics$f05)) {
-    ff_cat("F0.5:", metrics$f05,
+  if (hasvalue(metrics$accuracy_f05)) {
+    ff_cat("F0.5:", metrics$accuracy_f05,
       "precision:", metrics$precision,
       "recall:", metrics$recall,
       verbose = verbose
@@ -101,7 +101,7 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
     threshold = thresholds,
     precision_vector = metrics$precision,
     recall_vector = metrics$recall,
-    "F0.5" = metrics$f05,
+    "F0.5" = metrics$accuracy_f05,
     predicted_raster = predicted_raster,
     predictions = predictions
   ))
@@ -131,49 +131,49 @@ load_model <- function(model) {
 
 # Helper function to calculate performance metrics
 calculate_metrics <- function(predictions, groundtruth, thresholds) {
-  if (class(groundtruth) == "SpatRaster") {
+  if (inherits(groundtruth, "SpatRaster")) {
     groundtruth <- as.numeric(as.matrix(groundtruth))
   }
 
-  precision_vector <- recall_vector <- f05 <- numeric(length(thresholds))
+  precision_vector <- recall_vector <- accuracy_f05 <- numeric(length(thresholds))
 
   for (i in seq_along(thresholds)) {
     threshold <- thresholds[i]
     crosstable <- table(2 * (predictions > threshold) + groundtruth)
     precision_vector[i] <- as.numeric(crosstable[4] / (crosstable[4] + crosstable[3]))
     recall_vector[i] <- as.numeric(crosstable[4] / (crosstable[4] + crosstable[2]))
-    f05[i] <- 1.25 * precision_vector[i] * recall_vector[i] /
+    accuracy_f05[i] <- 1.25 * precision_vector[i] * recall_vector[i] /
       (0.25 * precision_vector[i] + recall_vector[i])
   }
 
   return(list(
     precision = precision_vector,
     recall = recall_vector,
-    f05 = f05
+    accuracy_f05 = accuracy_f05
   ))
 }
 
 # Helper function to fill raster with predictions
 fill_raster <- function(templateraster, predictions, indices, certainty, thresholds, verbose) {
-  result <- templateraster
-  result[] <- 0
+  filed_raster <- templateraster
+  filed_raster[] <- 0
 
   if (length(indices) > 1) {
     ff_cat("filling raster", verbose = verbose)
-    result[indices] <- if (!certainty) {
+    filed_raster[indices] <- if (!certainty) {
       predictions > thresholds
     } else {
       predictions
     }
-    return(result)
+    return(filed_raster)
   } else if (terra::ncell(templateraster) == length(predictions)) {
     ff_cat("filling raster", verbose = verbose)
-    result[] <- if (!certainty) {
+    filed_raster[] <- if (!certainty) {
       predictions > thresholds
     } else {
       predictions
     }
-    return(result)
+    return(filed_raster)
   } else {
     return(NA)
   }
@@ -208,7 +208,7 @@ fill_raster <- function(templateraster, predictions, indices, certainty, thresho
 #'
 #' @noRd
 test_feature_model_match <- function(model, feature_names = NULL) {
-  if (class(model) == "character") {
+  if (is.character(model)) {
     if (!file.exists(model)) {
       stop("model file does not exist")
     }
@@ -220,7 +220,7 @@ test_feature_model_match <- function(model, feature_names = NULL) {
       feature_names <- get(load(gsub("\\.model", "\\.rda", modelfile)))
     }
   } else {
-    if (is.null(feature_names)) {
+    if (!hasvalue(feature_names)) {
       stop("feature names should be given if model is an xgb.Booster object")
     }
   }
