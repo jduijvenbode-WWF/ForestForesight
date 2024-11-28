@@ -6,9 +6,17 @@ if (file.exists(config_file_path)) {
   print("============probably in rcmdcheck. printing new config_file_path")
   config_file_path <- file.path(getwd(), "../../env.yml")
   print(config_file_path)
+  
+  parent_dir <- file.path(getwd(), "../../")
+  print(paste("Listing files in directory:", parent_dir))
+  
+  # List all files and directories in the parent directory
+  print(list.files(parent_dir, full.names = TRUE))
+
   if (file.exists(config_file_path)) {
     print("------../../env.yml exists!")
-    message("-------../../env.yml exists!")
+  } else {
+    message("How come ../../env.yml doesn't exist!")
   }
 }
 config_load(config_file_path)
