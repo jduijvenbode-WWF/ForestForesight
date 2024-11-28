@@ -1,4 +1,4 @@
-name: R Project CI
+name: Run Unit Tests
 
 on:
   pull_request:
