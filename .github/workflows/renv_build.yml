@@ -1,11 +1,11 @@
-name: R
+name: Build Package
 
 on:
   pull_request:
     branches: [ "develop" ]
 
 jobs:
-  Building-testing-package:
+  Building-package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
