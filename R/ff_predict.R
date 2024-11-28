@@ -72,9 +72,9 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
 
   if (hasvalue(metrics$accuracy_f05)) {
     ff_cat("F0.5:", metrics$accuracy_f05,
-           "precision:", metrics$precision,
-           "recall:", metrics$recall,
-           verbose = verbose
+      "precision:", metrics$precision,
+      "recall:", metrics$recall,
+      verbose = verbose
     )
   }
 
@@ -130,7 +130,7 @@ load_model <- function(model) {
 #' @return The modified test_matrix with extra features removed
 #'
 #' @noRd
-remove_extra_features <- function(test_matrix, loaded_model){
+remove_extra_features <- function(test_matrix, loaded_model) {
   if (hasvalue(loaded_model$feature_names)) {
     test_features <- colnames(test_matrix$features)
     extra_features <- setdiff(test_features, loaded_model$feature_names)
@@ -142,7 +142,7 @@ remove_extra_features <- function(test_matrix, loaded_model){
         color = "yellow"
       )
       test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features),
-                                                   drop = FALSE
+        drop = FALSE
       ]
     }
   }
