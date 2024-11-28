@@ -7,18 +7,29 @@ if (file.exists(config_file_path)) {
   config_file_path <- file.path(getwd(), "../../env.yml")
   print(config_file_path)
 
+  parent_dir <- file.path(getwd(), "../../../..")
+  print(paste("Listing files in ../../../.. from rcmdcheck testthat:", parent_dir))
+  # List all files and directories in the parent directory
+  print(list.files(parent_dir, full.names = TRUE))
+
   parent_dir <- file.path(getwd(), "../../..")
-  print(paste("Listing files in director 1:", parent_dir))
+  print(paste("Listing files in ../../.. from rcmdcheck testthat:", parent_dir))
   # List all files and directories in the parent directory
   print(list.files(parent_dir, full.names = TRUE))
 
   parent_dir <- file.path(getwd(), "../..")
-  print(paste("Listing files in director 2:", parent_dir))
+  print(paste("Listing files in ../.. from rcmdcheck testthat:", parent_dir))
   # List all files and directories in the parent directory
   print(list.files(parent_dir, full.names = TRUE))
 
   parent_dir <- file.path(getwd(), "..")
-  print(paste("Listing files in director 3:", parent_dir))
+  print(paste("Listing files in .. from rcmdcheck testthat:", parent_dir))
+  # List all files and directories in the parent directory
+  print(list.files(parent_dir, full.names = TRUE))
+
+  
+  parent_dir <- file.path(getwd(), ".")
+  print(paste("Listing files in . from rcmdcheck testthat:", parent_dir))
   # List all files and directories in the parent directory
   print(list.files(parent_dir, full.names = TRUE))
 
