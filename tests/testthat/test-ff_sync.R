@@ -65,7 +65,7 @@ test_that("ff_sync handles country downloads", {
       identifier = "BRN",       # Using Brazil as an example
       features = "Low",         # Minimal feature set
       date_start = "2023-01-01",
-      date_end = "2023-02-01",  # Just one month of data
+      date_end = "2023-01-01",  # Just one month of data
       download_model = FALSE,    # Skip model download
       download_predictions = FALSE,
       verbose = FALSE
@@ -105,8 +105,7 @@ test_that("ff_sync handles different feature sets", {
 })
 
 test_that("ff_sync creates necessary directories", {
-  test_dir <- tempfile("ff_test_")
-  # Don't create the directory first
+  test_dir <- tempdir()
 
   expect_no_error(
     ff_sync(
@@ -115,8 +114,8 @@ test_that("ff_sync creates necessary directories", {
       features = "Low",
       date_start = "2023-01-01",
       date_end = "2023-02-01",
-      download_model = FALSE,
-      download_predictions = FALSE,
+      download_model = TRUE,
+      download_predictions = TRUE,
       verbose = FALSE
     )
   )
@@ -125,6 +124,10 @@ test_that("ff_sync creates necessary directories", {
   expect_true(dir.exists(test_dir))
   expect_true(dir.exists(file.path(test_dir, "preprocessed")))
   expect_true(dir.exists(file.path(test_dir, "preprocessed", "input")))
+  expect_true(length(list.files(path = file.path(test_dir, "models"),recursive = TRUE)) > 0)
+  expect_true(length(list.files(path = file.path(test_dir, "models"),recursive = TRUE, pattern = "model$")) > 0)
+  expect_true(length(list.files(path = file.path(test_dir, "models"),recursive = TRUE, pattern = "rda$")) > 0)
+  expect_true(length(list.files(path = file.path(test_dir, "predictions"),recursive = TRUE, pattern = "tif$")) > 0)
 
   unlink(test_dir, recursive = TRUE)
 })
