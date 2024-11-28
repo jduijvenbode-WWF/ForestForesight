@@ -48,22 +48,8 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
   loaded_model <- load_model(model)
 
   # Handle feature matching
-  if (hasvalue(loaded_model$feature_names)) {
-    test_features <- colnames(test_matrix$features)
-    extra_features <- setdiff(test_features, loaded_model$feature_names)
 
-    if (length(extra_features) > 0) {
-      ff_cat(
-        "Removing extra features from the test matrix:",
-        paste(extra_features, collapse = ", "),
-        color = "yellow"
-      )
-      test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features),
-                                                   drop = FALSE
-      ]
-    }
-  }
-
+  test_matrix <- remove_extra_features(test_matrix, loaded_model)
   # Convert to xgb_matrix
   if (hasvalue(test_matrix$label)) {
     xgb_matrix <- xgboost::xgb.DMatrix(test_matrix$features, label = test_matrix$label)
@@ -74,19 +60,14 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
   ff_cat("calculating predictions", verbose = verbose)
   predictions <- stats::predict(loaded_model, xgb_matrix)
 
-  # Calculate metrics if groundtruth is provided
-  metrics <- if (hasvalue(groundtruth)) {
-    ff_cat("calculating scores", verbose = verbose)
-    calculate_metrics(predictions, groundtruth, thresholds)
-  } else {
-    list(precision = NA, recall = NA, accuracy_f05 = NA)
-  }
+  metrics <- calculate_metrics(predictions, groundtruth, thresholds, verbose)
+
 
   # Handle spatial predictions
-  predicted_raster <- if (inherits(templateraster, "SpatRaster")) {
-    fill_raster(templateraster, predictions, indices, certainty, thresholds, verbose)
+  if (inherits(templateraster, "SpatRaster")) {
+    predicted_raster <- fill_raster(templateraster, predictions, indices, certainty, thresholds, verbose)
   } else {
-    NA
+    predicted_raster <- NA
   }
 
   if (hasvalue(metrics$accuracy_f05)) {
@@ -138,6 +119,36 @@ load_model <- function(model) {
   return(model)
 }
 
+#' Remove Extra Features from Test Matrix
+#'
+#' Removes features from the test matrix that are not present in the model's feature names.
+#' If extra features are found, they are removed and a warning message is displayed.
+#'
+#' @param test_matrix A list containing a 'features' matrix for predictions
+#' @param loaded_model An xgb.Booster object with optional feature_names attribute
+#'
+#' @return The modified test_matrix with extra features removed
+#'
+#' @noRd
+remove_extra_features <- function(test_matrix, loaded_model){
+  if (hasvalue(loaded_model$feature_names)) {
+    test_features <- colnames(test_matrix$features)
+    extra_features <- setdiff(test_features, loaded_model$feature_names)
+
+    if (length(extra_features) > 0) {
+      ff_cat(
+        "Removing extra features from the test matrix:",
+        paste(extra_features, collapse = ", "),
+        color = "yellow"
+      )
+      test_matrix$features <- test_matrix$features[, setdiff(test_features, extra_features),
+                                                   drop = FALSE
+      ]
+    }
+  }
+  return(test_matrix)
+}
+
 #' Calculate Performance Metrics
 #'
 #' Calculates precision, recall, and F0.5 score for model predictions against ground truth data.
@@ -149,7 +160,12 @@ load_model <- function(model) {
 #' @return List containing precision, recall, and F0.5 scores for each threshold
 #'
 #' @noRd
-calculate_metrics <- function(predictions, groundtruth, thresholds) {
+calculate_metrics <- function(predictions, groundtruth, thresholds, verbose) {
+  if (!hasvalue(groundtruth)) {
+    ff_cat("no groundtruth found, returning NA for precision, recall and F0.5")
+    return(list(precision = NA, recall = NA, accuracy_f05 = NA))
+  }
+  ff_cat("calculating scores", verbose = verbose)
   if (inherits(groundtruth, "SpatRaster")) {
     groundtruth <- as.numeric(as.matrix(groundtruth))
   }
