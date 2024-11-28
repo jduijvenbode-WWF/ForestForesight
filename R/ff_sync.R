@@ -127,9 +127,9 @@ ff_sync_get_features <- function(features, ff_folder) {
       if (features == "small model") {
         # Find and load small model RDA files
         model_files <- list.files(file.path(ff_folder, "models"),
-          pattern = "small\\.rda$",
-          recursive = TRUE,
-          full.names = TRUE
+                                  pattern = "small\\.rda$",
+                                  recursive = TRUE,
+                                  full.names = TRUE
         )
         if (length(model_files) == 0) {
           stop("no models were found. Either change download_model to TRUE or choose another option for features")
@@ -141,11 +141,11 @@ ff_sync_get_features <- function(features, ff_folder) {
         # Load feature metadata
         feature_metadata <- get(data("feature_metadata", envir = environment()))
         importance_levels <- switch(features,
-          "highest" = c("Highest"),
-          "high" = c("Highest", "High"),
-          "medium" = c("Highest", "High", "Medium"),
-          "low" = c("Highest", "High", "Medium", "Low"),
-          "everything" = unique(feature_metadata$importance)
+                                    "highest" = c("Highest"),
+                                    "high" = c("Highest", "High"),
+                                    "medium" = c("Highest", "High", "Medium"),
+                                    "low" = c("Highest", "High", "Medium", "Low"),
+                                    "everything" = unique(feature_metadata$importance)
         )
         feature_list <- feature_metadata$name[feature_metadata$importance %in% importance_levels]
       } else {
@@ -192,42 +192,45 @@ groundtruth_downloader <- function(ff_folder, tile, dates_to_check, bucket, regi
   for (file in matching_files) {
     if (!file.exists(file.path(ff_folder, file))) {
       aws.s3::save_object(file,
-        bucket = bucket, region = region,
-        file = file.path(ff_folder, file), verbose = verbose
+                          bucket = bucket, region = region,
+                          file = file.path(ff_folder, file), verbose = verbose
       )
     }
   }
 }
 
 get_tiles <- function(identifier) {
-  if (class(identifier) == "character" && nchar(identifier) == 8 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
+  countries <- terra::vect(get(data("countries", envir = environment())))
+  gfw_tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))
+  #test if identifier is a tile
+  if (is.character(identifier) && nchar(identifier) == 8 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
     tiles <- identifier
-  } else if (inherits(identifier, "SpatVector")) {
+    identifier <- gfw_tiles[gfw_tiles$tile_id == identifier]
+  }
+  #if it was a tile or is a spatvector, do this
+  if (inherits(identifier, "SpatVector")) {
     check_spatvector(identifier, check_size = FALSE)
     identifier <- terra::buffer(identifier, width = -1)
     # Load necessary data sets
-    countries <- terra::vect(get(data("countries")))
-    gfw_tiles <- terra::vect(get(data("gfw_tiles")))
 
     # Intersect the provided SpatVector with countries to get ISO3 codes
     intersected <- terra::intersect(identifier, countries)
     country_codes <- unique(intersected$iso3)
 
     # Get tiles that intersect with the provided SpatVector
-    tiles <- terra::intersect(gfw_tiles, identifier)
-    tiles <- tiles$tile_id
+    if (!exists("tiles")) {
+      tiles <- terra::intersect(gfw_tiles, identifier)
+      tiles <- tiles$tile_id
+    }
   } else {
-    # Load necessary data sets
-    countries <- terra::vect(get(data("countries")))
-    gfw_tiles <- terra::vect(get(data("gfw_tiles")))
-
-    # Filter country and get tiles
+    #if the identifier was a country, get tiles by intersecting
     country_shape <- countries[countries$iso3 == identifier, ]
     if (nrow(country_shape) == 0) stop("Invalid country code")
     country_codes <- identifier
     tiles <- terra::intersect(gfw_tiles, country_shape)
     tiles <- tiles$tile_id
   }
+
   return(list(tiles = tiles, country_codes = country_codes))
 }
 
@@ -244,8 +247,8 @@ model_downloader <- function(ff_folder, country_codes, bucket, region, verbose, 
     for (file in s3_files) {
       ff_cat(file, verbose = verbose)
       aws.s3::save_object(file,
-        bucket = bucket, region = region,
-        file = file.path(ff_folder, file), verbose = F
+                          bucket = bucket, region = region,
+                          file = file.path(ff_folder, file), verbose = F
       )
     }
   }
@@ -283,8 +286,8 @@ data_downloader <- function(ff_folder, tile, feature_list, dates_to_check, bucke
       if (!file.exists(file.path(ff_folder, file))) {
         ff_cat(file, verbose = verbose)
         aws.s3::save_object(file,
-          bucket = bucket, region = region,
-          file = file.path(ff_folder, file), verbose = F
+                            bucket = bucket, region = region,
+                            file = file.path(ff_folder, file), verbose = F
         )
       }
     }
@@ -317,8 +320,8 @@ prediction_downloader <- function(ff_folder, country_codes, dates_to_check, buck
       if (!file.exists(file.path(ff_folder, file))) {
         ff_cat(file, verbose = verbose)
         aws.s3::save_object(file,
-          bucket = bucket, region = region,
-          file = file.path(ff_folder, file), verbose = F
+                            bucket = bucket, region = region,
+                            file = file.path(ff_folder, file), verbose = F
         )
       }
     }
