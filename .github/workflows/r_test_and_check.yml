@@ -64,11 +64,15 @@ jobs:
             print(result$warnings)
             cat("Notes:\n")
             print(result$notes)
-            
-            # Print the content of the 00check.log file
-            log_path <- file.path(result$checkdir, "00check.log")
-            cat("\nContents of 00check.log:\n")
-            cat(readLines(log_path), sep = "\n")
+                  
+            # Print the content of the testthat.Rout file
+            test_rout_path <- file.path(result$checkdir, "tests", "testthat.Rout")
+            if (file.exists(test_rout_path)) {
+              cat("\nContents of testthat.Rout:\n")
+              cat(readLines(test_rout_path), sep = "\n")
+            } else {
+              cat("\ntestthat.Rout file not found.\n")
+            }
           }, error = function(e) {
             cat("An error occurred during rcmdcheck:\n")
             print(e)
