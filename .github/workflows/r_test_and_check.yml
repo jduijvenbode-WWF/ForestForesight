@@ -1,0 +1,71 @@
+name: R Check
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  R-CMD-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release' 
+
+      - name: Print R version
+        run: R --version
+
+
+      - name: Install comprehensive system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcurl4-openssl-dev \
+            libxml2-dev \
+            libssl-dev \
+            libudunits2-0 \
+            libudunits2-dev \
+            proj-bin \
+            libproj-dev \
+            libgdal-dev \
+            libgeos-dev \
+            libnetcdf-dev
+  
+      - name: Set up renv
+        uses: r-lib/actions/setup-renv@v2
+    
+      - name: Install R package
+        run: |
+          Rscript -e 'devtools::install()'
+    
+      - name: Regenerate documentation
+        run: |
+          Rscript -e "roxygen2::roxygenise()"
+
+      - name: Session info
+        run: sessionInfo()
+        shell: Rscript {0}
+      
+      - name: Run Tests
+        run: |
+          Rscript -e "devtools::load_all(); testthat::test_dir('tests/testthat')"
+  
+      - name: Check
+        run: |
+          tryCatch({
+            result <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "never")
+            cat("Errors:\n")
+            print(result$errors)
+            cat("Warnings:\n")
+            print(result$warnings)
+            cat("Notes:\n")
+            print(result$notes)
+          }, error = function(e) {
+            cat("An error occurred during rcmdcheck:\n")
+            print(e)
+          })
+        shell: Rscript {0}
