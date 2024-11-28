@@ -7,12 +7,11 @@
 #' @param return_values Should the values of the rasters also be returned.
 #'
 #' @examples
+#' \dontrun{
 #' # Example usage:
 #' result <- process_tif_files("path/to/tif_folder")
-#'
+#' }
 #' @export
-#'
-#'
 ff_dqc <- function(folder_path, return_values = TRUE) {
   summary_by_feature <- function(dataframe, feature) {
     type <- "dynamic"
