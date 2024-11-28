@@ -64,6 +64,11 @@ jobs:
             print(result$warnings)
             cat("Notes:\n")
             print(result$notes)
+            
+            # Print the content of the 00check.log file
+            log_path <- file.path(result$checkdir, "00check.log")
+            cat("\nContents of 00check.log:\n")
+            cat(readLines(log_path), sep = "\n")
           }, error = function(e) {
             cat("An error occurred during rcmdcheck:\n")
             print(e)
