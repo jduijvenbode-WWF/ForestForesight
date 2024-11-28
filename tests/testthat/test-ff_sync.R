@@ -5,7 +5,6 @@ library(aws.s3)
 test_that("ff_sync handles basic tile downloads", {
   # Setup test directory
   test_dir <- tempfile("ff_test_")
-  dir.create(test_dir)
 
   # Test a single tile download with minimal features
   expect_no_error(
@@ -31,7 +30,6 @@ test_that("ff_sync handles basic tile downloads", {
 
 test_that("ff_sync validates dates correctly", {
   test_dir <- tempdir()
-  dir.create(test_dir)
 
   # Test invalid start date
   expect_error(
@@ -55,8 +53,7 @@ test_that("ff_sync validates dates correctly", {
 })
 
 test_that("ff_sync handles country downloads", {
-  test_dir <- tempfile("ff_test_")
-  dir.create(test_dir)
+  test_dir <- tempdir()
 
   # Test a small country download with minimal features
   expect_no_error(
@@ -79,8 +76,7 @@ test_that("ff_sync handles country downloads", {
 })
 
 test_that("ff_sync handles different feature sets", {
-  test_dir <- tempfile("ff_test_")
-  dir.create(test_dir)
+  test_dir <- tempdir()
 
   # Test with explicit feature names
   expect_no_error(
@@ -121,8 +117,6 @@ test_that("ff_sync creates necessary directories", {
   )
 
   # Check that directories were created
-  expect_true(dir.exists(test_dir))
-  expect_true(dir.exists(file.path(test_dir, "preprocessed")))
   expect_true(dir.exists(file.path(test_dir, "preprocessed", "input")))
   expect_true(length(list.files(path = file.path(test_dir, "models"),recursive = TRUE)) > 0)
   expect_true(length(list.files(path = file.path(test_dir, "models"),recursive = TRUE, pattern = "model$")) > 0)
