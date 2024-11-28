@@ -10,11 +10,11 @@ test_that("ff_sync handles basic tile downloads", {
   expect_no_error(
     ff_sync(
       ff_folder = test_dir,
-      identifier = "00N_000E",  # Using a known tile
-      features = "Low",         # Minimal feature set
+      identifier = "00N_000E", # Using a known tile
+      features = "Low", # Minimal feature set
       date_start = "2023-01-01",
-      date_end = "2023-01-01",  # Just one of data
-      download_model = FALSE,    # Skip model download
+      date_end = "2023-01-01", # Just one of data
+      download_model = FALSE, # Skip model download
       download_predictions = FALSE,
       verbose = FALSE
     )
@@ -59,11 +59,11 @@ test_that("ff_sync handles country downloads", {
   expect_no_error(
     ff_sync(
       ff_folder = test_dir,
-      identifier = "BRN",       # Using Brazil as an example
-      features = "Low",         # Minimal feature set
+      identifier = "BRN", # Using Brazil as an example
+      features = "Low", # Minimal feature set
       date_start = "2023-01-01",
-      date_end = "2023-01-01",  # Just one month of data
-      download_model = FALSE,    # Skip model download
+      date_end = "2023-01-01", # Just one month of data
+      download_model = FALSE, # Skip model download
       download_predictions = FALSE,
       verbose = FALSE
     )
@@ -83,7 +83,7 @@ test_that("ff_sync handles different feature sets", {
     ff_sync(
       ff_folder = test_dir,
       identifier = "00N_000E",
-      features = c("initialforestcover", "elevation"),  # Specific features
+      features = c("initialforestcover", "elevation"), # Specific features
       date_start = "2023-01-01",
       date_end = "2023-02-01",
       download_model = FALSE,
@@ -118,10 +118,10 @@ test_that("ff_sync creates necessary directories", {
 
   # Check that directories were created
   expect_true(dir.exists(file.path(test_dir, "preprocessed", "input")))
-  expect_true(length(list.files(path = file.path(test_dir, "models"),recursive = TRUE)) > 0)
-  expect_true(length(list.files(path = file.path(test_dir, "models"),recursive = TRUE, pattern = "model$")) > 0)
-  expect_true(length(list.files(path = file.path(test_dir, "models"),recursive = TRUE, pattern = "rda$")) > 0)
-  expect_true(length(list.files(path = file.path(test_dir, "predictions"),recursive = TRUE, pattern = "tif$")) > 0)
+  expect_true(length(list.files(path = file.path(test_dir, "models"), recursive = TRUE)) > 0)
+  expect_true(length(list.files(path = file.path(test_dir, "models"), recursive = TRUE, pattern = "model$")) > 0)
+  expect_true(length(list.files(path = file.path(test_dir, "models"), recursive = TRUE, pattern = "rda$")) > 0)
+  expect_true(length(list.files(path = file.path(test_dir, "predictions"), recursive = TRUE, pattern = "tif$")) > 0)
 
   unlink(test_dir, recursive = TRUE)
 })
