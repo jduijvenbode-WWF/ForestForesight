@@ -1,10 +1,13 @@
-config_load <- function() {
+config_load <- function(config_file_path = "") {
   library(yaml)
   library(here)
 
-  # Locate config.yml in the root
-  config_file <- here::here("env.yml")
-
+  if (config_file_path == ""){
+    # Locate config.yml in the root
+    config_file <- here::here("env.yml")
+  } else {
+    config_file <- config_file_path
+  }
   if (file.exists(config_file)) {
     # Load the YAML file
     config <- yaml.load_file(config_file)
