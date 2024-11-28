@@ -8,7 +8,7 @@ if (file.exists(config_file_path)) {
     print("../../env.yml exists!")
   }
 } else {
-    print("the normal test")
+  print("the normal test")
 }
 config_load(config_file_path)
 
