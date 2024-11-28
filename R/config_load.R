@@ -2,7 +2,7 @@ config_load <- function(config_file_path = "") {
   library(yaml)
   library(here)
 
-  if (config_file_path == ""){
+  if (config_file_path == "") {
     # Locate config.yml in the root
     config_file <- here::here("env.yml")
   } else {
