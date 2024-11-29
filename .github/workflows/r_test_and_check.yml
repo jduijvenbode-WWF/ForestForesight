@@ -55,8 +55,13 @@ jobs:
       - name: Check (Run Tests toward build package)
         run: |
           tryCatch({
-            result <- rcmdcheck::rcmdcheck(args = c("--as-cran"), error_on = "never") # use: error_on = "error" to 1. stop on error, 2. not printing unit tests detail in Check
+            # Usage of option of 'error_on' in rcmdcheck: 
+            # Use error_on = "error" to stop on error (recommended default). 
+            # Drawback: doesn't show unit test details in Check.
 
+            # Use error_on = "never" to debug if you encounter errors with rcmdcheck.
+            result <- rcmdcheck::rcmdcheck(args = c("--as-cran"), error_on = "error")
+          
             # Print the content of the testthat.Rout file
             test_rout_path <- file.path(result$checkdir, "tests", "testthat.Rout")
             if (file.exists(test_rout_path)) {

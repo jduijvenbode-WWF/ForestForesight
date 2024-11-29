@@ -4,7 +4,7 @@ if (file.exists(config_file_path)) {
   # normal unit tests run
 } else { # the rcmdcheck unit tests
   config_file_path <- file.path(getwd(), "../env.yml")
-  print(config_file_path)
+  cat("rcmdcheck run ", config_file_path)
 
   if (!file.exists(config_file_path)) {
     stop("Error: ../env.yml does not exist. Please provide env.yml under tests folder.")
