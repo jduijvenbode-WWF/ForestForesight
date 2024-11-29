@@ -5,3 +5,4 @@
 *.xlsx#
 *.tar.gz
 .idea/
+config.yml
