@@ -56,7 +56,7 @@ jobs:
       - name: Check (Run Tests toward build package)
         run: |
           tryCatch({
-            result <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "never")
+            result <- rcmdcheck::rcmdcheck(args = c("--as-cran"), error_on = "never")
 
             # Print the content of the testthat.Rout file
             test_rout_path <- file.path(result$checkdir, "tests", "testthat.Rout")
@@ -67,11 +67,17 @@ jobs:
               cat("\ntestthat.Rout file not found.\n")
             }
               
-
             errors <- paste(result$errors, collapse = "\n")
             warnings <- paste(result$warnings, collapse = "\n")
             notes <- paste(result$notes, collapse = "\n")
             
+            cat("Errors:\n")
+            print(errors)
+            cat("Warnings:\n")
+            print(warnings)
+            cat("Notes:\n")
+            print(notes)
+
             # Save errors, warnings, and notes to files
             write(errors, file = "check_errors.txt")
             write(warnings, file = "check_warnings.txt")
