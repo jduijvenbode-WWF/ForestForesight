@@ -1,4 +1,5 @@
-config_load <- function(config_file_path = "") {
+#' @export
+#' config_load <- function(config_file_path = "") {
   library(yaml)
   library(here)
 
