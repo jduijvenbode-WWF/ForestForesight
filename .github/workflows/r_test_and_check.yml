@@ -67,16 +67,48 @@ jobs:
             } else {
               cat("\ntestthat.Rout file not found.\n")
             }
-              
-            cat("Errors:\n")
-            print(result$errors)
-            cat("Warnings:\n")
-            print(result$warnings)
-            cat("Notes:\n")
-            print(result$notes)
+
+            errors <- paste(result$errors, collapse = "\n")
+            warnings <- paste(result$warnings, collapse = "\n")
+            notes <- paste(result$notes, collapse = "\n")
+            
+            # Set environment variables for errors, warnings, notes
+            echo "::set-env name=CHECK_ERRORS::$errors"
+            echo "::set-env name=CHECK_WARNINGS::$warnings"
+            echo "::set-env name=CHECK_NOTES::$notes"
                   
           }, error = function(e) {
             cat("An error occurred during rcmdcheck:\n")
             print(e)
           })
         shell: Rscript {0}
+        
+      - name: Output Errors
+        run: |
+            if [[ -n "${{ env.CHECK_ERRORS }}" ]]; then
+                echo "Errors found:"
+                echo "${{ env.CHECK_ERRORS }}"
+                exit 1  # Fail the job if there are errors
+            else
+                echo "No errors."
+            fi
+      
+              
+      - name: Output Warnings
+        run: |
+            if [[ -n "${{ env.CHECK_WARNINGS }}" ]]; then
+                echo "Warnings found:"
+                echo "${{ env.CHECK_WARNINGS }}"
+            else
+                echo "No warnings."
+            fi
+      
+              
+      - name: Output Notes
+        run: |
+            if [[ -n "${{ env.CHECK_NOTES }}" ]]; then
+                echo "Notes found:"
+                echo "${{ env.CHECK_NOTES }}"
+            else
+                echo "No notes."
+            fi
