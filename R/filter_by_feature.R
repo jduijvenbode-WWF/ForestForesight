@@ -10,7 +10,7 @@
 #' @return A list containing the filtered matrix and the indices of the filtered rows.
 #'
 #' @examples
-#' \dontrun{}
+#' \dontrun{
 #' filter_by_feature(
 #'   filter_features = c("landpercentage", "forestmask"),
 #'   filter_conditions = c(">100", ">0"),
