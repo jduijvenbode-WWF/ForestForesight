@@ -50,14 +50,14 @@ jobs:
         run: sessionInfo()
         shell: Rscript {0}
       
-      - name: Run Tests
+      - name: Run Tests toward codebase
         run: |
           Rscript -e "devtools::load_all(); testthat::test_dir('tests/testthat')"
-  
-      - name: Check
+
+      - name: Check (Run Tests toward build package)
         run: |
           tryCatch({
-            result <- rcmdcheck::rcmdcheck(args = "--no-manual ", error_on = "never")
+            result <- rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")
             
             # Print the content of the testthat.Rout file
             test_rout_path <- file.path(result$checkdir, "tests", "testthat.Rout")
@@ -72,11 +72,11 @@ jobs:
             warnings <- paste(result$warnings, collapse = "\n")
             notes <- paste(result$notes, collapse = "\n")
             
-            # Set environment variables for errors, warnings, notes
-            echo "::set-env name=CHECK_ERRORS::$errors"
-            echo "::set-env name=CHECK_WARNINGS::$warnings"
-            echo "::set-env name=CHECK_NOTES::$notes"
-                  
+            # Set environment variables by writing to the $GITHUB_ENV file
+            write(paste0("CHECK_ERRORS=", errors, "\n"), file = Sys.getenv('GITHUB_ENV'), append = TRUE)
+            write(paste0("CHECK_WARNINGS=", warnings, "\n"), file = Sys.getenv('GITHUB_ENV'), append = TRUE)
+            write(paste0("CHECK_NOTES=", notes, "\n"), file = Sys.getenv('GITHUB_ENV'), append = TRUE)
+            
           }, error = function(e) {
             cat("An error occurred during rcmdcheck:\n")
             print(e)
@@ -85,30 +85,29 @@ jobs:
         
       - name: Output Errors
         run: |
-            if [[ -n "${{ env.CHECK_ERRORS }}" ]]; then
-                echo "Errors found:"
-                echo "${{ env.CHECK_ERRORS }}"
-                exit 1  # Fail the job if there are errors
-            else
-                echo "No errors."
-            fi
+          if [[ -n "${{ env.CHECK_ERRORS }}" ]]; then
+            echo "Errors found:"
+            echo "${{ env.CHECK_ERRORS }}"
+            exit 1  # Fail the job if there are errors
+          else
+            echo "No errors."
+          fi
       
-              
       - name: Output Warnings
         run: |
-            if [[ -n "${{ env.CHECK_WARNINGS }}" ]]; then
-                echo "Warnings found:"
-                echo "${{ env.CHECK_WARNINGS }}"
-            else
-                echo "No warnings."
-            fi
+          if [[ -n "${{ env.CHECK_WARNINGS }}" ]]; then
+            echo "Warnings found:"
+            echo "${{ env.CHECK_WARNINGS }}"
+          else
+            echo "No warnings."
+          fi
       
-              
       - name: Output Notes
         run: |
-            if [[ -n "${{ env.CHECK_NOTES }}" ]]; then
-                echo "Notes found:"
-                echo "${{ env.CHECK_NOTES }}"
-            else
-                echo "No notes."
-            fi
+          if [[ -n "${{ env.CHECK_NOTES }}" ]]; then
+            echo "Notes found:"
+            echo "${{ env.CHECK_NOTES }}"
+          else
+            echo "No notes."
+          fi
+      
