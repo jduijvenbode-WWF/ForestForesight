@@ -22,12 +22,12 @@ config_load <- function(config_file_path = "") {
 }
 
 load_variables <- function(config_file_path) {
-  # Load the YML file 
+  # Load the YML file
   config_file_message <- paste("=== loading into environment variables: ", config_file_path)
   config <- yaml::yaml.load_file(config_file_path)
   config_file_message <- paste(config_file_message, "\n", config)
   print("config file: ")
-  print(config_file_message)  # Set environment variables
+  print(config_file_message) # Set environment variables
   set_env_vars <- function(config_list, prefix = "") {
     for (name in names(config_list)) {
       value <- config_list[[name]]
