@@ -35,8 +35,9 @@ jobs:
     - name: Set up renv
       uses: r-lib/actions/setup-renv@v2
     
-    - name: Install R package
+    - name: Update NAMESPACE and Install R packages
       run: |
+        devtools::document()
         devtools::install()
       shell: Rscript {0}
 
