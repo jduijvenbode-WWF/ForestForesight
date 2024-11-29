@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # Fetch all history to get the previous commit
 
     - name: Set up R
       uses: r-lib/actions/setup-r@v2
