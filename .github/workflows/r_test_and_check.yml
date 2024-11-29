@@ -1,4 +1,4 @@
-name: R Check
+name: R Check and Unit Tests
 
 on:
   pull_request:
@@ -32,8 +32,9 @@ jobs:
             libproj-dev \
             libgdal-dev \
             libgeos-dev \
-            libnetcdf-dev
-  
+            libnetcdf-dev \
+            texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
+
       - name: Set up renv
         uses: r-lib/actions/setup-renv@v2
     
