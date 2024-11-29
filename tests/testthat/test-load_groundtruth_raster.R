@@ -1,9 +1,9 @@
 test_that("load_groundtruth_raster handles no groundtruth file of the correct date correctly", {
   # Mock data
-  datafolder <- Sys.getenv("TEST_DATA_FOLDER")
+  datafolder <- file.path(getwd(), Sys.getenv("TEST_DATA_FOLDER"))
   date <- "2024-09-01" # Missing date for ground truth
   tiles <- c("10N_110E")
-  groundtruth_pattern <- "groundtruth6m"
+  groundtruth_pattern <- Sys.getenv("DEFAULT_GROUNDTRUTH")
   verbose <- TRUE
 
   message("\ndatafolder: ")
