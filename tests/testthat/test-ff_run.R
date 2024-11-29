@@ -3,7 +3,6 @@ test_that("check that ff_run can handle ", {
   tiffile <- file.path(test_dir, "result.tif")
   tiffile2 <- file.path(test_dir, "result2.tif")
   datadir <- file.path(getwd(), Sys.getenv("TEST_DATA_FOLDER"))
-  print("check that ff_run can handle - datadir:")
   print(datadir)
   print(dir.exists(datadir))
   modelfile <- file.path(test_dir, "model.model")
