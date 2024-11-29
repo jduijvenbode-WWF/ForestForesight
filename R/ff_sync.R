@@ -81,7 +81,7 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
   # Create ff_folder if it doesn't exist
 
   # Determine if identifier is a tile, country code, or SpatVector
-  identifier_lookup <- get_tiles(identifier)
+  identifier_lookup <- get_tiles_and_country_codes(identifier)
   tiles <- identifier_lookup$tiles
   country_codes <- identifier_lookup$country_codes
 
@@ -199,7 +199,7 @@ groundtruth_downloader <- function(ff_folder, tile, dates_to_check, bucket, regi
   }
 }
 
-get_tiles <- function(identifier) {
+get_tiles_and_country_codes <- function(identifier) {
   countries <- terra::vect(get(data("countries", envir = environment())))
   gfw_tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))
   # test if identifier is a tile
@@ -207,11 +207,10 @@ get_tiles <- function(identifier) {
     tiles <- identifier
     identifier <- gfw_tiles[gfw_tiles$tile_id == identifier]
   }
-  # if it was a tile or is a spatvector, do this
+  # if the identifier is a spatvector, do this
   if (inherits(identifier, "SpatVector")) {
     check_spatvector(identifier, check_size = FALSE)
     identifier <- terra::buffer(identifier, width = -1)
-    # Load necessary data sets
 
     # Intersect the provided SpatVector with countries to get ISO3 codes
     intersected <- terra::intersect(identifier, countries)
