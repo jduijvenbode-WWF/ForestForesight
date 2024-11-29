@@ -4,29 +4,38 @@ config_load <- function(config_file_path = "") {
 
   if (config_file_path == "") {
     # Locate config.yml in the root
-    config_file <- here::here("env.yml")
+    config_file <- here::here("tests/env.yml")
   } else {
     config_file <- config_file_path
   }
+  print("env.yml path: ")
+  print(config_file)
   if (file.exists(config_file)) {
     load_variables(config_file)
 
     # user_config_file is used by users to replace or supplement default configuration
     user_config_file <- here::here("config.yml")
+    print("user_config_file path: ")
+    print(user_config_file)
     if (file.exists(user_config_file)) { # optionally load the user config_file
+      print("user_config_file was found!")
       load_variables(user_config_file)
     }
   } else {
-    warning("The config file does not exist. Please check the file path.")
+    warning("The config file does not exist. Please check the file path....")
   }
 }
 
-load_variables <- function(config_file_path) {
+load_variables <- function(config_file) {
   # Load the YML file
-  config_file_message <- paste("=== loading into environment variables: ", config_file_path)
-  config <- yaml::yaml.load_file(config_file_path)
+  print("YAHOO")
+  config_file_message <- paste("=== loading into environment variables: ", config_file)
+  print("1st config file message: ")
+  print(config_file_message) # Set environment variables
+  config <- yaml::yaml.load_file(config_file)
+  print("YAHOO 3")
   config_file_message <- paste(config_file_message, "\n", config)
-  print("config file: ")
+  print("2nd config file message: ")
   print(config_file_message) # Set environment variables
   set_env_vars <- function(config_list, prefix = "") {
     for (name in names(config_list)) {
