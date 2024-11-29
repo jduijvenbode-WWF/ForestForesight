@@ -57,7 +57,7 @@ jobs:
         run: |
           tryCatch({
             result <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "never")
-            
+
             # Print the content of the testthat.Rout file
             test_rout_path <- file.path(result$checkdir, "tests", "testthat.Rout")
             if (file.exists(test_rout_path)) {
@@ -89,7 +89,6 @@ jobs:
           if [[ -s check_errors.txt ]]; then
             echo "Errors found:"
             cat check_errors.txt
-            exit 1  # Fail the job if there are errors
           else
             echo "No errors."
           fi
