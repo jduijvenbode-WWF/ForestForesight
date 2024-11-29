@@ -72,11 +72,11 @@ jobs:
             warnings <- paste(result$warnings, collapse = "\n")
             notes <- paste(result$notes, collapse = "\n")
             
-            cat("Errors:\n")
+            cat("\nErrors:\n")
             print(result$errors)
-            cat("Warnings:\n")
+            cat("\nWarnings:\n")
             print(result$warnings)
-            cat("Notes:\n")
+            cat("\nNotes:\n")
             print(result$notes)
             
             # Save errors, warnings, and notes to files
