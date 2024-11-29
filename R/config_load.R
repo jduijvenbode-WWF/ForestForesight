@@ -29,15 +29,8 @@ config_load <- function(config_file_path = "") {
 
 load_variables <- function(config_file) {
   # Load the YML file
-  print("YAHOO")
-  config_file_message <- paste("=== loading into environment variables: ", config_file)
-  print("1st config file message: ")
-  print(config_file_message) # Set environment variables
   config <- yaml::yaml.load_file(config_file)
-  print("YAHOO 3")
-  config_file_message <- paste(config_file_message, "\n", config)
-  print("2nd config file message: ")
-  print(config_file_message) # Set environment variables
+  
   set_env_vars <- function(config_list, prefix = "") {
     for (name in names(config_list)) {
       value <- config_list[[name]]
