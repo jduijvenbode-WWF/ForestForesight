@@ -3,7 +3,7 @@ AWS_BUCKET_NAME: "forestforesight-public"
 AWS_BUCKET_REGION: "eu-west-1"
 EARLIEST_DATA_DATE: "2021-01-01"
 DEFAULT_GROUNDTRUTH: "groundtruth6m"
-DATA_FOLDER: "C:/Kodingan3/FFdatang" # Adjust this. Make sure you use '/' instead of '\'
+DATA_FOLDER: "" # Adjust this. Make sure you use '/' instead of '\'
 TEST:
   DATA_FOLDER: "../test_data"
   FF_PREP_QC_DATE: "2021-01-01"
