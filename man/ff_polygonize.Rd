@@ -5,48 +5,47 @@
 \title{Polygonize raster to risk areas}
 \usage{
 ff_polygonize(
-  raster,
+  input_raster,
   output_file = NA,
-  min_pixel = 5,
+  minimum_pixel_count = 5,
   threshold = 0.5,
   window_size = 7,
   smoothness = 2,
   verbose = FALSE,
-  calc_max = FALSE,
+  calculate_max_count = FALSE,
   contain_polygons = NA
 )
 }
 \arguments{
-\item{raster}{Character or SpatRaster. Path to the input raster file or a SpatRaster.}
+\item{input_raster}{Character or SpatRaster. Path to the input raster file or a SpatRaster object}
 
 \item{output_file}{Character. File path to save shapefiles.
 Default is NA and means the polygons are returned and not written.}
 
-\item{min_pixel}{Numeric. Base pixel count to filter on. Default is 5}
+\item{minimum_pixel_count}{Numeric. Base pixel count to filter on. Default is 5}
 
 \item{threshold}{Numeric or Character. Threshold to apply to the raster. Default is 0.5.
-Options are:
-\describe{
-  \item{"numeric"}{A value between 0 and 1 that reflects the value that you want as a threshold}
-  \item{"medium"}{Automatically chosen threshold for medium risk}
-  \item{"high"}{Automatically chosen threshold for medium risk}
-  \item{"very high"}{Automatically chosen threshold for medium risk}
-}}
+Valid options are:
+* A numeric value between 0 and 1
+* "medium" - Automatically chosen threshold for medium risk
+* "high" - Automatically chosen threshold for high risk
+* "very high" - Automatically chosen threshold for very high risk}
 
-\item{window_size}{Numeric. Window size for focal calculation. Default is 7.}
+\item{window_size}{Numeric. Window size for focal calculation. Default is 7}
 
 \item{smoothness}{Numeric. Smoothness parameter for ksmooth method. Default is 2}
 
-\item{verbose}{Logical. Whether the automatically detected threshold should be plotted}
+\item{verbose}{Logical. Whether to print progress messages. Default is FALSE}
 
-\item{calc_max}{Logical.
-If this is set to True a reasonable amount of polygons will be outputted depending on the area size}
+\item{calculate_max_count}{Logical. If TRUE, outputs a reasonable number of polygons
+based on area size. Default is FALSE}
 
-\item{contain_polygons}{Logical.
-If calc_max is enabled, only polygons will be created that lie within the SpatVector contain_polygons}
+\item{contain_polygons}{SpatVector. If provided with calculate_max_count=TRUE,
+only creates polygons within this boundary}
 }
 \value{
-A SpatVector object containing the processed and simplified polygons.
+A SpatVector object containing the processed and simplified polygons,
+  or NULL if no polygons were generated
 }
 \description{
 This function processes a raster file, applies thresholds, creates polygons,
@@ -54,13 +53,14 @@ and simplifies them based on various parameters.
 }
 \examples{
 \dontrun{
-ff_polygonize("path/to/raster.tif", "output_polygons.shp",
-  min_pixel = 5, threshold = 0.5, window_size = 7
+# Basic usage with default parameters
+result <- ff_polygonize("input.tif")
+
+# Save output with custom threshold
+ff_polygonize("input.tif",
+  output_file = "risk_areas.shp",
+  threshold = "high"
 )
 }
 
-}
-\references{
-Jonas van Duijvenbode (2023)
-Zillah Calle (2023)
 }
