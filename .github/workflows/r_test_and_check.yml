@@ -51,13 +51,7 @@ jobs:
       - name: Run Tests toward codebase
         run: |
           Rscript -e "devtools::load_all(); testthat::test_dir('tests/testthat')"
-
-      - name: Run covr to see test coverage
-        run: 
-          coverage <- covr::package_coverage() 
-          writeLines(jsonlite::toJSON(coverage, pretty = TRUE))
-        shell: Rscript {0}
-
+          
       - name: Check (Run Tests toward build package)
         run: |
           tryCatch({
