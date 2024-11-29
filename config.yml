@@ -7,4 +7,4 @@ DATA_FOLDER: "" #Should be empty on develop only change it locally.
 TEST:
   DATA_FOLDER: "tests/test_data"
   FF_PREP_QC_DATE: "2021-01-01"
-  FF_PREP_COUNTRY: "BRN"
+  COUNTRY: "BRN"
