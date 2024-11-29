@@ -17,12 +17,9 @@ jobs:
       with:
         r-version: 'release' 
 
-    - name: Set up renv
-      uses: r-lib/actions/setup-renv@v2
-    
-    - name: Install R package
+    - name: Install Lintr, Styler and Roxygen2
       run: |
-        Rscript -e 'devtools::install()'
+        Rscript -e "install.packages(c('lintr', 'styler', 'roxygen2'), repos = 'https://cran.rstudio.com/')"
 
     - name: Style R code
       run: |
