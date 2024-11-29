@@ -9,28 +9,35 @@ config_load <- function(config_file_path = "") {
     config_file <- config_file_path
   }
   if (file.exists(config_file)) {
-    # Load the YAML file
-    config <- yaml.load_file(config_file)
-
-    # Set environment variables
-    set_env_vars <- function(config_list, prefix = "") {
-      for (name in names(config_list)) {
-        value <- config_list[[name]]
-        var_name <- paste0(prefix, toupper(name))
-        if (is.list(value)) {
-          set_env_vars(value, paste0(var_name, "_"))
-        } else {
-          # Resolve relative paths to absolute
-          if (grepl("^tests/", value)) {
-            value <- here::here(value)
-          }
-          do.call(Sys.setenv, setNames(list(value), var_name))
-        }
-      }
-    }
-
-    set_env_vars(config)
+    load_variables(config_file)
   } else {
     warning("The config file does not exist. Please check the file path.")
   }
+}
+
+load_variables <- function(config_file_path) {
+  # Load the YAML file
+  print("config file message: ")
+  config_file_message <- paste("=== loading into environment variables: ", config_file_path)
+
+  config <- yaml::yaml.load_file(config_file_path)
+  config_file_message <- paste(config_file_message, "\n", config)
+  print(config_file_message)
+  # Set environment variables
+  set_env_vars <- function(config_list, prefix = "") {
+    for (name in names(config_list)) {
+      value <- config_list[[name]]
+      var_name <- paste0(prefix, toupper(name))
+      if (is.list(value)) {
+        set_env_vars(value, paste0(var_name, "_"))
+      } else {
+        # Resolve relative paths to absolute
+        if (grepl("^tests/", value)) {
+          value <- here::here(value)
+        }
+        do.call(Sys.setenv, setNames(list(value), var_name))
+      }
+    }
+  }
+  set_env_vars(config)
 }
