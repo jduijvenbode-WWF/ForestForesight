@@ -81,7 +81,7 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
   # Create ff_folder if it doesn't exist
 
   # Determine if identifier is a tile, country code, or SpatVector
-  identifier_lookup <- get_tiles(identifier)
+  identifier_lookup <- get_tiles_and_country_codes(identifier)
   tiles <- identifier_lookup$tiles
   country_codes <- identifier_lookup$country_codes
 
@@ -199,35 +199,37 @@ groundtruth_downloader <- function(ff_folder, tile, dates_to_check, bucket, regi
   }
 }
 
-get_tiles <- function(identifier) {
-  if (class(identifier) == "character" && nchar(identifier) == 8 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
+get_tiles_and_country_codes <- function(identifier) {
+  countries <- terra::vect(get(data("countries", envir = environment())))
+  gfw_tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))
+  # test if identifier is a tile
+  if (is.character(identifier) && nchar(identifier) == 8 && grepl("^[0-9]{2}[NS]_[0-9]{3}[EW]$", identifier)) {
     tiles <- identifier
-  } else if (inherits(identifier, "SpatVector")) {
+    identifier <- gfw_tiles[gfw_tiles$tile_id == identifier]
+  }
+  # if the identifier is a spatvector, do this
+  if (inherits(identifier, "SpatVector")) {
     check_spatvector(identifier, check_size = FALSE)
     identifier <- terra::buffer(identifier, width = -1)
-    # Load necessary data sets
-    countries <- terra::vect(get(data("countries")))
-    gfw_tiles <- terra::vect(get(data("gfw_tiles")))
 
     # Intersect the provided SpatVector with countries to get ISO3 codes
     intersected <- terra::intersect(identifier, countries)
     country_codes <- unique(intersected$iso3)
 
     # Get tiles that intersect with the provided SpatVector
-    tiles <- terra::intersect(gfw_tiles, identifier)
-    tiles <- tiles$tile_id
+    if (!exists("tiles")) {
+      tiles <- terra::intersect(gfw_tiles, identifier)
+      tiles <- tiles$tile_id
+    }
   } else {
-    # Load necessary data sets
-    countries <- terra::vect(get(data("countries")))
-    gfw_tiles <- terra::vect(get(data("gfw_tiles")))
-
-    # Filter country and get tiles
+    # if the identifier was a country, get tiles by intersecting
     country_shape <- countries[countries$iso3 == identifier, ]
     if (nrow(country_shape) == 0) stop("Invalid country code")
     country_codes <- identifier
     tiles <- terra::intersect(gfw_tiles, country_shape)
     tiles <- tiles$tile_id
   }
+
   return(list(tiles = tiles, country_codes = country_codes))
 }
 
