@@ -9,15 +9,12 @@ config_load <- function(config_file_path = "") {
   } else {
     config_file <- config_file_path
   }
-  print("env.yml path: ")
-  print(config_file)
+  
   if (file.exists(config_file)) {
     load_variables(config_file)
 
     # user_config_file is used by users to replace or supplement default configuration
     user_config_file <- here::here("config.yml")
-    print("user_config_file path: ")
-    print(user_config_file)
     if (file.exists(user_config_file)) { # optionally load the user config_file
       print("user_config_file was found!")
       load_variables(user_config_file)
@@ -30,7 +27,6 @@ config_load <- function(config_file_path = "") {
 load_variables <- function(config_file) {
   # Load the YML file
   config <- yaml::yaml.load_file(config_file)
-  
   set_env_vars <- function(config_list, prefix = "") {
     for (name in names(config_list)) {
       value <- config_list[[name]]
