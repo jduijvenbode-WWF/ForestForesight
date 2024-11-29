@@ -16,7 +16,8 @@ This function loops through all tif files in a given folder and gives a summary
 and total overview of the quality of the rasters
 }
 \examples{
+\dontrun{
 # Example usage:
 result <- process_tif_files("path/to/tif_folder")
-
+}
 }

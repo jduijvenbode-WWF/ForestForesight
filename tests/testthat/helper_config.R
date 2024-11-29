@@ -1,8 +1,13 @@
 # helper_config.R
-config_load()
+config_file_path <- here::here("env.yml")
+if (file.exists(config_file_path)) {
+  # normal unit tests run
+} else { # the rcmdcheck unit tests
+  config_file_path <- file.path(getwd(), "../env.yml")
+  cat("rcmdcheck run ", config_file_path)
 
-# Print a message to indicate the setup file has been executed
-print("helper_config.R has been executed")
-
-cat("TEST_FF_PREP_COUNTRY is ")
-cat(Sys.getenv("TEST_FF_PREP_COUNTRY"))
+  if (!file.exists(config_file_path)) {
+    stop("Error: ../env.yml does not exist. Please provide env.yml under tests folder.")
+  }
+}
+config_load(config_file_path)
