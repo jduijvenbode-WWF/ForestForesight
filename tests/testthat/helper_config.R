@@ -6,10 +6,8 @@ if (file.exists(config_file_path)) {
   config_file_path <- file.path(getwd(), "../env.yml")
   print(config_file_path)
 
-  if (file.exists(config_file_path)) {
-    print("------../env.yml exists!")
-  } else {
-    message("How come ../env.yml doesn't exist!")
+  if (!file.exists(config_file_path)) {
+    stop("Error: ../env.yml does not exist. Please provide env.yml under tests folder.")
   }
 }
 config_load(config_file_path)
