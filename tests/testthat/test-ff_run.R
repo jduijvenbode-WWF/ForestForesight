@@ -8,7 +8,7 @@ test_that("check that ff_run can handle ", {
   modelfile <- file.path(test_dir, "model.model")
   testthat::expect_no_error(
     result1 <- ff_run(
-      country = "BRN", train_dates = "2023-01-01",
+      country = Sys.getenv("TEST_COUNTRY"), train_dates = "2023-01-01",
       validation_dates = "2023-02-01", prediction_dates = "2023-03-01",
       ff_folder = datadir,
       ff_prep_params = list(inc_features = c("initialforestcover", "timesinceloss")),
