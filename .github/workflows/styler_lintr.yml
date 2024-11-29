@@ -17,10 +17,31 @@ jobs:
       with:
         r-version: 'release' 
 
-    - name: Install Lintr, Styler and Roxygen2
+    - name: Install comprehensive system dependencies
       run: |
-        Rscript -e "install.packages(c('lintr', 'styler', 'roxygen2'), repos = 'https://cran.rstudio.com/')"
-
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcurl4-openssl-dev \
+            libxml2-dev \
+            libssl-dev \
+            libudunits2-0 \
+            libudunits2-dev \
+            proj-bin \
+            libproj-dev \
+            libgdal-dev \
+            libgeos-dev \
+            libnetcdf-dev
+  
+    - name: Set up renv
+      uses: r-lib/actions/setup-renv@v2
+    
+    - name: Install R package
+      run: |
+        devtools::install("styler")
+        devtools::install("lintr")
+        devtools::install("roxygen2")
+      shell: Rscript {0}
+      
     - name: Style R code
       run: |
         Rscript -e "styler::style_pkg(include_roxygen_examples = FALSE); warnings()"
