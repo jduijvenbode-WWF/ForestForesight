@@ -55,7 +55,7 @@ jobs:
       - name: Check (Run Tests toward build package)
         run: |
           tryCatch({
-            result <- rcmdcheck::rcmdcheck(args = c("--as-cran"), error_on = "never")
+            result <- rcmdcheck::rcmdcheck(args = c("--as-cran"), error_on = "error")
 
             # Print the content of the testthat.Rout file
             test_rout_path <- file.path(result$checkdir, "tests", "testthat.Rout")
