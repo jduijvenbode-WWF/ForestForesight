@@ -58,13 +58,7 @@ jobs:
         run: |
           tryCatch({
             result <- rcmdcheck::rcmdcheck(args = "--no-manual ", error_on = "never")
-            cat("Errors:\n")
-            print(result$errors)
-            cat("Warnings:\n")
-            print(result$warnings)
-            cat("Notes:\n")
-            print(result$notes)
-                  
+            
             # Print the content of the testthat.Rout file
             test_rout_path <- file.path(result$checkdir, "tests", "testthat.Rout")
             if (file.exists(test_rout_path)) {
@@ -73,6 +67,14 @@ jobs:
             } else {
               cat("\ntestthat.Rout file not found.\n")
             }
+              
+            cat("Errors:\n")
+            print(result$errors)
+            cat("Warnings:\n")
+            print(result$warnings)
+            cat("Notes:\n")
+            print(result$notes)
+                  
           }, error = function(e) {
             cat("An error occurred during rcmdcheck:\n")
             print(e)
