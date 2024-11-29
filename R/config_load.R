@@ -9,7 +9,7 @@ config_load <- function(config_file_path = "") {
   } else {
     config_file <- config_file_path
   }
-  
+
   if (file.exists(config_file)) {
     load_variables(config_file)
 
