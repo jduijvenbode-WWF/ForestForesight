@@ -70,12 +70,6 @@ jobs:
             warnings <- paste(result$warnings, collapse = "\n")
             notes <- paste(result$notes, collapse = "\n")
             
-            # Set environment variables by writing to the $GITHUB_ENV file
-
-            errors <- paste(result$errors, collapse = "\n")
-            warnings <- paste(result$warnings, collapse = "\n")
-            notes <- paste(result$notes, collapse = "\n")
-            
             # Save errors, warnings, and notes to files
             write(errors, file = "check_errors.txt")
             write(warnings, file = "check_warnings.txt")
