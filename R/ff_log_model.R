@@ -58,7 +58,7 @@ ff_log_model <- function(
     flavor = "xgboost"
 ) {
   # Check if required Python packages are available
-  required_packages <- c("mlflow", "xgboost")
+  required_packages <- c("mlflow")
   if (!reticulate::py_available()) {
     stop("Python is not available. Please ensure Python is installed and configured.")
   }
