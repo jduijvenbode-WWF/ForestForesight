@@ -37,10 +37,12 @@ A character vector containing the file paths of the selected raster files.
 This function retrieves raster files from a specified data folder based on the given date, feature, and tile pattern.
 }
 \examples{
+\dontrun{
 datafolder <- "/path/to/data"
 date <- as.Date("2022-01-01")
 feature <- "initialforestcover"
 tile <- "00N_070W"
 get_raster(datafolder, date, feature, tile)
+}
 # Returns: Vector of file paths to selected raster files.
 }

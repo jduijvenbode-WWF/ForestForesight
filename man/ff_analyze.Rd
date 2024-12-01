@@ -7,56 +7,51 @@
 ff_analyze(
   predictions,
   groundtruth,
-  forestmask = NULL,
-  csvfile = NULL,
+  forest_mask = NULL,
+  csv_filename = NULL,
   country = NULL,
   append = TRUE,
   analysis_polygons = NULL,
-  return_polygons = TRUE,
   remove_empty = TRUE,
   date = NULL,
   tile = NULL,
   method = NA,
-  addWKT = FALSE,
+  add_wkt = FALSE,
   verbose = FALSE
 )
 }
 \arguments{
-\item{predictions}{A character vector or raster object representing the predictions.}
+\item{predictions}{A SpatRaster object or path to raster file representing the predictions}
 
-\item{groundtruth}{A character vector or raster object representing the ground truth.}
+\item{groundtruth}{A SpatRaster object or path to raster file representing the ground truth}
 
-\item{forestmask}{An optional character vector or raster object representing the forest mask.}
+\item{forest_mask}{Optional SpatRaster object or path to raster file representing the forest mask}
 
-\item{csvfile}{An optional CSV file to which the results will be written.}
+\item{csv_filename}{Optional path to CSV file for writing results}
 
-\item{country}{Character. If NULL all the overlapping polygons will be processed.
-Otherwise the ISO3 code should be given and the analysis_polygons dataset should contain a column called iso3}
+\item{country}{Character string containing ISO3 code for filtering analysis polygons}
 
-\item{append}{Logical. If TRUE, results will be appended to the existing CSV file.}
+\item{append}{Logical indicating whether to append results to existing CSV file}
 
-\item{analysis_polygons}{Optional vector or character vector representing analysis polygons.}
+\item{analysis_polygons}{Optional SpatVector object or path to vector file for analysis areas}
 
-\item{return_polygons}{Logical. If TRUE, the polygons with calculated scores will be returned.}
+\item{remove_empty}{Logical indicating whether to remove empty records}
 
-\item{remove_empty}{Logical. If TRUE, empty rows (with all scores being zero) will be removed from the output.}
+\item{date}{Character string in YYYY-MM-DD format}
 
-\item{date}{character. should be in format (YYYY-MM-DD).
-Optional if either groundtruth or predictions is a character to the tiffile.}
+\item{tile}{Character string in format AA{N-S}_BBB{W-E}}
 
-\item{tile}{character. should be in format AA{N-S}_BBB{W-E}.
-Optional if either groundtruth or predictions is a character to the tiffile with a directory name.}
+\item{method}{Character string indicating the analysis method}
 
-\item{method}{character. The shorthand for the method used,
-which should also be included in the separate csv file for storing methods}
+\item{add_wkt}{Logical indicating whether to add WKT geometry to output}
 
-\item{addWKT}{Logical.  Whether the WKT should be added as a column to the CSV output}
-
-\item{verbose}{Logical. Whether the steps taken in the function should be verbose.}
+\item{verbose}{Logical indicating whether to print progress messages}
 }
 \value{
-A vector dataset containing calculated scores for each polygon.
+A SpatVector object containing calculated scores for each polygon
 }
 \description{
 This function calculates scores based on predictions, ground truth, and optional parameters.
+It processes raster data and compares predictions against ground truth, optionally using
+a forest mask to restrict the analysis area.
 }

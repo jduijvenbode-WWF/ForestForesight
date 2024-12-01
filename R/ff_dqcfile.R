@@ -6,12 +6,11 @@
 #' @param return_values Should the values of the rasters also be returned.
 #'
 #' @examples
+#' \dontrun{
 #' # Example usage:
 #' result <- process_tif_files("path/to/tif_file")
-#'
+#' }
 #' @export
-#'
-#'
 ff_dqc_file <- function(raster, return_values = TRUE) {
   loadras <- terra::rast(raster)
   return(list(
