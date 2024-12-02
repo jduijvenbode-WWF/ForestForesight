@@ -1,4 +1,3 @@
-
 testthat::test_that("ff_dqc processes folder of raster files correctly", {
   # Test 1: Basic functionality and return structure
   test_folder <- "../test_data/preprocessed/input/10N_110E/"
@@ -7,14 +6,18 @@ testthat::test_that("ff_dqc processes folder of raster files correctly", {
   # Check that the function returns a list with exactly 7 elements
   testthat::expect_type(result, "list")
   testthat::expect_length(result, 7)
-  testthat::expect_named(result, c("tile", "byfeature", "all", "equalextent",
-                         "equaldaterange", "incorrect_dateformats", "minextent"))
+  testthat::expect_named(result, c(
+    "tile", "byfeature", "all", "equalextent",
+    "equaldaterange", "incorrect_dateformats", "minextent"
+  ))
 
   # Test 2: Check the byfeature data frame structure and content
   testthat::expect_s3_class(result$byfeature, "data.frame")
-  expected_cols <- c("feature", "type", "min_date", "max_date", "has_gaps", "has_doubles",
-                     "pixel_count", "xmin", "xmax", "ymin", "ymax", "resolution",
-                     "crs_name", "crs_code", "mean_value", "max_value", "has_NA")
+  expected_cols <- c(
+    "feature", "type", "min_date", "max_date", "has_gaps", "has_doubles",
+    "pixel_count", "xmin", "xmax", "ymin", "ymax", "resolution",
+    "crs_name", "crs_code", "mean_value", "max_value", "has_NA"
+  )
   testthat::expect_named(result$byfeature, expected_cols)
 
   # Test 3: Validate output types and data integrity
@@ -30,7 +33,7 @@ testthat::test_that("ff_dqc processes folder of raster files correctly", {
   testthat::expect_true(all(result$byfeature$has_gaps %in% c("yes", "no")))
   testthat::expect_true(all(result$byfeature$has_doubles %in% c("yes", "no")))
   testthat::expect_true(all(result$byfeature$pixel_count == "differing" |
-                    is.numeric(result$byfeature$pixel_count)))
+    is.numeric(result$byfeature$pixel_count)))
 })
 
 testthat::test_that("ff_dqc handles edge cases correctly", {
@@ -81,4 +84,3 @@ testthat::test_that("summary_by_feature handles single features correctly", {
   testthat::expect_equal(result$pixel_count, 100)
   testthat::expect_equal(result$has_doubles, "no")
 })
-

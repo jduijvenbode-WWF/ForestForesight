@@ -44,11 +44,11 @@ hasvalue <- function(x) {
   }
 
   # Handle different types of single values
-  if (is.na(x) ||                    # Handles all NA types
-      identical(x, "") ||            # Empty string
-      identical(x, logical(0)) ||    # Empty logical
-      identical(x, list()) ||        # Empty list
-      identical(x, numeric(0))) {    # Empty numeric
+  if (is.na(x) || # Handles all NA types
+    identical(x, "") || # Empty string
+    identical(x, logical(0)) || # Empty logical
+    identical(x, list()) || # Empty list
+    identical(x, numeric(0))) { # Empty numeric
     return(FALSE)
   }
 
