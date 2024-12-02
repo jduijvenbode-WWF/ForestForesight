@@ -25,5 +25,5 @@ test_that("check that ff_run can handle ", {
   testthat::expect_no_error(result4 <- ff_run(shape = countries, train_dates = "2023-02-01", ff_folder = datadir, save_path = modelfile, verbose = F))
   countries <- disagg(countries)
 
-  testthat::expect_no_error(result4 <- ff_run(shape = countries, train_dates = "2023-02-01",prediction_dates = "2023-03-01", ff_folder = datadir, save_path = modelfile, verbose = F))
+  testthat::expect_no_error(result4 <- ff_run(shape = countries, train_dates = "2023-02-01", prediction_dates = "2023-03-01", ff_folder = datadir, save_path = modelfile, verbose = F))
 })
