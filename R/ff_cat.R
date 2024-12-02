@@ -62,7 +62,7 @@ ff_cat <- function(..., color = NULL, sep = " ", fill = FALSE, labels = NULL,
   if (verbose) {
     cat(text, sep = "", fill = fill, labels = labels, append = append)
   }
-  if (hasvalue(logfile)) {
+  if (has_value(logfile)) {
     if (timestamp) {
       cat(text, sep = "", fill = fill, labels = labels, append = append, file = logfile)
     } else {

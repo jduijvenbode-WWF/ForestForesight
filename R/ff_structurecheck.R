@@ -52,13 +52,13 @@ check_main_folders <- function(folder_path, error_on_issue, silent_on_pass) {
   for (folder in main_folders) {
     if (!dir.exists(file.path(folder_path, folder))) {
       all_correct <- FALSE
-      print_result(paste("No", folder, "folder present"),
+      print_result("No", folder, "folder present",
         color = "red"
       )
     } else {
-      print_result(paste(folder, "folder present"),
+      print_result(folder, "folder present",
         color = "green",
-        verbose = !silent_on_pass
+        silent_on_pass = silent_on_pass
       )
     }
   }
@@ -164,7 +164,7 @@ check_preprocessed_folders <- function(folder_path, info, check_date, error_on_i
     } else {
       print_result(subfolder, "subfolder present in preprocessed",
         color = "green",
-        verbose = !silent_on_pass
+        silent_on_pass = silent_on_pass
       )
       check_tile_subfolders(folder, info, subfolder, check_date, error_on_issue, silent_on_pass, groundtruth_pattern = groundtruth_pattern)
     }
@@ -182,7 +182,7 @@ check_tile_subfolders <- function(folder, info, subfolder, check_date,
     } else {
       print_result("Subfolder for tile", tile, "present in", subfolder,
         color = "green",
-        verbose = !silent_on_pass
+        silent_on_pass = silent_on_pass
       )
       check_tile_files(folder, tile, subfolder, check_date, silent_on_pass,
         groundtruth_pattern = groundtruth_pattern
@@ -313,7 +313,7 @@ print_result <- function(...,
     if (color == "red" && error_on_issue) {
       stop(statement)
     } else {
-      ff_cat(statement, color = color)
+      ff_cat(statement, color = color, verbose = TRUE)
     }
   }
 }
