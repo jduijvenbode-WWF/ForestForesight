@@ -27,35 +27,7 @@
 #' print(result$equalextent)
 #' }
 #' @export
-#' Data quality control for raster folders
-#'
-#' This function analyzes all TIF files in a given folder and provides a comprehensive
-#' quality assessment of the rasters, including temporal and spatial consistency checks.
-#'
-#' @param folder_path Character string. The path to the folder containing TIF files.
-#' @param return_values Logical. Should the actual values of the rasters be returned.
-#'   Default is TRUE.
-#'
-#' @return A list containing:
-#' \itemize{
-#'   \item tile: The base name of the folder
-#'   \item byfeature: Data frame with quality metrics for each feature
-#'   \item all: Data frame with raw values for all files
-#'   \item equalextent: Logical indicating if all files have same extent
-#'   \item equaldaterange: Logical indicating if date ranges are consistent
-#'   \item incorrect_dateformats: Count of files with incorrect date formats
-#'   \item minextent: SpatExtent object with minimum overlap extent
-#' }
-#'
-#' @examples
-#' \dontrun{
-#' result <- ff_dqc("path/to/tif_folder")
-#' # Access summary by feature
-#' print(result$byfeature)
-#' # Check if all files have same extent
-#' print(result$equalextent)
-#' }
-#' @export
+
 ff_dqc <- function(folder_path, return_values = TRUE) {
   # Get and process all TIF files
   tif_files <- list.files(folder_path, pattern = "\\.tif$", full.names = TRUE)

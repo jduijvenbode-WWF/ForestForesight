@@ -23,30 +23,12 @@ A list containing:
   \item incorrect_dateformats: Count of files with incorrect date formats
   \item minextent: SpatExtent object with minimum overlap extent
 }
-
-A list containing:
-\itemize{
-  \item tile: The base name of the folder
-  \item byfeature: Data frame with quality metrics for each feature
-  \item all: Data frame with raw values for all files
-  \item equalextent: Logical indicating if all files have same extent
-  \item equaldaterange: Logical indicating if date ranges are consistent
-  \item incorrect_dateformats: Count of files with incorrect date formats
-  \item minextent: SpatExtent object with minimum overlap extent
-}
 }
 \description{
 This function analyzes all TIF files in a given folder and provides a comprehensive
 quality assessment of the rasters, including temporal and spatial consistency checks.
 }
 \examples{
-\dontrun{
-result <- ff_dqc("path/to/tif_folder")
-# Access summary by feature
-print(result$byfeature)
-# Check if all files have same extent
-print(result$equalextent)
-}
 \dontrun{
 result <- ff_dqc("path/to/tif_folder")
 # Access summary by feature
