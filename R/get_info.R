@@ -97,7 +97,7 @@ get_country_info <- function(shape) {
 
 get_tile_info <- function(shape, ff_dir) {
   gfw_tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))
-  intersecting_tiles <- terra::relate(gfw_tiles, shape, "intersects")
+  intersecting_tiles <- terra::relate(gfw_tiles, aggregate(shape), "intersects")
   covered_tiles <- gfw_tiles[intersecting_tiles, ]
   tile_ids <- covered_tiles$tile_id
 
@@ -148,7 +148,7 @@ print_info <- function(results) {
     ff_cat("Available features:", paste(results$available_features, collapse = ", "))
   }
 
-  ff_cat("Area:", format(results$area, scientific = FALSE), "hectares")
+  ff_cat("Area:", format(sum(results$area), scientific = FALSE), "hectares")
   ff_cat("Bounding box (xmin, xmax, ymin, ymax):", paste(round(results$bbox, 5), collapse = ", "))
   ff_cat("Countries:", paste(results$overlapping_countries, collapse = ", "))
   ff_cat("Country group(s):", paste(results$country_groups, collapse = ", "))
