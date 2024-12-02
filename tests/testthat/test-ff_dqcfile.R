@@ -14,7 +14,7 @@ test_that("ff_dqc_file processes raster file correctly", {
   # Test 3: Check required elements are present with correct types
   expected_names <- c(
     "pixel_count", "xmin", "xmax", "ymin", "ymax", "resolution",
-    "crsname", "crscode", "mean", "max", "hasNA"
+    "crs_name", "crscode", "mean", "max", "hasNA"
   )
   expect_named(result, expected_names)
 

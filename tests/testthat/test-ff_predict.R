@@ -7,7 +7,7 @@ test_that("ff_predict functions as expected", {
     indices = data$test_indices, templateraster = data$groundtruth_raster
   )
   testthat::expect_equal(class(result$predicted_raster)[1], "SpatRaster")
-  testthat::expect_equal(hasvalue(result$F0.5), TRUE)
+  testthat::expect_equal(has_value(result$F0.5), TRUE)
   testthat::expect_equal(as.numeric(global(result$predicted_raster, "max")), 1)
   result <- ff_predict(
     model = model, test_matrix = data$feature_dataset,
