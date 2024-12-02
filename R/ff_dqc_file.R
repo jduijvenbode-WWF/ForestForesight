@@ -16,9 +16,9 @@ ff_dqc_file <- function(raster, return_values = TRUE) {
     if (!file.exists(raster)) {
       stop(paste("file does not exist:", raster))
     }
-  loaded_raster <- terra::rast(raster)
-  }else{
-    if (!inherits(raster,"SpatRaster")) {
+    loaded_raster <- terra::rast(raster)
+  } else {
+    if (!inherits(raster, "SpatRaster")) {
       stop("input should be a SpatRaster or a filename of a TIF file")
     }
   }
