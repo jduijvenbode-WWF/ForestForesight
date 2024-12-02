@@ -140,16 +140,16 @@ get_spatial_metrics <- function(shape) {
 }
 
 print_info <- function(results) {
-  cat("Shape Information:\n")
-  cat("Number of tiles covered:", results$num_tiles, "\n")
-  cat("Tile IDs:", paste(results$tile_ids, collapse = ", "), "\n")
+  ff_cat("Shape Information:")
+  ff_cat("Number of tiles covered:", results$num_tiles)
+  ff_cat("Tile IDs:", paste(results$tile_ids, collapse = ", "))
 
   if (!is.null(results$available_features)) {
-    cat("Available features:", paste(results$available_features, collapse = ", "), "\n")
+    ff_cat("Available features:", paste(results$available_features, collapse = ", "))
   }
 
-  cat("Area:", format(results$area, scientific = FALSE), "hectares\n")
-  cat("Bounding box (xmin, xmax, ymin, ymax):", paste(round(results$bbox, 5), collapse = ", "), "\n")
-  cat("Countries:", paste(results$overlapping_countries, collapse = ", "), "\n")
-  cat("Country group(s):", paste(results$country_groups, collapse = ", "), "\n")
+  ff_cat("Area:", format(results$area, scientific = FALSE), "hectares")
+  ff_cat("Bounding box (xmin, xmax, ymin, ymax):", paste(round(results$bbox, 5), collapse = ", "))
+  ff_cat("Countries:", paste(results$overlapping_countries, collapse = ", "))
+  ff_cat("Country group(s):", paste(results$country_groups, collapse = ", "))
 }
