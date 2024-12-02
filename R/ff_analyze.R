@@ -81,7 +81,7 @@ get_date_from_files <- function(predictions, groundtruth) {
 #' @return Spatvector of analysis polygons
 #' @noRd
 retrieve_analysis_polygons <- function(analysis_polygons, predictions, country) {
-  if (!hasvalue(analysis_polygons)) {
+  if (!has_value(analysis_polygons)) {
     polygons <- terra::vect(get(data("degree_polygons", envir = environment())))
   } else {
     if (inherits(analysis_polygons, "character")) {
@@ -91,7 +91,7 @@ retrieve_analysis_polygons <- function(analysis_polygons, predictions, country) 
     }
   }
   # Filter by country if specified
-  if (hasvalue(country) && ("iso3" %in% names(polygons))) {
+  if (has_value(country) && ("iso3" %in% names(polygons))) {
     polygons <- polygons[which(polygons$iso3 == country)]
   }
 
@@ -153,7 +153,7 @@ calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
 #' @noRd
 create_crosstable <- function(predictions, groundtruth, forest_mask, verbose) {
   # Create crosstable raster
-  if (hasvalue(forest_mask)) {
+  if (has_value(forest_mask)) {
     ff_cat("using forest mask", verbose = verbose)
     crosstable_raster <- (2 * groundtruth + predictions) * (forest_mask > 0)
   } else {
@@ -207,7 +207,7 @@ validate_and_load_data <- function(predictions, groundtruth, forest_mask = NULL,
   groundtruth <- groundtruth > 0
 
   # Load forest mask if provided
-  if (hasvalue(forest_mask)) {
+  if (has_value(forest_mask)) {
     if (inherits(forest_mask, "character")) {
       if (!file.exists(forest_mask)) {
         stop("forest mask file does not exist")
@@ -261,7 +261,7 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
     polygons_dataframe <- as.data.frame(polygons)
   }
 
-  if (hasvalue(csv_filename)) {
+  if (has_value(csv_filename)) {
     if (append && file.exists(csv_filename)) {
       ff_cat("appending to existing dataset", verbose = verbose)
       previous_data <- read.csv(csv_filename)

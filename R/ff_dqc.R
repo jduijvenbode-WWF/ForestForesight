@@ -146,7 +146,7 @@ summary_by_feature <- function(dataframe, feature) {
     "crs_code" = get_consistent_value(feature_files$crscode, TRUE),
     "mean_value" = round(mean(as.numeric(feature_files$mean)), 2),
     "max_value" = round(max(as.numeric(feature_files$max)), 2),
-    "has_NA" = get_consistent_value(feature_files$hasNA, TRUE)
+    "has_na" = get_consistent_value(feature_files$has_na, TRUE)
   ))
 }
 

@@ -12,28 +12,38 @@
 #' }
 #' @export
 ff_dqc_file <- function(raster, return_values = TRUE) {
-  loadras <- terra::rast(raster)
+  if (is.character(raster)) {
+    if (!file.exists(raster)) {
+      stop(paste("file does not exist:", raster))
+    }
+  loaded_raster <- terra::rast(raster)
+  }else{
+    if (!inherits(raster,"SpatRaster")) {
+      stop("input should be a SpatRaster or a filename of a TIF file")
+    }
+  }
+
   return(list(
-    "pixel_count" = terra::ncell(loadras),
-    "xmin" = terra::xmin(loadras),
-    "xmax" = terra::xmax(loadras),
-    "ymin" = terra::ymin(loadras),
-    "ymax" = terra::ymax(loadras),
-    "resolution" = terra::res(loadras)[1],
-    "crsname" = terra::crs(loadras, describe = TRUE)$name,
-    "crscode" = terra::crs(loadras, describe = TRUE)$code,
+    "pixel_count" = terra::ncell(loaded_raster),
+    "xmin" = terra::xmin(loaded_raster),
+    "xmax" = terra::xmax(loaded_raster),
+    "ymin" = terra::ymin(loaded_raster),
+    "ymax" = terra::ymax(loaded_raster),
+    "resolution" = terra::res(loaded_raster)[1],
+    "crs_name" = terra::crs(loaded_raster, describe = TRUE)$name,
+    "crs_code" = terra::crs(loaded_raster, describe = TRUE)$code,
     "mean" = if (return_values) {
-      as.numeric(round(terra::global(loadras, "mean", na.rm = TRUE), 2))
+      as.numeric(round(terra::global(loaded_raster, "mean", na.rm = TRUE), 2))
     } else {
       NA
     },
     "max" = if (return_values) {
-      as.numeric(round(terra::global(loadras, "max", na.rm = TRUE), 2))
+      as.numeric(round(terra::global(loaded_raster, "max", na.rm = TRUE), 2))
     } else {
       NA
     },
-    "hasNA" = if (return_values) {
-      (length(summary(loadras, warn = FALSE)) == 7)
+    "has_na" = if (return_values) {
+      (length(summary(loaded_raster, warn = FALSE)) == 7)
     } else {
       NA
     }

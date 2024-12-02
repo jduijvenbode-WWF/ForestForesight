@@ -153,7 +153,7 @@ save_model <- function(model, filename, verbose = FALSE) {
 #' @return NULL invisibly
 #' @noRd
 validate_inputs <- function(train_matrix) {
-  if (!hasvalue(train_matrix$label)) {
+  if (!has_value(train_matrix$label)) {
     stop(
       "The input data has no label.",
       "This likely means no ground truth was available for this date or area."
