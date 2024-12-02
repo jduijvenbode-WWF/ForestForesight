@@ -24,10 +24,10 @@
 #' }
 #' # Returns: Vector of file paths to selected raster files.
 get_raster <- function(datafolder, date, feature, tile = NULL, shape = NULL, return_raster = FALSE, verbose = FALSE) {
-  if ((hasvalue(tile) + hasvalue(shape)) != 1) {
+  if ((has_value(tile) + has_value(shape)) != 1) {
     stop("either a tile or a shape should be given")
   }
-  if (hasvalue(shape)) {
+  if (has_value(shape)) {
     gfw_tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))
     tile <- gfw_tiles[terra::project(shape, gfw_tiles), ]$tile_id
     if (verbose) {
@@ -38,7 +38,7 @@ get_raster <- function(datafolder, date, feature, tile = NULL, shape = NULL, ret
   allfiles <- allfiles[grep("tif$", allfiles)]
   allfiles <- allfiles[grep(paste0("_", feature, "\\."), allfiles)]
   filename <- ForestForesight::select_files_date(date, allfiles)
-  if (!hasvalue(filename)) {
+  if (!has_value(filename)) {
     stop("no files were found in this folder with this combination of date, tile and feature")
   }
   if (verbose) {
