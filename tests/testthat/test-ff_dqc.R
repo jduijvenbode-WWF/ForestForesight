@@ -78,7 +78,7 @@ test_that("summary_by_feature handles single features correctly", {
     max = 10,
     hasNA = FALSE
   )
-  test_df <- rbind(test_df,test_df)
+  test_df <- rbind(test_df, test_df)
 
   result <- summary_by_feature(test_df, "test_feature")
   testthat::expect_equal(result$type, "static")
