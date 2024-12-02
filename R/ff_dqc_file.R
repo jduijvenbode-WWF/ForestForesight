@@ -14,7 +14,7 @@
 ff_dqc_file <- function(raster, return_values = TRUE) {
   loadras <- terra::rast(raster)
   return(list(
-    "npixel" = terra::ncell(loadras),
+    "pixel_count" = terra::ncell(loadras),
     "xmin" = terra::xmin(loadras),
     "xmax" = terra::xmax(loadras),
     "ymin" = terra::ymin(loadras),

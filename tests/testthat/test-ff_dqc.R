@@ -63,7 +63,7 @@ testthat::test_that("summary_by_feature handles single features correctly", {
   test_df <- data.frame(
     featurenames = "test_feature",
     dates = "2023-01-01",
-    npixel = 100,
+    pixel_count = 100,
     xmin = 0,
     xmax = 1,
     ymin = 0,
