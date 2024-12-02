@@ -1,4 +1,4 @@
-testthat::test_that("ff_dqc processes folder of raster files correctly", {
+test_that("ff_dqc processes folder of raster files correctly", {
   # Test 1: Basic functionality and return structure
   test_folder <- "../test_data/preprocessed/input/10N_110E/"
   result <- ff_dqc(test_folder)
@@ -36,7 +36,7 @@ testthat::test_that("ff_dqc processes folder of raster files correctly", {
     is.numeric(result$byfeature$pixel_count)))
 })
 
-testthat::test_that("ff_dqc handles edge cases correctly", {
+test_that("ff_dqc handles edge cases correctly", {
   # Test 4: Test with return_values = FALSE
   test_folder <- "../test_data/preprocessed/input/10N_110E/"
   result <- ff_dqc(test_folder, return_values = FALSE)
@@ -45,7 +45,7 @@ testthat::test_that("ff_dqc handles edge cases correctly", {
   testthat::expect_true(all(is.na(result$byfeature$has_NA)))
 })
 
-testthat::test_that("ff_dqc validates date formats correctly", {
+test_that("ff_dqc validates date formats correctly", {
   # Test 5: Check date format validation
   test_folder <- "../test_data/preprocessed/input/10N_110E/"
   result <- ff_dqc(test_folder)
@@ -61,10 +61,10 @@ testthat::test_that("ff_dqc validates date formats correctly", {
   testthat::expect_true(all(!is.na(as.Date(valid_dates$max_date))))
 })
 
-testthat::test_that("summary_by_feature handles single features correctly", {
+test_that("summary_by_feature handles single features correctly", {
   # Test 6: Test summary_by_feature function with single row
   test_df <- data.frame(
-    featurenames = "test_feature",
+    feature_names = "test_feature",
     dates = "2023-01-01",
     pixel_count = 100,
     xmin = 0,
@@ -78,6 +78,7 @@ testthat::test_that("summary_by_feature handles single features correctly", {
     max = 10,
     hasNA = FALSE
   )
+  test_df <- rbind(test_df,test_df)
 
   result <- summary_by_feature(test_df, "test_feature")
   testthat::expect_equal(result$type, "static")

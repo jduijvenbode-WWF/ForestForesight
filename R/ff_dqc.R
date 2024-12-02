@@ -111,6 +111,9 @@ ff_dqc <- function(folder_path, return_values = TRUE) {
 #' @noRd
 summary_by_feature <- function(dataframe, feature) {
   feature_files <- dataframe[which(dataframe$feature_names == feature), ]
+  if (length(feature_files) == 0) {
+    stop(paste("feature was not found in folder", feature))
+  }
   feature_type <- if (nrow(feature_files) == 1) {
     feature_files <- rbind(feature_files, feature_files)
     "static"
