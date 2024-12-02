@@ -83,10 +83,12 @@ get_available_features <- function(tile_ids, ff_dir) {
   feature_names <- tools::file_path_sans_ext(basename(feature_files))
 
   if (length(feature_names) > 0) {
-    feature_names <- sort(unique(feature_names))}else{
-      ff_cat("no features found for this area in given folder",
-             color = "yellow", verbose = TRUE)
-    }
+    feature_names <- sort(unique(feature_names))
+  } else {
+    ff_cat("no features found for this area in given folder",
+      color = "yellow", verbose = TRUE
+    )
+  }
 
   return(feature_names)
 }
