@@ -9,14 +9,11 @@ overlapping countries, and country groups.}
 get_info(shape_or_iso, ff_dir = NULL, verbose = TRUE)
 }
 \arguments{
-\item{shape_or_iso}{Either a SpatVector object representing a spatial shape,
-or a 3-digit ISO country code as a character string.}
+\item{shape_or_iso}{SpatVector object or 3-digit ISO code}
 
-\item{ff_dir}{Character string. The directory path to the ForestForesight data.
-If NULL, available features will not be determined. Default is NULL.}
+\item{ff_dir}{Path to ForestForesight data directory. Default: NULL}
 
-\item{verbose}{Logical. If TRUE, prints the information to the console.
-Default is TRUE.}
+\item{verbose}{If TRUE, prints information. Default: TRUE}
 }
 \value{
 An invisible list containing:
@@ -31,33 +28,5 @@ An invisible list containing:
 List containing spatial information (invisibly)
 }
 \description{
-This function provides information about a given spatial shape or country,
-including the number of tiles it covers, available features, area, bounding box,
-overlapping countries, and country groups.
-}
-\details{
-If a 3-digit ISO code is provided, the function uses the 'countries' dataset
-from the ForestForesight package to get the corresponding country shape.
-The function then determines which Global Forest Watch (GFW) tiles intersect
-with the given shape, calculates the area, finds the bounding box, determines
-overlapping countries, and identifies the country groups. If a ForestForesight
-directory is provided, it also determines the available features for the
-intersecting tiles.
-}
-\examples{
-\dontrun{
-# Using an ISO code
-result_iso <- get_info("BRA", ff_dir = "/path/to/ForestForesight", verbose = TRUE)
-
-# Using a SpatVector object
-my_shape <- vect(your_shapefile_path)
-result_shape <- get_info(my_shape, ff_dir = "/path/to/ForestForesight", verbose = TRUE)
-
-# Accessing results
-num_tiles <- result_shape$num_tiles
-tile_ids <- result_shape$tile_ids
-overlapping_countries <- result_shape$overlapping_countries
-country_groups <- result_shape$country_groups
-}
-
+Get Information About a Spatial Shape or Country
 }
