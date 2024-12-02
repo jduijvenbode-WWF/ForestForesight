@@ -16,7 +16,7 @@ test_that("ff_dqc processes folder of raster files correctly", {
   expected_cols <- c(
     "feature", "type", "min_date", "max_date", "has_gaps", "has_doubles",
     "pixel_count", "xmin", "xmax", "ymin", "ymax", "resolution",
-    "crs_name", "crs_code", "mean_value", "max_value", "has_NA"
+    "crs_name", "crs_code", "mean_value", "max_value", "has_na"
   )
   testthat::expect_named(result$byfeature, expected_cols)
 
@@ -42,7 +42,7 @@ test_that("ff_dqc handles edge cases correctly", {
   result <- ff_dqc(test_folder, return_values = FALSE)
   testthat::expect_true(all(is.na(result$byfeature$mean_value)))
   testthat::expect_true(all(is.na(result$byfeature$max_value)))
-  testthat::expect_true(all(is.na(result$byfeature$has_NA)))
+  testthat::expect_true(all(is.na(result$byfeature$has_na)))
 })
 
 test_that("ff_dqc validates date formats correctly", {
@@ -72,16 +72,16 @@ test_that("summary_by_feature handles single features correctly", {
     ymin = 0,
     ymax = 1,
     resolution = 0.1,
-    crsname = "test_crs",
-    crscode = "EPSG:4326",
+    crs_name = "test_crs",
+    crs_code = "EPSG:4326",
     mean = 5,
     max = 10,
-    hasNA = FALSE
+    has_na = FALSE
   )
   test_df <- rbind(test_df, test_df)
 
   result <- summary_by_feature(test_df, "test_feature")
-  testthat::expect_equal(result$type, "static")
+  testthat::expect_equal(result$type, "dynamic")
   testthat::expect_equal(result$pixel_count, 100)
-  testthat::expect_equal(result$has_doubles, "no")
+  testthat::expect_equal(result$has_doubles, "yes")
 })
