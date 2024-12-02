@@ -31,7 +31,7 @@ get_raster <- function(datafolder, date, feature, tile = NULL, shape = NULL, ret
     gfw_tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))
     tile <- gfw_tiles[terra::project(shape, gfw_tiles), ]$tile_id
     if (verbose) {
-      ff_cat("getting data from tiles", paste(tile, collapse = ", "), "\n")
+      ff_cat("getting data from tiles", paste(tile, collapse = ", "))
     }
   }
   allfiles <- unlist(sapply(tile, function(x) list.files(datafolder, recursive = TRUE, pattern = x, full.names = TRUE)))
@@ -42,14 +42,14 @@ get_raster <- function(datafolder, date, feature, tile = NULL, shape = NULL, ret
     stop("no files were found in this folder with this combination of date, tile and feature")
   }
   if (verbose) {
-    ff_cat("found files", paste(filename, collapse = ", "), "\n")
+    ff_cat("found files", paste(filename, collapse = ", "))
   }
   if (return_raster) {
     if (length(tile) == 1) {
       return(terra::rast(filename))
     } else {
       if (verbose) {
-        ff_cat("merging tiles\n")
+        ff_cat("merging tiles")
       }
       return(do.call(terra::merge, unname(sapply(filename, function(x) terra::rast(x)))))
     }
