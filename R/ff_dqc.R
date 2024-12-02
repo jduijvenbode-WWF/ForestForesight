@@ -27,64 +27,91 @@
 #' print(result$equalextent)
 #' }
 #' @export
+#' Data quality control for raster folders
+#'
+#' This function analyzes all TIF files in a given folder and provides a comprehensive
+#' quality assessment of the rasters, including temporal and spatial consistency checks.
+#'
+#' @param folder_path Character string. The path to the folder containing TIF files.
+#' @param return_values Logical. Should the actual values of the rasters be returned.
+#'   Default is TRUE.
+#'
+#' @return A list containing:
+#' \itemize{
+#'   \item tile: The base name of the folder
+#'   \item byfeature: Data frame with quality metrics for each feature
+#'   \item all: Data frame with raw values for all files
+#'   \item equalextent: Logical indicating if all files have same extent
+#'   \item equaldaterange: Logical indicating if date ranges are consistent
+#'   \item incorrect_dateformats: Count of files with incorrect date formats
+#'   \item minextent: SpatExtent object with minimum overlap extent
+#' }
+#'
+#' @examples
+#' \dontrun{
+#' result <- ff_dqc("path/to/tif_folder")
+#' # Access summary by feature
+#' print(result$byfeature)
+#' # Check if all files have same extent
+#' print(result$equalextent)
+#' }
+#' @export
 ff_dqc <- function(folder_path, return_values = TRUE) {
   # Get and process all TIF files
   tif_files <- list.files(folder_path, pattern = "\\.tif$", full.names = TRUE)
-  valuelist <- lapply(tif_files, function(x) ff_dqc_file(x, return_values))
+  file_metrics <- lapply(tif_files, function(x) ff_dqc_file(x, return_values))
 
   # Combine results into data frame
-  allvals <- as.data.frame(as.matrix(do.call(rbind, valuelist)))
-  names(allvals) <- names(valuelist[[1]])
-  allvals[] <- lapply(allvals, unlist)
+  all_metrics <- as.data.frame(as.matrix(do.call(rbind, file_metrics)))
+  names(all_metrics) <- names(file_metrics[[1]])
+  all_metrics[] <- lapply(all_metrics, unlist)
 
   # Extract feature names and dates
-  allvals$featurenames <- sapply(basename(tif_files), function(x) substr(x, 21, nchar(x) - 4))
-  allvals$dates <- substr(basename(tif_files), 10, 19)
-  incorrect_dateformats <- sum(nchar(allvals$dates) != 10)
+  all_metrics$feature_names <- sapply(basename(tif_files),
+                                      function(x) substr(x, 21, nchar(x) - 4))
+  all_metrics$dates <- substr(basename(tif_files), 10, 19)
+  invalid_date_count <- sum(nchar(all_metrics$dates) != 10)
 
   # Reorder columns and process features
-  allvals <- allvals[, c(ncol(allvals) - 1, ncol(allvals), seq(ncol(allvals) - 2))]
-  summary <- suppressWarnings(lapply(
-    unique(allvals$featurenames),
-    function(x) summary_by_feature(allvals, x)
+  all_metrics <- all_metrics[, c(ncol(all_metrics) - 1,
+                                 ncol(all_metrics),
+                                 seq(ncol(all_metrics) - 2))]
+  feature_summaries <- suppressWarnings(lapply(
+    unique(all_metrics$feature_names),
+    function(x) summary_by_feature(all_metrics, x)
   ))
 
   # Create summary table
-  summarytable <- as.data.frame(do.call(rbind, summary))
-  names(summarytable) <- names(summary[[1]])
-  summarytable[] <- lapply(summarytable, unlist)
-  summarytable <- summarytable[order(summarytable$type), ]
+  summary_table <- as.data.frame(do.call(rbind, feature_summaries))
+  names(summary_table) <- names(feature_summaries[[1]])
+  summary_table[] <- lapply(summary_table, unlist)
+  summary_table <- summary_table[order(summary_table$type), ]
 
   # Perform consistency checks
-  dyn_summary <- summarytable[which(!is.na(summarytable$min_date)), ]
-  datecheck <- check_date_consistency(dyn_summary)
-  extentcheck <- check_extent_consistency(allvals)
+  dynamic_features <- summary_table[which(!is.na(summary_table$min_date)), ]
+  date_consistency <- check_date_consistency(dynamic_features)
+  extent_consistency <- check_extent_consistency(all_metrics)
 
   return(list(
     "tile" = basename(folder_path),
-    "byfeature" = summarytable,
-    "all" = allvals,
-    "equalextent" = extentcheck,
-    "equaldaterange" = datecheck,
-    "incorrect_dateformats" = incorrect_dateformats,
+    "byfeature" = summary_table,
+    "all" = all_metrics,
+    "equalextent" = extent_consistency,
+    "equaldaterange" = date_consistency,
+    "incorrect_dateformats" = invalid_date_count,
     "minextent" = terra::ext(
-      max(allvals$xmin), min(allvals$xmax),
-      max(allvals$ymin), min(allvals$ymax)
+      max(all_metrics$xmin), min(all_metrics$xmax),
+      max(all_metrics$ymin), min(all_metrics$ymax)
     )
   ))
 }
 
 #' Summarize raster features
-#'
-#' Internal function to generate summary statistics for each feature in the raster dataset.
-#'
-#' @param dataframe Data frame containing raster information
-#' @param feature Character string of feature name to summarize
-#' @return List of summary statistics for the feature
+#' [Documentation remains the same...]
 #' @noRd
 summary_by_feature <- function(dataframe, feature) {
-  feature_files <- dataframe[which(dataframe$featurenames == feature), ]
-  type <- if (nrow(feature_files) == 1) {
+  feature_files <- dataframe[which(dataframe$feature_names == feature), ]
+  feature_type <- if (nrow(feature_files) == 1) {
     feature_files <- rbind(feature_files, feature_files)
     "static"
   } else {
@@ -92,17 +119,17 @@ summary_by_feature <- function(dataframe, feature) {
   }
 
   # Calculate date ranges
-  dates <- as.Date(feature_files$dates)
-  date_diffs <- diff(sort(dates))
+  feature_dates <- as.Date(feature_files$dates)
+  date_intervals <- diff(sort(feature_dates))
 
   return(list(
     "feature" = feature,
-    "type" = type,
-    "min_date" = if (is.na(dates[1])) NA else as.character(min(dates)),
-    "max_date" = if (is.na(dates[1])) NA else as.character(max(dates)),
-    "has_gaps" = check_gaps(date_diffs, type),
-    "has_doubles" = check_doubles(date_diffs, type),
-    "pixel_count" = get_consistent_value(feature_files$npixel),
+    "type" = feature_type,
+    "min_date" = if (is.na(feature_dates[1])) NA else as.character(min(feature_dates)),
+    "max_date" = if (is.na(feature_dates[1])) NA else as.character(max(feature_dates)),
+    "has_gaps" = check_gaps(date_intervals, feature_type),
+    "has_doubles" = check_doubles(date_intervals, feature_type),
+    "pixel_count" = get_consistent_value(feature_files$pixel_count),
     "xmin" = get_consistent_value(feature_files$xmin),
     "xmax" = get_consistent_value(feature_files$xmax),
     "ymin" = get_consistent_value(feature_files$ymin),
@@ -128,7 +155,7 @@ check_date_consistency <- function(summary_df) {
 #' Check for consistent extents
 #' @noRd
 check_extent_consistency <- function(vals) {
-  extent_vars <- c("npixel", "xmin", "xmax", "ymin", "ymax", "resolution")
+  extent_vars <- c("pixel_count", "xmin", "xmax", "ymin", "ymax", "resolution")
   all(sapply(extent_vars, function(var) length(unique(vals[[var]])) == 1))
 }
 
