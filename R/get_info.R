@@ -51,8 +51,8 @@
 #' @export
 get_info <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
   extract_feature_name <- function(filename) {
-    parts <- strsplit(filename, "_")[[1]]
-    last_part <- parts[length(parts)]
+    filename_parts <- strsplit(filename, "_")[[1]]
+    last_part <- filename_parts[length(filename_parts)]
     feature_name <- tools::file_path_sans_ext(last_part)
     return(feature_name)
   }

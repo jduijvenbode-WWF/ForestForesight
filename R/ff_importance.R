@@ -57,7 +57,7 @@ ff_importance <- function(model_path, output_csv, append = TRUE) {
   importance_matrix$fnum <- as.numeric(gsub("f", "", importance_matrix$Feature)) + 1
   importance_matrix$Feature <- feature_names[importance_matrix$fnum]
   # Create dataframe
-  df <- data.frame(
+  importance_dataframe <- data.frame(
     model_name = rep(sub("\\.model$", "", basename(model_path)), nrow(importance_matrix)),
     feature = importance_matrix$Feature,
     rank = seq_len(nrow(importance_matrix)),
@@ -68,11 +68,11 @@ ff_importance <- function(model_path, output_csv, append = TRUE) {
   if (!file.exists(output_csv)) {
     append <- FALSE
   }
-  write.table(df,
+  write.table(importance_dataframe,
     file = output_csv, sep = ",", row.names = FALSE,
     col.names = !append, append = append
   )
 
   # Return dataframe invisibly
-  invisible(df)
+  invisible(importance_dataframe)
 }

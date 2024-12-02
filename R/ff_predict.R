@@ -59,7 +59,6 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
 
   ff_cat("calculating predictions", verbose = verbose)
   predictions <- stats::predict(loaded_model, xgb_matrix)
-
   metrics <- calculate_metrics(predictions, groundtruth, thresholds, verbose)
 
 
