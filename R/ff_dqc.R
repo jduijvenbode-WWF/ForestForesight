@@ -67,15 +67,19 @@ ff_dqc <- function(folder_path, return_values = TRUE) {
   all_metrics[] <- lapply(all_metrics, unlist)
 
   # Extract feature names and dates
-  all_metrics$feature_names <- sapply(basename(tif_files),
-                                      function(x) substr(x, 21, nchar(x) - 4))
+  all_metrics$feature_names <- sapply(
+    basename(tif_files),
+    function(x) substr(x, 21, nchar(x) - 4)
+  )
   all_metrics$dates <- substr(basename(tif_files), 10, 19)
   invalid_date_count <- sum(nchar(all_metrics$dates) != 10)
 
   # Reorder columns and process features
-  all_metrics <- all_metrics[, c(ncol(all_metrics) - 1,
-                                 ncol(all_metrics),
-                                 seq(ncol(all_metrics) - 2))]
+  all_metrics <- all_metrics[, c(
+    ncol(all_metrics) - 1,
+    ncol(all_metrics),
+    seq(ncol(all_metrics) - 2)
+  )]
   feature_summaries <- suppressWarnings(lapply(
     unique(all_metrics$feature_names),
     function(x) summary_by_feature(all_metrics, x)
