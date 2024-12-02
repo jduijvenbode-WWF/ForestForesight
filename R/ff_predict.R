@@ -51,7 +51,7 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
 
   test_matrix <- remove_extra_features(test_matrix, loaded_model)
   # Convert to xgb_matrix
-  if (hasvalue(test_matrix$label)) {
+  if (has_value(test_matrix$label)) {
     xgb_matrix <- xgboost::xgb.DMatrix(test_matrix$features, label = test_matrix$label)
   } else {
     xgb_matrix <- xgboost::xgb.DMatrix(test_matrix$features)
@@ -59,7 +59,6 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
 
   ff_cat("calculating predictions", verbose = verbose)
   predictions <- stats::predict(loaded_model, xgb_matrix)
-
   metrics <- calculate_metrics(predictions, groundtruth, thresholds, verbose)
 
 
@@ -70,7 +69,7 @@ ff_predict <- function(model, test_matrix, thresholds = 0.5, groundtruth = NA, i
     predicted_raster <- NA
   }
 
-  if (hasvalue(metrics$accuracy_f05)) {
+  if (has_value(metrics$accuracy_f05)) {
     ff_cat("F0.5:", metrics$accuracy_f05,
       "precision:", metrics$precision,
       "recall:", metrics$recall,
@@ -131,7 +130,7 @@ load_model <- function(model) {
 #'
 #' @noRd
 remove_extra_features <- function(test_matrix, loaded_model) {
-  if (hasvalue(loaded_model$feature_names)) {
+  if (has_value(loaded_model$feature_names)) {
     test_features <- colnames(test_matrix$features)
     extra_features <- setdiff(test_features, loaded_model$feature_names)
 
@@ -161,7 +160,7 @@ remove_extra_features <- function(test_matrix, loaded_model) {
 #'
 #' @noRd
 calculate_metrics <- function(predictions, groundtruth, thresholds, verbose) {
-  if (!hasvalue(groundtruth)) {
+  if (!has_value(groundtruth)) {
     ff_cat("no groundtruth found, returning NA for precision, recall and F0.5")
     return(list(precision = NA, recall = NA, accuracy_f05 = NA))
   }
@@ -254,7 +253,7 @@ test_feature_model_match <- function(model, feature_names = NULL) {
       feature_names <- get(load(gsub("\\.model", "\\.rda", modelfile)))
     }
   } else {
-    if (!hasvalue(feature_names)) {
+    if (!has_value(feature_names)) {
       stop("feature names should be given if model is an xgb.Booster object")
     }
   }

@@ -85,40 +85,40 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   fixed_sample_size <- 6e6
   sample_size <- 0.3
 
-  if (!hasvalue(shape) && !hasvalue(country)) {
+  if (!has_value(shape) && !has_value(country)) {
     stop("either input shape or country should be given")
   }
-  if (hasvalue(shape)) {
+  if (has_value(shape)) {
     ForestForesight::check_spatvector(shape,
-      check_size = hasvalue(train_dates)
+      check_size = has_value(train_dates)
     )
   }
-  if (!hasvalue(shape)) {
+  if (!has_value(shape)) {
     data(countries, envir = environment())
     countries <- terra::vect(countries)
     shape <- countries[which(countries$iso3 == country), ]
   }
 
   # check if all the function parameters have values in the right format
-  if (hasvalue(validation_dates)) {
+  if (has_value(validation_dates)) {
     validation <- FALSE
   }
-  if (!hasvalue(ff_folder)) {
+  if (!has_value(ff_folder)) {
     stop("ff_folder is not given")
   }
   if (!dir.exists(ff_folder)) {
     stop(paste(ff_folder, "does not exist"))
   }
-  if (!hasvalue(prediction_dates) && !is.null(trained_model)) {
+  if (!has_value(prediction_dates) && !is.null(trained_model)) {
     stop("prediction_date is not given and model is given so there is no need to run.")
   }
-  if (!hasvalue(prediction_dates)) {
+  if (!has_value(prediction_dates)) {
     prediction_dates <- "3000-01-01"
   }
   prediction_dates <- sort(prediction_dates)
 
   if (is.null(trained_model)) {
-    if (!hasvalue(train_dates)) {
+    if (!has_value(train_dates)) {
       ff_cat("No train dates were given though a training was wanted")
       # Extract the number of months from groundtruth_pattern (e.g., "6" from "groundtruth6m")
       months_back <- as.integer(gsub("\\D", "", groundtruth_pattern))
@@ -152,7 +152,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   shape <- check_spatvector(shape)
   ff_structurecheck(
     shape = shape, folder_path = ff_folder,
-    check_date = if (hasvalue(train_dates)) {
+    check_date = if (has_value(train_dates)) {
       train_dates[1]
     } else {
       prediction_dates[1]
@@ -166,7 +166,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   if (is.null(trained_model)) {
     sample_size <- 0.3
     # ff prep to determine the sample size
-    if (autoscale_sample && hasvalue(filter_conditions)) {
+    if (autoscale_sample && has_value(filter_conditions)) {
       ff_cat("Finding optimal sample size based on filter conditions", color = "green", verbose = verbose)
       ff_prep_params_original <- list(
         datafolder = ff_folder, shape = shape, dates = train_dates,
@@ -208,7 +208,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     ff_prep_params_combined <- merge_lists(ff_prep_params_original, ff_prep_params)
 
     traindata <- do.call(ff_prep, ff_prep_params_combined)
-    if (hasvalue(validation_dates)) {
+    if (has_value(validation_dates)) {
       ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n",
         color = "green", verbose = verbose
       )
@@ -238,15 +238,15 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
       train_matrix = traindata$feature_dataset, verbose = verbose,
       modelfilename = save_path
     )
-    if (validation || hasvalue(validation_dates)) {
+    if (validation || has_value(validation_dates)) {
       ff_train_params_original <- c(ff_train_params_original, list(validation_matrix = traindata$validation_matrix))
     }
     ff_train_params_original <- merge_lists(ff_train_params_original, ff_train_params)
 
     trained_model <- do.call(ff_train, ff_train_params_original)
   }
-  if (hasvalue(importance_csv)) {
-    if (hasvalue(save_path)) {
+  if (has_value(importance_csv)) {
+    if (has_value(save_path)) {
       ff_importance(save_path, importance_csv, append = TRUE)
     } else {
       ff_importance(trained_model, importance_csv, append = TRUE)
@@ -296,7 +296,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
           datafolder = file.path(ff_folder, "preprocessed", "input"),
           feature = filter_features[i]
         )
-        if (!hasvalue(filename)) {
+        if (!has_value(filename)) {
           stop(paste("Cannot find the file for feature", filter_features[i]))
         }
         curras <- terra::rast(filename)
@@ -316,7 +316,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
           forestras <- forestras * curras
         }
       }
-      if (!hasvalue(forestras)) {
+      if (!has_value(forestras)) {
         forestras <- NULL
       }
       if (predset$has_groundtruth) {
@@ -355,7 +355,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     fullras <- terra::mask(fullras, shape)
     fullras <- terra::crop(fullras, shape)
     names(fullras) <- prediction_date
-    if (hasvalue(save_path_predictions)) {
+    if (has_value(save_path_predictions)) {
       if (length(prediction_dates) > 1) {
         filename <- paste0(sub("\\.tif$", "", save_path_predictions), "_", prediction_date, ".tif")
       } else {
