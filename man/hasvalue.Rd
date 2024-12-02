@@ -2,7 +2,7 @@
 % Please edit documentation in R/hasvalue.R
 \name{hasvalue}
 \alias{hasvalue}
-\title{Check if an object has a value and is not NULL or NA}
+\title{Check if an object has a meaningful value}
 \usage{
 hasvalue(x)
 }
@@ -10,16 +10,29 @@ hasvalue(x)
 \item{x}{An R object to be tested.}
 }
 \value{
-TRUE if the object is not NULL or NA, else FALSE. returns TRUE if it is a vector of multiple NA's
+Logical. TRUE if the object contains meaningful data, FALSE otherwise.
+  Returns TRUE for vectors with length > 1 even if they contain NA values.
+  Returns FALSE for NULL, single NA values, empty strings, and empty vectors.
+  For SpatRaster objects, returns TRUE if the raster exists and has valid dimensions.
 }
 \description{
-This function checks whether an object is not NULL or NA.
+This function determines whether an object contains meaningful data by checking
+for NULL, NA, empty strings, and other edge cases. For vectors with length > 1,
+it returns TRUE even if they contain some NA values. For SpatRaster objects,
+it returns TRUE if the raster exists and has valid dimensions.
 }
 \examples{
+hasvalue(c(1, 2, NA, 4))        # TRUE (vector with length > 1)
+hasvalue(NULL)                   # FALSE
+hasvalue(NA)                     # FALSE
+hasvalue("")                     # FALSE
+hasvalue(character(0))           # FALSE
+hasvalue(NA_character_)          # FALSE
+hasvalue(factor("a"))           # TRUE
+hasvalue(list())                # FALSE
 \dontrun{
-# Test with a vector containing NA values
-hasvalue(c(1, 2, NA, 4))
-# Test with a NULL object
-hasvalue(NULL)
+r <- terra::rast()              # Empty raster
+hasvalue(r)                     # FALSE
 }
+
 }
