@@ -1,5 +1,5 @@
 # helper_config.R
-config_file_path <- here::here("env.yml")
+config_file_path <- system.file("env.yml", package = "ForestForesight")
 if (file.exists(config_file_path)) {
   # normal unit tests run
 } else { # the rcmdcheck unit tests
