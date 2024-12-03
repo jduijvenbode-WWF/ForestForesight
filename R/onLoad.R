@@ -1,6 +1,10 @@
 .onLoad <- function(libname, pkgname) {
   print(".onLoad is called")
   # remove Warning: replacing previous import 'smoothr::densify' by 'terra::densify'
-  conflicted::conflicts_prefer(terra::densify) 
+  if (requireNamespace("conflicted", quietly = TRUE)) {
+    conflicted::conflicts_prefer(terra::densify)
+  } else {
+    message("Package 'conflicted' is not installed. Preferred conflict for 'terra::densify' not set.")
+  }
   config_load() # Call the config_load function when the package is loaded
 }
