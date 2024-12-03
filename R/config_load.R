@@ -4,7 +4,7 @@ config_load <- function(config_file_path = "") {
   library(here)
 
   if (config_file_path == "") {
-    # Locate config.yml in the root
+    # Locate env.yml from the root
     config_file <- here::here("tests/env.yml")
   } else {
     config_file <- config_file_path
@@ -17,7 +17,7 @@ config_load <- function(config_file_path = "") {
     # user_config_file is used by users to replace or supplement default configuration
     user_config_file <- here::here("config.yml")
     if (file.exists(user_config_file)) { # optionally load the user config_file
-      print("user_config_file was found!")
+      print("user_config_file, config.yml was found!")
       load_variables(user_config_file)
     }
   } else {
