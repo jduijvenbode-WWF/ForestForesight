@@ -3,25 +3,30 @@ config_load <- function(config_file_path = "") {
   library(yaml)
   library(here)
 
-  if (config_file_path == "") {
-    # Locate env.yml from the root
-    config_file <- here::here("tests/env.yml")
-  } else {
+  # Locate env.yml in the package
+  config_file <- system.file("env.yml", package = "ForestForesight")
+  if (config_file_path != "") {
+    print("config_file_path argument found: ")
+    print(config_file_path)
     config_file <- config_file_path
   }
+  print("config_file:")
+  print(config_file)
 
   if (file.exists(config_file)) {
     load_variables(config_file)
-    message("Default config, env.yml loaded successfully.")
+    message("\nDefault config, env.yml loaded successfully.")
 
     # user_config_file is used by users to replace or supplement default configuration
     user_config_file <- here::here("config.yml")
     if (file.exists(user_config_file)) { # optionally load the user config_file
       print("user_config_file, config.yml was found!")
       load_variables(user_config_file)
+    }  else {
+      message("User config file is not found the working directory")
     }
   } else {
-    warning("The config file does not exist. Please check the file path....")
+    warning("Default config file, env.yml does not exist. Please check the file path....")
   }
 }
 
@@ -35,11 +40,14 @@ load_variables <- function(config_file) {
       if (is.list(value)) {
         set_env_vars(value, paste0(var_name, "_"))
       } else {
-        # Resolve relative paths to absolute
-        if (grepl("^tests/", value)) {
-          value <- here::here(value)
+        # Only set environment variables if the value is not NULL or an empty string
+        if (!is.null(value) && nzchar(value)) {
+          # Resolve relative paths to absolute
+          if (grepl("^tests/", value)) {
+            value <- system.file(value, package = "ForestForesight")
+          }
+          do.call(Sys.setenv, setNames(list(value), var_name))
         }
-        do.call(Sys.setenv, setNames(list(value), var_name))
       }
     }
   }

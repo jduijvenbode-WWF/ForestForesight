@@ -1,8 +1,8 @@
 name: R Check and Unit Tests
 
 on:
-  pull_request:
-    branches: [ "develop" ]
+  push:
+    branches: [ "bugfix/config_load" ]
 
 jobs:
   R-CMD-check:
