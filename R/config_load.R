@@ -12,6 +12,7 @@ config_load <- function(config_file_path = "") {
 
   if (file.exists(config_file)) {
     load_variables(config_file)
+    message("Default config, env.yml loaded successfully.")
 
     # user_config_file is used by users to replace or supplement default configuration
     user_config_file <- here::here("config.yml")
