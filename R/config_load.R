@@ -6,12 +6,8 @@ config_load <- function(config_file_path = "") {
   # Locate env.yml in the package
   config_file <- system.file("env.yml", package = "ForestForesight")
   if (config_file_path != "") {
-    print("config_file_path argument found: ")
-    print(config_file_path)
     config_file <- config_file_path
   }
-  print("config_file:")
-  print(config_file)
 
   if (file.exists(config_file)) {
     load_variables(config_file)
@@ -26,7 +22,7 @@ config_load <- function(config_file_path = "") {
       message("User config file is not found the working directory")
     }
   } else {
-    warning("Default config file, env.yml does not exist. Please check the file path....")
+    error("Default config file, env.yml does not exist. Please check the file path....")
   }
 }
 
