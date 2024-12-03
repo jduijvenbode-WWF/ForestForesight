@@ -367,7 +367,7 @@ append_date_based_features <- function(feature_dataset, date) {
   return(as.matrix(feature_dataset))
 }
 
-sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices) {
+sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices, verbose) {
   # take a random sample if that was applied
   if (sample_size < 1) {
     sample_indices <- sample(seq_len(nrow(current_tile_feature_dataset)), max(round(nrow(current_tile_feature_dataset) * sample_size), 1))
@@ -499,7 +499,7 @@ process_tile_dates <- function(tiles, tile, current_tile_files, shape, shrink, w
     current_tile_feature_dataset <- feature_filter_result$filtered_matrix
     filtered_indices <- feature_filter_result$filtered_indices
 
-    combine_result <- sample_and_combine_data(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices)
+    combine_result <- sample_and_combine_data(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices, verbose = verbose)
     feature_dataset <- combine_result$feature_dataset
     pixel_indices <- combine_result$pixel_indices
     first_loop_iteration <- combine_result$first_loop_iteration
