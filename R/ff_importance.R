@@ -28,7 +28,7 @@
 #' }
 #'
 #' @export
-ff_importance <- function(model, output_csv, name=NA, append = TRUE) {
+ff_importance <- function(model, output_csv, name = NA, append = TRUE) {
   if (!has_value(name)) {
     if (is.character(model)) {
       name <- sub("\\.model$", "", basename(model))
@@ -39,7 +39,7 @@ ff_importance <- function(model, output_csv, name=NA, append = TRUE) {
   feature_names <- model$feature_names
   # Get importance
   importance_matrix <- xgboost::xgb.importance(model = model)
-  #create importance dataset structure
+  # create importance dataset structure
 
   importance_dataframe <- data.frame(
     model_name = rep(name, nrow(importance_matrix)),
