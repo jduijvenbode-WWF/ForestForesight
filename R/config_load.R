@@ -43,7 +43,7 @@ load_variables <- function(config_file) {
             value <- system.file(value, package = "ForestForesight")
           }
           library(base)
-          do.call(Sys.setenv, setNames(list(value), var_name))
+          do.call(Sys.setenv, stats::setNames(list(value), var_name))
           # do.call(Sys.setenv, list(var_name = value))
           # do.call(Sys.setenv, setNames(list(value), var_name))
           # Sys.setenv(var_name = value)  # Directly set the environment variable
