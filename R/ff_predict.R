@@ -112,7 +112,7 @@ load_model <- function(model) {
 
     if (file.exists(rda_file)) {
       model_features <- get(load(rda_file))
-      attr(model, "feature_names") <- model_features
+      model$feature_names <- model_features
     }
   }
   return(model)
