@@ -1,3 +1,4 @@
+
 name: R Check and Unit Tests
 
 on:
@@ -5,15 +6,20 @@ on:
     branches: [ "bugfix/config_load" ]
 
 jobs:
-  setup-r:
+  R-CMD-check:
     runs-on: ubuntu-latest
-    outputs:
-      package-path: ${{ steps.install-package.outputs.package-path }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: r-lib/actions/setup-r@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
+  
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
         with:
-          r-version: 'release'
+          r-version: 'release' 
+
+      - name: Print R version
+        run: R --version
+
       - name: Install comprehensive system dependencies
         run: |
           sudo apt-get update
@@ -31,79 +37,59 @@ jobs:
             texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
       - name: Set up renv
         uses: r-lib/actions/setup-renv@v2
+
       - name: Update NAMESPACE and Install R packages
-        id: install-package
         run: |
           devtools::document()
           devtools::install()
         shell: Rscript {0}
+
       - name: Session info
         run: sessionInfo()
         shell: Rscript {0}
-      - name: Upload installed package artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: installed-package  # This will be used in the download step
-          path: ${{ steps.install-package.outputs.package-path }}  # Path to the installed package
-
-  test-and-check:
-    runs-on: ubuntu-latest
-    needs: setup-r
-    strategy:
-      matrix:
-        job: [test, check]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
-        with:
-          name: installed-package  # Ensure this matches the artifact name
-          path: /home/runner/work/_temp/installed-package  # Path where the artifact will be downloaded
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: 'release'
-      - name: Run Tests or Check
+      
+      - name: Run Tests toward codebase
         run: |
-          if [ "${{ matrix.job }}" == "test" ]; then
-            Rscript -e "devtools::load_all(); testthat::test_dir('tests/testthat')"
-          elif [ "${{ matrix.job }}" == "check" ]; then
-            tryCatch({
-              result <- rcmdcheck::rcmdcheck(args = c("--as-cran"), error_on = "error")
-
-              # Print the content of the testthat.Rout file
-              test_rout_path <- file.path(result$checkdir, "tests", "testthat.Rout")
-              if (file.exists(test_rout_path)) {
-                cat("\nContents of testthat.Rout:\n")
-                cat(readLines(test_rout_path), sep = "\n")
-              } else {
-                cat("\ntestthat.Rout file not found.\n")
-              }
-
-              errors <- paste(result$errors, collapse = "\n")
-              warnings <- paste(result$warnings, collapse = "\n")
-              notes <- paste(result$notes, collapse = "\n")
-
-              cat("\nErrors:\n")
-              print(result$errors)
-              cat("\nWarnings:\n")
-              print(result$warnings)
-              cat("\nNotes:\n")
-              print(result$notes)
-
-              # Save errors, warnings, and notes to files
-              write(errors, file = "check_errors.txt")
-              write(warnings, file = "check_warnings.txt")
-              write(notes, file = "check_notes.txt")
-
-            }, error = function(e) {
-              cat("An error occurred during rcmdcheck:\n")
-              print(e)
-            })
-          fi
+          Rscript -e "devtools::load_all(); testthat::test_dir('tests/testthat')"
+          
+      - name: Check (Run Tests toward build package)
+        run: |
+          tryCatch({
+            result <- rcmdcheck::rcmdcheck(args = c("--as-cran"), error_on = "error")
+          
+            # Print the content of the testthat.Rout file
+            test_rout_path <- file.path(result$checkdir, "tests", "testthat.Rout")
+            if (file.exists(test_rout_path)) {
+              cat("\nContents of testthat.Rout:\n")
+              cat(readLines(test_rout_path), sep = "\n")
+            } else {
+              cat("\ntestthat.Rout file not found.\n")
+            }
+              
+            errors <- paste(result$errors, collapse = "\n")
+            warnings <- paste(result$warnings, collapse = "\n")
+            notes <- paste(result$notes, collapse = "\n")
+            
+            cat("\nErrors:\n")
+            print(result$errors)
+            cat("\nWarnings:\n")
+            print(result$warnings)
+            cat("\nNotes:\n")
+            print(result$notes)
+            
+            # Save errors, warnings, and notes to files
+            write(errors, file = "check_errors.txt")
+            write(warnings, file = "check_warnings.txt")
+            write(notes, file = "check_notes.txt")
+            
+          }, error = function(e) {
+            cat("An error occurred during rcmdcheck:\n")
+            print(e)
+          })
         shell: Rscript {0}
-
-      # Output detailed check results only after running `check`
+        
       - name: Output Errors
-        if: always() && matrix.job == 'check'
+        if: always()
         run: |
           if [[ -s check_errors.txt ]]; then
             echo "Errors found:"
@@ -111,8 +97,9 @@ jobs:
           else
             echo "No errors."
           fi
+      
       - name: Output Warnings
-        if: always() && matrix.job == 'check'
+        if: always()
         run: |
           if [[ -s check_warnings.txt ]]; then
             echo "Warnings found:"
@@ -120,8 +107,9 @@ jobs:
           else
             echo "No warnings."
           fi
+      
       - name: Output Notes
-        if: always() && matrix.job == 'check'
+        if: always()
         run: |
           if [[ -s check_notes.txt ]]; then
             echo "Notes found:"
@@ -129,3 +117,4 @@ jobs:
           else
             echo "No notes."
           fi
+      
