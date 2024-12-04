@@ -3,8 +3,9 @@
 #' This function loads a ForestForesight model (.model file) and its corresponding
 #' feature names (.rda file), extracts feature importance, and saves the results to a CSV file.
 #'
-#' @param model_path Character string. Path to the .model file.
+#' @param model_path xgb.model class object or Character string for Path to the .model file.
 #' @param output_csv Character string. Path to the output CSV file.
+#' @param name Character string. Name to be given to the model if the model is an xgb.model
 #' @param append Logical. If TRUE, append to existing CSV file. If FALSE, overwrite. Default is TRUE
 #'
 #' @return Invisibly returns the importance dataframe.
@@ -27,38 +28,21 @@
 #' }
 #'
 #' @export
-ff_importance <- function(model_path, output_csv, append = TRUE) {
-  # Check if model file exists
-  if (!file.exists(model_path)) {
-    stop("Model file does not exist: ", model_path)
+ff_importance <- function(model, output_csv, name=NA, append = TRUE) {
+  if (!has_value(name)) {
+    if (is.character(model)) {
+      name <- sub("\\.model$", "", basename(model))
+    }
   }
-
-  # Construct path for .rda file
-  rda_path <- sub("\\.model$", ".rda", model_path)
-
-  # Check if .rda file exists
-  if (!file.exists(rda_path)) {
-    stop("Corresponding .rda file does not exist: ", rda_path)
-  }
-
-  # Load model
-  model <- xgboost::xgb.load(model_path)
-
+  model <- load_model(model)
   # Load feature names
-  feature_names <- get(load(rda_path))
-
-  # Assign feature names to model
-
-
+  feature_names <- model$feature_names
   # Get importance
-
   importance_matrix <- xgboost::xgb.importance(model = model)
+  #create importance dataset structure
 
-  importance_matrix$fnum <- as.numeric(gsub("f", "", importance_matrix$Feature)) + 1
-  importance_matrix$Feature <- feature_names[importance_matrix$fnum]
-  # Create dataframe
   importance_dataframe <- data.frame(
-    model_name = rep(sub("\\.model$", "", basename(model_path)), nrow(importance_matrix)),
+    model_name = rep(name, nrow(importance_matrix)),
     feature = importance_matrix$Feature,
     rank = seq_len(nrow(importance_matrix)),
     importance = importance_matrix$Gain
