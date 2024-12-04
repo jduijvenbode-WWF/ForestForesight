@@ -94,8 +94,10 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   pretrained_model_path <- corrected_date_input$pretrained_model_path
   train_dates <- corrected_date_input$train_dates
 
-  shape_and_tiles <- check_folder_and_input(ff_folder, country, shape, train_dates,
-                                            prediction_dates,model_save_path, predictions_save_path)
+  shape_and_tiles <- check_folder_and_input(
+    ff_folder, country, shape, train_dates,
+    prediction_dates, model_save_path, predictions_save_path
+  )
   shape <- shape_and_tiles$shape
   tiles <- shape_and_tiles$tiles
 
@@ -369,7 +371,7 @@ check_dates <- function(train_dates, validation_dates, prediction_dates,
 #' @return A list containing the validated shape object and tiles
 #'
 #' @noRd
-check_folder_and_input <- function(ff_folder, country, shape, train_dates, prediction_dates,model_save_path, predictions_save_path) {
+check_folder_and_input <- function(ff_folder, country, shape, train_dates, prediction_dates, model_save_path, predictions_save_path) {
   if (!has_value(model_save_path) && !has_value(prediction_dates)) {
     stop("no model is being saved and no predictions are being made (no prediction dates), so there is no point to this")
   }
@@ -480,10 +482,9 @@ determine_sample_fraction <- function(autoscale_sample, ff_folder, shape, train_
       color = "green", verbose = verbose
     )
     return(sample_fraction)
-  }else{
+  } else {
     return(0.3)
   }
-
 }
 
 #' Prepare Training Data for Model
