@@ -50,7 +50,7 @@ jobs:
       - name: Upload installed package as an artifact
         uses: actions/upload-artifact@v3
         with:
-          name: package-${{ runner.os }}-${{ runner.arch }}
+          name: package-Linux-X64
           path: ~/.local/lib/R/site-library
 
   test-codebase:
@@ -68,7 +68,8 @@ jobs:
       - name: Download installed package artifact
         uses: actions/download-artifact@v3
         with:
-          name: package-${{ runner.os }}-${{ runner.arch }}
+          name: package-Linux-X64
+          path: ~/.local/lib/R/site-library
           
       - name: Run Tests toward codebase
         run: |
@@ -90,7 +91,8 @@ jobs:
       - name: Download installed package artifact
         uses: actions/download-artifact@v3
         with:
-          name: package-${{ runner.os }}-${{ runner.arch }}
+          name: package-Linux-X64
+          path: ~/.local/lib/R/site-library
 
       - name: Check (Run Tests toward build package)
         run: |
