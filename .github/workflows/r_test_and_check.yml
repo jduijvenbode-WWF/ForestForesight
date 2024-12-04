@@ -4,6 +4,10 @@ name: R Check and Unit Tests
 on:
   push:
     branches: [ "bugfix/config_load" ]
+  pull_request:
+    branches:
+      - "main"
+      - "develop"
 
 jobs:
   R-CMD-check:
