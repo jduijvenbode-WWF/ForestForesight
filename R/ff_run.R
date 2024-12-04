@@ -259,6 +259,37 @@ is_date_format <- function(dates) {
   return(all(valid_dates))
 }
 
+#' Validate and Process Date Parameters
+#'
+#' This function validates the format and logic of training, validation, and prediction dates.
+#' It performs several checks:
+#' - Ensures all dates follow the YYYY-MM-01 format
+#' - Handles validation dates and validation flag conflicts
+#' - Sets default prediction dates when not provided
+#' - Validates temporal relationships between training and prediction dates
+#' - Processes training dates based on groundtruth pattern when not provided
+#'
+#' @param train_dates Vector of dates for model training in YYYY-MM-01 format
+#' @param validation_dates Vector of dates for validation in YYYY-MM-01 format
+#' @param prediction_dates Vector of dates for prediction in YYYY-MM-01 format
+#' @param validation Logical; whether to use validation sampling
+#' @param pretrained_model_path Path to a pretrained model, if using one
+#' @param groundtruth_pattern String pattern indicating groundtruth data timeframe (e.g., "groundtruth6m")
+#'
+#' @return A list containing:
+#'   \item{validation}{Logical; updated validation flag}
+#'   \item{train_dates}{Character vector; processed training dates}
+#'   \item{prediction_dates}{Character vector; processed prediction dates}
+#'   \item{pretrained_model_path}{Character; path to pretrained model}
+#'
+#' @details
+#' The function handles several edge cases:
+#' - If prediction_dates aren't provided, sets to "3000-01-01"
+#' - If train_dates aren't provided but training is needed, calculates based on groundtruth_pattern
+#' - Warns if training dates are too close to or after prediction dates
+#' - Validates that dates are at least 6 months apart
+#'
+#' @noRd
 check_dates <- function(train_dates, validation_dates, prediction_dates,
                         validation, pretrained_model_path, groundtruth_pattern) {
   if (has_value(train_dates) && !is_date_format(train_dates)) {
@@ -321,6 +352,23 @@ check_dates <- function(train_dates, validation_dates, prediction_dates,
   ))
 }
 
+#' Check Folder Structure and Input Parameters
+#'
+#' Validates the input parameters and folder structure for the ForestForesight analysis.
+#' Checks if either shape or country is provided (but not both), validates the existence
+#' of the ff_folder, and ensures all necessary files are present.
+#'
+#' @param ff_folder Path to the main ForestForesight data folder
+#' @param country ISO3 country code
+#' @param shape SpatVector object representing the area of interest
+#' @param train_dates Vector of training dates in YYYY-MM-01 format
+#' @param prediction_dates Vector of prediction dates in YYYY-MM-01 format
+#' @param model_save_path Path where the model should be saved
+#' @param predictions_save_path Path where predictions should be saved
+#'
+#' @return A list containing the validated shape object and tiles
+#'
+#' @noRd
 check_folder_and_input <- function(ff_folder, country, shape, train_dates, prediction_dates,model_save_path, predictions_save_path) {
   if (!has_value(model_save_path) && !has_value(prediction_dates)) {
     stop("no model is being saved and no predictions are being made (no prediction dates), so there is no point to this")
@@ -367,7 +415,27 @@ check_folder_and_input <- function(ff_folder, country, shape, train_dates, predi
   return(list(shape = shape, tiles = tiles))
 }
 
-
+#' Determine Sample Fraction for Training Data
+#'
+#' Calculates the optimal sample fraction for training data based on the input parameters
+#' and data size. If autoscaling is enabled, it will adjust the sample size based on
+#' the filtered data volume.
+#'
+#' @param autoscale_sample Logical; whether to automatically scale the sample size
+#' @param ff_folder Path to the ForestForesight data folder
+#' @param shape SpatVector object representing the area of interest
+#' @param train_dates Vector of training dates
+#' @param filter_conditions Conditions for filtering the training data
+#' @param filter_features Features to use for filtering
+#' @param groundtruth_pattern Pattern for groundtruth data
+#' @param ff_prep_parameters Parameters for data preparation
+#' @param validation Logical; whether validation is enabled
+#' @param fixed_sample_size Numeric; the target sample size when autoscaling
+#' @param verbose Logical; whether to print progress messages
+#'
+#' @return Numeric value representing the calculated sample fraction
+#'
+#' @noRd
 determine_sample_fraction <- function(autoscale_sample, ff_folder, shape, train_dates,
                                       filter_conditions, filter_features,
                                       groundtruth_pattern,
@@ -418,8 +486,25 @@ determine_sample_fraction <- function(autoscale_sample, ff_folder, shape, train_
 
 }
 
-
-
+#' Prepare Training Data for Model
+#'
+#' Prepares the training data by applying filters and sampling according to
+#' the specified parameters.
+#'
+#' @param ff_folder Path to the ForestForesight data folder
+#' @param shape SpatVector object representing the area of interest
+#' @param train_dates Vector of training dates
+#' @param filter_conditions Conditions for filtering the training data
+#' @param filter_features Features to use for filtering
+#' @param sample_fraction Fraction of data to sample
+#' @param groundtruth_pattern Pattern for groundtruth data
+#' @param validation Logical; whether validation is enabled
+#' @param ff_prep_parameters Parameters for data preparation
+#' @param verbose Logical; whether to print progress messages
+#'
+#' @return A list containing the prepared training data and combined parameters
+#'
+#' @noRd
 prepare_training_data <- function(ff_folder, shape, train_dates, filter_conditions, filter_features,
                                   sample_fraction, groundtruth_pattern, validation,
                                   ff_prep_parameters, verbose) {
@@ -438,6 +523,21 @@ prepare_training_data <- function(ff_folder, shape, train_dates, filter_conditio
   return(list(train_input_data = train_input_data, ff_prep_params_combined = ff_prep_params_combined))
 }
 
+
+#' Prepare Validation Data
+#'
+#' Prepares validation data by either splitting the training data or using
+#' separate validation dates.
+#'
+#' @param train_input_data List containing the training data
+#' @param train_dates Vector of training dates
+#' @param validation_dates Vector of validation dates
+#' @param ff_prep_params_combined Combined parameters for data preparation
+#' @param verbose Logical; whether to print progress messages
+#'
+#' @return Updated train_input_data list with validation data added
+#'
+#' @noRd
 prepare_validation_data <- function(train_input_data, train_dates,
                                     validation_dates, ff_prep_params_combined, verbose) {
   if (has_value(validation_dates)) {
@@ -469,6 +569,20 @@ prepare_validation_data <- function(train_input_data, train_dates,
 }
 
 
+#' Prepare and Train Model
+#'
+#' Prepares the training parameters and trains the model using the provided data.
+#'
+#' @param train_input_data List containing the training data
+#' @param model_save_path Path where the model should be saved
+#' @param validation Logical; whether validation is enabled
+#' @param validation_dates Vector of validation dates
+#' @param ff_train_parameters Parameters for model training
+#' @param verbose Logical; whether to print progress messages
+#'
+#' @return Path to the trained model
+#'
+#' @noRd
 prepare_and_train <- function(train_input_data, model_save_path, validation,
                               validation_dates, ff_train_parameters, verbose) {
   ff_train_params_original <- list(
@@ -490,6 +604,23 @@ prepare_and_train <- function(train_input_data, model_save_path, validation,
   return(pretrained_model_path)
 }
 
+#' Prepare and Run Prediction
+#'
+#' Prepares the data and runs predictions using the trained model.
+#'
+#' @param ff_folder Path to the ForestForesight data folder
+#' @param tile Tile identifier
+#' @param prediction_date Date for prediction
+#' @param groundtruth_pattern Pattern for groundtruth data
+#' @param filter_features Features to use for filtering
+#' @param filter_conditions Conditions for filtering
+#' @param ff_prep_parameters Parameters for data preparation
+#' @param pretrained_model_path Path to the pre-trained model
+#' @param verbose Logical; whether to print progress messages
+#'
+#' @return List containing the prepared prediction input data
+#'
+#' @noRd
 prepare_and_run_prediction <- function(ff_folder, tile, prediction_date,
                                        groundtruth_pattern, filter_features, filter_conditions,
                                        ff_prep_parameters, pretrained_model_path, verbose) {
@@ -519,6 +650,19 @@ prepare_and_run_prediction <- function(ff_folder, tile, prediction_date,
   return(prediction_input_data)
 }
 
+#' Create Forest Mask
+#'
+#' Creates a binary mask for forested areas based on specified features and conditions.
+#'
+#' @param ff_folder Path to the ForestForesight data folder
+#' @param tile Tile identifier
+#' @param prediction_date Date for prediction
+#' @param filter_features Features to use for filtering
+#' @param filter_conditions Conditions for filtering
+#'
+#' @return SpatRaster object containing the forest mask
+#'
+#' @noRd
 create_forest_mask <- function(ff_folder, tile, prediction_date, filter_features, filter_conditions) {
   if (length(filter_features) == 0) {
     return(NULL)
@@ -552,6 +696,27 @@ create_forest_mask <- function(ff_folder, tile, prediction_date, filter_features
   return(forest_mask)
 }
 
+#' Analyze Predictions
+#'
+#' Analyzes the model predictions by comparing them with groundtruth data.
+#'
+#' @param ff_folder Path to the ForestForesight data folder
+#' @param shape SpatVector object representing the area of interest
+#' @param tile Tile identifier
+#' @param prediction List containing prediction results
+#' @param prediction_date Date of prediction
+#' @param filter_features Features used for filtering
+#' @param filter_conditions Conditions used for filtering
+#' @param prediction_input_data Input data used for prediction
+#' @param certainty_threshold Threshold for binary classification
+#' @param accuracy_output_path Path to save accuracy metrics
+#' @param country ISO3 country code
+#' @param merged_polygons Previously merged polygons (if any)
+#' @param verbose Logical; whether to print progress messages
+#'
+#' @return Updated merged_polygons object
+#'
+#' @noRd
 analyze_predictions <- function(ff_folder, shape, tile, prediction, prediction_date,
                                 filter_features, filter_conditions, prediction_input_data,
                                 certainty_threshold, accuracy_output_path, country,
@@ -581,6 +746,20 @@ analyze_predictions <- function(ff_folder, shape, tile, prediction, prediction_d
   return(merged_polygons)
 }
 
+#' Merge and Write Raster Results
+#'
+#' Merges multiple raster tiles and writes the results to disk if specified.
+#'
+#' @param raster_list List of SpatRaster objects to merge
+#' @param shape SpatVector object for masking/cropping
+#' @param prediction_date Date of prediction
+#' @param predictions_save_path Path to save the predictions
+#' @param prediction_dates Vector of all prediction dates
+#' @param verbose Logical; whether to print progress messages
+#'
+#' @return Merged SpatRaster object
+#'
+#' @noRd
 merge_and_write_raster <- function(raster_list, shape, prediction_date, predictions_save_path, prediction_dates, verbose) {
   if (length(raster_list) == 1) {
     merged_prediction <- raster_list[[1]]
