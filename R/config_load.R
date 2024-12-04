@@ -1,6 +1,5 @@
 #' @export
 config_load <- function(config_file_path = "") {
-  library(yaml)
   library(here)
 
   # Locate env.yml in the package
@@ -27,6 +26,7 @@ config_load <- function(config_file_path = "") {
 }
 
 load_variables <- function(config_file) {
+  library(yaml)
   # Load the YML file
   config <- yaml::yaml.load_file(config_file)
   set_env_vars <- function(config_list, prefix = "") {
@@ -42,7 +42,11 @@ load_variables <- function(config_file) {
           if (grepl("^tests/", value)) {
             value <- system.file(value, package = "ForestForesight")
           }
-          do.call(Sys.setenv, list(var_name = value))
+          library(base)
+          do.call(Sys.setenv, setNames(list(value), var_name))
+          # do.call(Sys.setenv, list(var_name = value))
+          # do.call(Sys.setenv, setNames(list(value), var_name))
+          # Sys.setenv(var_name = value)  # Directly set the environment variable
         }
       }
     }
