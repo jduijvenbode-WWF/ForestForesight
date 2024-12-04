@@ -22,10 +22,76 @@ ff_train(
   objective = "binary:logistic"
 )
 }
+\arguments{
+\item{train_matrix}{A list containing 'features' (matrix or data.frame) and 'label' (vector),
+or an xgb.DMatrix object. The training data for the model.}
+
+\item{validation_matrix}{Optional; similar structure as train_matrix. If provided, used for
+validation during training and early stopping.}
+
+\item{nrounds}{Integer; maximum number of boosting rounds. Default is 200.}
+
+\item{eta}{Numeric; learning rate (between 0 and 1). Default is 0.1.}
+
+\item{max_depth}{Integer; maximum depth of trees. Default is 5.}
+
+\item{subsample}{Numeric; subsample ratio of training instances (0 to 1). Default is 0.75.}
+
+\item{eval_metric}{Character; metric used for evaluation. Default is "aucpr"
+(Area Under the Precision-Recall Curve).}
+
+\item{early_stopping_rounds}{Integer; training stops if performance doesn't improve
+for this many rounds. Default is 10.}
+
+\item{gamma}{Numeric; minimum loss reduction required to make a partition. Default is NULL.}
+
+\item{maximize}{Logical; whether to maximize the evaluation metric. Default is NULL.}
+
+\item{min_child_weight}{Numeric; minimum sum of instance weight needed in a child. Default is 1.}
+
+\item{verbose}{Logical; whether to print training progress. Default is FALSE.}
+
+\item{xgb_model}{Optional; previously trained model to continue training from. Default is NULL.}
+
+\item{modelfilename}{Optional; path to save the trained model. Default is NULL.}
+
+\item{objective}{Character; learning objective for XGBoost. Default is "binary:logistic".}
+}
 \value{
-A trained XGBoost model (xgb.Booster object).
+A trained XGBoost model (xgb.Booster object). If modelfilename is provided,
+        the model is also saved to disk.
 }
 \description{
-This function trains an XGBoost model with optimized default
-parameters derived from worldwide data analysis.
+This function trains an XGBoost model with optimized default parameters derived from worldwide
+data analysis. It supports both training from scratch and fine-tuning existing models, with
+optional validation data for early stopping.
+}
+\details{
+The function implements several best practices for deforestation prediction:
+* Uses AUCPR as default metric due to class imbalance in deforestation data
+* Implements early stopping to prevent overfitting
+* Saves both model and feature names when a filename is provided
+* Supports continuing training from a previous model state
+}
+\examples{
+\dontrun{
+# Basic training
+model <- ff_train(
+  train_matrix = list(features = feature_matrix, label = labels),
+  nrounds = 100
+)
+
+# Training with validation and model saving
+model <- ff_train(
+  train_matrix = training_data,
+  validation_matrix = validation_data,
+  modelfilename = "deforestation_model.model",
+  verbose = TRUE
+)
+}
+
+}
+\seealso{
+* [xgboost::xgb.train()] for underlying XGBoost training function
+* [ff_predict()] for making predictions with the trained model
 }
