@@ -17,7 +17,7 @@ config_load <- function(config_file_path = "") {
     if (file.exists(user_config_file)) { # optionally load the user config_file
       print("user_config_file, config.yml was found!")
       load_variables(user_config_file)
-    }  else {
+    } else {
       message("User config file is not found the working directory")
     }
   } else {
