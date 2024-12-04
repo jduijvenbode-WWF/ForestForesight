@@ -2,7 +2,9 @@ name: R Check and Unit Tests
 
 on:
   pull_request:
-    branches: [ "develop" ]
+    branches:
+      - "main"
+      - "develop"
 
 jobs:
   R-CMD-check:
@@ -34,7 +36,6 @@ jobs:
             libgeos-dev \
             libnetcdf-dev \
             texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
-
       - name: Set up renv
         uses: r-lib/actions/setup-renv@v2
 
