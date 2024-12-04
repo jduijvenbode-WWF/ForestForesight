@@ -42,7 +42,7 @@ load_variables <- function(config_file) {
           if (grepl("^tests/", value)) {
             value <- system.file(value, package = "ForestForesight")
           }
-          do.call(Sys.setenv, setNames(list(value), var_name))
+          do.call(Sys.setenv, list(var_name = value))
         }
       }
     }
