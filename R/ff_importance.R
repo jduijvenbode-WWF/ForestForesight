@@ -35,8 +35,6 @@ ff_importance <- function(model, output_csv, name = NA, append = TRUE) {
     }
   }
   model <- load_model(model)
-  # Load feature names
-  feature_names <- model$feature_names
   # Get importance
   importance_matrix <- xgboost::xgb.importance(model = model)
   # create importance dataset structure
