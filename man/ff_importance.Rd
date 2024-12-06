@@ -4,7 +4,7 @@
 \alias{ff_importance}
 \title{Extract Feature Importance from ForestForesight Model}
 \usage{
-ff_importance(model, output_csv, name = NA, append = TRUE)
+ff_importance(model, output_csv = NULL, name = NA, append = TRUE)
 }
 \arguments{
 \item{output_csv}{Character string. Path to the output CSV file.}

@@ -20,7 +20,7 @@ ff_run(
   filter_features = "initialforestcover",
   filter_conditions = ">0",
   accuracy_output_path = NULL,
-  importance_output_path = NA,
+  importance_output_path = NULL,
   verbose = TRUE,
   autoscale_sample = FALSE,
   validation = FALSE,
@@ -61,9 +61,9 @@ Default is initialforestcover. Can be more than one}
 \item{filter_conditions}{The condition with value that is used to filter the training dataset based on mask features.
 Default is ">0". Can be more than one}
 
-\item{accuracy_output_path}{Path to save accuracy metrics in CSV format. Default is NA (no CSV output).}
+\item{accuracy_output_path}{Path to save accuracy metrics in CSV format. Default is NULL (no CSV output).}
 
-\item{importance_output_path}{Path to save feature importance metrics in CSV format. Default is NA (no CSV output).}
+\item{importance_output_path}{Path to save feature importance metrics in CSV format. Default is NULL (no CSV output).}
 
 \item{verbose}{Logical; whether to display progress messages. Default is TRUE.}
 
