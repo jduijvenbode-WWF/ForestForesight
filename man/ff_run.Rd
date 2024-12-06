@@ -74,8 +74,15 @@ based on the size of the area and the length of the training period.}
 which is set at 0.25 of the training matrix. Should not be set if validation_dates is not NULL.}
 }
 \value{
-A SpatRaster object containing the predicted deforestation probabilities.
-If multiple prediction dates are given you receive a rasterstack with a raster per date
+A list containing:
+  \item{prediction_timeseries}{A SpatRaster object or RasterStack containing the predicted deforestation
+        probabilities for each prediction date}
+  \item{shape}{The SpatVector object used for analysis, either from direct input or derived from country code}
+  \item{model}{Path to the model used for predictions (either newly trained or pretrained)}
+  \item{accuracy_dataframe}{A SpatialPolygonsDataFrame containing accuracy metrics for each analyzed area.
+        NULL if no groundtruth data was available}
+  \item{importance_dataframe}{A data frame containing feature importance metrics.
+        NULL if importance calculation was not requested}
 }
 \description{
 This function trains an XGBoost model using historical data and then predicts deforestation

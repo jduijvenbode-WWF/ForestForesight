@@ -30,8 +30,15 @@
 #' @param validation Logical; Whether to add a validation matrix based on the training data,
 #' which is set at 0.25 of the training matrix. Should not be set if validation_dates is not NULL.
 #'
-#' @return A SpatRaster object containing the predicted deforestation probabilities.
-#' If multiple prediction dates are given you receive a rasterstack with a raster per date
+#' @return A list containing:
+#'   \item{prediction_timeseries}{A SpatRaster object or RasterStack containing the predicted deforestation
+#'         probabilities for each prediction date}
+#'   \item{shape}{The SpatVector object used for analysis, either from direct input or derived from country code}
+#'   \item{model}{Path to the model used for predictions (either newly trained or pretrained)}
+#'   \item{accuracy_dataframe}{A SpatialPolygonsDataFrame containing accuracy metrics for each analyzed area.
+#'         NULL if no groundtruth data was available}
+#'   \item{importance_dataframe}{A data frame containing feature importance metrics.
+#'         NULL if importance calculation was not requested}
 #'
 #' @examples
 #' \dontrun{
@@ -89,110 +96,32 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     train_dates, validation_dates,
     prediction_dates, validation, pretrained_model_path, groundtruth_pattern
   )
-  validation <- corrected_date_input$validation
-  prediction_dates <- corrected_date_input$prediction_dates
-  pretrained_model_path <- corrected_date_input$pretrained_model_path
-  train_dates <- corrected_date_input$train_dates
-
   shape_and_tiles <- check_folder_and_input(
     ff_folder, country, shape, train_dates,
-    prediction_dates, model_save_path, predictions_save_path
+    corrected_date_input$prediction_dates, model_save_path, predictions_save_path
   )
+
+  prediction_dates <- corrected_date_input$prediction_dates
   shape <- shape_and_tiles$shape
   tiles <- shape_and_tiles$tiles
 
-  # Train model if not provided
-  if (is.null(pretrained_model_path)) {
-    sample_fraction <- determine_sample_fraction(
-      autoscale_sample, ff_folder,
-      shape, train_dates,
-      filter_conditions, filter_features,
-      groundtruth_pattern,
-      ff_prep_parameters,
-      validation, fixed_sample_size, verbose
-    )
-    ff_cat("Preparing data\nLooking in folder", ff_folder, verbose = verbose, color = "green")
+  pretrained_model_path <- prepare_and_train_model(ff_folder, shape, corrected_date_input$train_dates,
+                                                   validation_dates, fixed_sample_size,
+                                                   model_save_path, filter_features, filter_conditions,
+                                                   groundtruth_pattern, corrected_date_input$validation,
+                                                   ff_prep_parameters, ff_train_parameters,
+                                                   pretrained_model_path, autoscale_sample, verbose)
 
-    data_and_parameters <- prepare_training_data(
-      ff_folder, shape, train_dates, filter_conditions, filter_features,
-      sample_fraction, groundtruth_pattern, validation,
-      ff_prep_parameters, verbose
-    )
-    train_input_data <- data_and_parameters$train_input_data
-    ff_prep_params_combined <- data_and_parameters$ff_prep_params_combined
+  importance_dataframe <- get_feature_importance(importance_output_path, model_save_path, pretrained_model_path)
 
-    train_input_data <- prepare_validation_data(
-      train_input_data,
-      train_dates, validation_dates, ff_prep_params_combined, verbose
-    )
-
-    pretrained_model_path <- prepare_and_train(
-      train_input_data, model_save_path,
-      validation, validation_dates, ff_train_parameters, verbose
-    )
-  }
-  if (has_value(importance_output_path)) {
-    if (has_value(model_save_path)) {
-      ff_importance(model = model_save_path, output_csv = importance_output_path, append = TRUE)
-    } else {
-      ff_importance(model = pretrained_model_path, output_csv = importance_output_path, append = TRUE)
-    }
-  }
-  # Predict
-  if (prediction_dates[1] == "3000-01-01") {
-    # if no prediction dates were given the prediction date was set to 3000 but should not make
-    # actual predictions
-    return(NA)
-  }
-  merged_polygons <- NULL
-  for (prediction_date in prediction_dates) {
-    raster_list <- list()
-    for (tile in tiles) {
-      # run the predict function if a model was not built but was provided by the function
-      prediction_input_data <- prepare_and_run_prediction(
-        ff_folder, tile, prediction_date,
-        groundtruth_pattern, filter_features, filter_conditions,
-        ff_prep_parameters, pretrained_model_path, verbose
-      )
-
-      prediction <- ff_predict(
-        model = pretrained_model_path, test_matrix = prediction_input_data$feature_dataset,
-        indices = prediction_input_data$test_indices,
-        templateraster = prediction_input_data$groundtruth_raster,
-        verbose = verbose, certainty = TRUE
-      )
-      raster_list[[tile]] <- prediction$predicted_raster
-      # Analyze prediction
-      merged_polygons <- analyze_predictions(
-        ff_folder, shape, tile, prediction, prediction_date,
-        filter_features, filter_conditions, prediction_input_data,
-        certainty_threshold, accuracy_output_path, country,
-        merged_polygons, verbose
-      )
-    }
-    if (verbose && has_value(merged_polygons)) {
-      # print the precision and recall and F0.5
-      precision <- sum(merged_polygons$TP, na.rm = TRUE) /
-        (sum(merged_polygons$TP, na.rm = TRUE) + sum(merged_polygons$FP, na.rm = TRUE))
-      recall <- sum(merged_polygons$TP, na.rm = TRUE) /
-        (sum(merged_polygons$TP, na.rm = TRUE) + sum(merged_polygons$FN, na.rm = TRUE))
-      ff_cat("date:", prediction_date, "precision:", precision, ",recall:", recall,
-        ",F0.5", (1.25 * precision * recall) / (0.25 * precision + recall),
-        color = "green"
-      )
-    }
-
-    merged_prediction <- merge_and_write_raster(
-      raster_list, shape,
-      prediction_date, predictions_save_path, prediction_dates, verbose
-    )
-    if (!exists("prediction_timeseries")) {
-      prediction_timeseries <- merged_prediction
-    } else {
-      prediction_timeseries <- c(prediction_timeseries, merged_prediction)
-    }
-  }
-  return(prediction_timeseries)
+  prediction_data <- run_predictions(ff_folder,shape, groundtruth_pattern, prediction_dates, tiles,filter_features, filter_conditions, ff_prep_parameters,
+                              pretrained_model_path, certainty_threshold, accuracy_output_path, country, predictions_save_path, verbose)
+  return(list(prediction_timeseries = prediction_data$prediction_timeseries,
+              shape = shape,
+              model = pretrained_model_path,
+              accuracy_dataframe = prediction_data$accuracy_polygons,
+              importance_dataframe = importance_dataframe,
+              ))
 }
 
 
@@ -326,7 +255,7 @@ check_dates <- function(train_dates, validation_dates, prediction_dates,
       if (is.na(months_back) || months_back <= 0) {
         months_back <- 6
         ff_cat(paste("Invalid or missing groundtruth_pattern:", groundtruth_pattern, ". Defaulting to 6 months."),
-          color = "yellow", verbose = TRUE
+               color = "yellow", verbose = TRUE
         )
       }
 
@@ -335,8 +264,8 @@ check_dates <- function(train_dates, validation_dates, prediction_dates,
           months(months_back, abbreviate = FALSE)
       )
       ff_cat("No train dates were given though a training was wanted, model will be trained on",
-        train_dates,
-        color = "yellow"
+             train_dates,
+             color = "yellow"
       )
     }
 
@@ -350,7 +279,7 @@ check_dates <- function(train_dates, validation_dates, prediction_dates,
   prediction_dates <- sort(prediction_dates)
   return(list(
     validation = validation, train_dates = train_dates,
-    prediction_dates = prediction_dates, pretrained_model_path = pretrained_model_path
+    prediction_dates = prediction_dates
   ))
 }
 
@@ -386,7 +315,7 @@ check_folder_and_input <- function(ff_folder, country, shape, train_dates, predi
   }
   if (has_value(shape)) {
     ForestForesight::check_spatvector(shape,
-      check_size = has_value(train_dates)
+                                      check_size = has_value(train_dates)
     )
   } else {
     data(countries, envir = environment())
@@ -446,7 +375,7 @@ determine_sample_fraction <- function(autoscale_sample, ff_folder, shape, train_
   # ff prep to determine the sample size
   if (autoscale_sample && has_value(filter_conditions)) {
     ff_cat("Finding optimal sample size based on filter conditions",
-      color = "green", verbose = verbose
+           color = "green", verbose = verbose
     )
     ff_prep_params_original <- list(
       datafolder = ff_folder, shape = shape, dates = train_dates,
@@ -479,7 +408,7 @@ determine_sample_fraction <- function(autoscale_sample, ff_folder, shape, train_
     }
 
     ff_cat("Autoscaled sample size:", round(sample_fraction, 2),
-      color = "green", verbose = verbose
+           color = "green", verbose = verbose
     )
     return(sample_fraction)
   } else {
@@ -543,7 +472,7 @@ prepare_validation_data <- function(train_input_data, train_dates,
                                     validation_dates, ff_prep_params_combined, verbose) {
   if (has_value(validation_dates)) {
     ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n",
-      color = "green", verbose = verbose
+           color = "green", verbose = verbose
     )
 
     ff_prep_params_combined["dates"] <- validation_dates
@@ -637,8 +566,8 @@ prepare_and_run_prediction <- function(ff_folder, tile, prediction_date,
       model_features <- list("inc_features" = get(load(gsub("\\.model", "\\.rda", pretrained_model_path))))
 
       ff_cat("pre-trained model only includes the following features:",
-        paste(model_features$inc_features, collapse = ", "),
-        color = "green", verbose = verbose
+             paste(model_features$inc_features, collapse = ", "),
+             color = "green", verbose = verbose
       )
 
       ff_prep_params_combined <- merge_lists(
@@ -681,12 +610,12 @@ create_forest_mask <- function(ff_folder, tile, prediction_date, filter_features
     operator <- gsub("[[:alnum:]]", "", filter_conditions[i])
     filter_value <- as.numeric(gsub("[^0-9.-]", "", filter_conditions[i]))
     current_feature_raster <- switch(operator,
-      ">" = current_feature_raster > filter_value,
-      "<" = current_feature_raster < filter_value,
-      "==" = current_feature_raster == filter_value,
-      "!=" = current_feature_raster != filter_value,
-      ">=" = current_feature_raster >= filter_value,
-      "<=" = current_feature_raster <= filter_value
+                                     ">" = current_feature_raster > filter_value,
+                                     "<" = current_feature_raster < filter_value,
+                                     "==" = current_feature_raster == filter_value,
+                                     "!=" = current_feature_raster != filter_value,
+                                     ">=" = current_feature_raster >= filter_value,
+                                     "<=" = current_feature_raster <= filter_value
     )
     if (i == 1) {
       forest_mask <- current_feature_raster
@@ -728,10 +657,10 @@ analyze_predictions <- function(ff_folder, shape, tile, prediction, prediction_d
 
     analysis_polygons <- terra::intersect(terra::vect(get(data("degree_polygons"))), terra::aggregate(shape))
     polygons <- ff_analyze(prediction$predicted_raster > certainty_threshold,
-      groundtruth = prediction_input_data$groundtruth_raster,
-      csv_filename = accuracy_output_path, tile = tile, date = prediction_date,
-      append = TRUE, country = country,
-      verbose = verbose, forest_mask = forest_mask, analysis_polygons = analysis_polygons
+                           groundtruth = prediction_input_data$groundtruth_raster,
+                           csv_filename = accuracy_output_path, tile = tile, date = prediction_date,
+                           append = TRUE, country = country,
+                           verbose = verbose, forest_mask = forest_mask, analysis_polygons = analysis_polygons
     )
     if (verbose) {
       if (!has_value(merged_polygons)) {
@@ -782,4 +711,251 @@ merge_and_write_raster <- function(raster_list, shape, prediction_date, predicti
     terra::writeRaster(merged_prediction, filename, overwrite = TRUE)
   }
   return(merged_prediction)
+}
+
+#' Prepare and Train ForestForesight Model
+#'
+#' This function handles the complete model preparation and training pipeline,
+#' including data sampling, preparation of training and validation datasets,
+#' and model training. If a pretrained model is provided, it skips the training process.
+#'
+#' @param ff_folder Path to the ForestForesight data folder
+#' @param shape SpatVector object representing the area of interest
+#' @param train_dates Vector of dates for model training
+#' @param validation_dates Vector of dates for validation
+#' @param fixed_sample_size Numeric; target size for training sample
+#' @param model_save_path Path to save the trained model
+#' @param filter_features Vector of feature names used for filtering
+#' @param filter_conditions Vector of conditions applied to filter features
+#' @param groundtruth_pattern String pattern for groundtruth data identification
+#' @param validation Logical; whether to use validation sampling
+#' @param ff_prep_parameters List of parameters for data preparation
+#' @param ff_train_parameters List of parameters for model training
+#' @param pretrained_model_path Path to a pretrained model (if using one)
+#' @param autoscale_sample Logical; whether to automatically scale the sample size
+#'
+#' @return Path to the trained or pretrained model
+#'
+#' @details
+#' The function follows these steps:
+#' 1. Determines appropriate sample size if autoscaling is enabled
+#' 2. Prepares training data with the calculated sample fraction
+#' 3. Prepares validation data if required
+#' 4. Trains the model and saves it if a save path is provided
+#'
+#' @noRd
+
+prepare_and_train_model <- function(ff_folder, shape, train_dates, validation_dates,
+                                    fixed_sample_size, model_save_path, filter_features, filter_conditions,
+                                    groundtruth_pattern, validation, ff_prep_parameters,
+                                    ff_train_parameters, pretrained_model_path, autoscale_sample, verbose){
+  # Train model if not provided
+  if (is.null(pretrained_model_path)) {
+    sample_fraction <- determine_sample_fraction(
+      autoscale_sample, ff_folder,
+      shape, train_dates,
+      filter_conditions, filter_features,
+      groundtruth_pattern,
+      ff_prep_parameters,
+      validation, fixed_sample_size, verbose
+    )
+    ff_cat("Preparing data\nLooking in folder", ff_folder, verbose = verbose, color = "green")
+
+    data_and_parameters <- prepare_training_data(
+      ff_folder, shape, train_dates, filter_conditions, filter_features,
+      sample_fraction, groundtruth_pattern, validation,
+      ff_prep_parameters, verbose
+    )
+    train_input_data <- data_and_parameters$train_input_data
+    ff_prep_params_combined <- data_and_parameters$ff_prep_params_combined
+
+    train_input_data <- prepare_validation_data(
+      train_input_data,
+      train_dates, validation_dates, ff_prep_params_combined, verbose
+    )
+
+    pretrained_model_path <- prepare_and_train(
+      train_input_data, model_save_path,
+      validation, validation_dates, ff_train_parameters, verbose
+    )
+  }
+  return(pretrained_model_path)
+}
+
+#' Print Model Performance Metrics
+#'
+#' Calculates and prints precision, recall, and F0.5 score for model predictions
+#' if merged polygons are available. These metrics are particularly relevant for
+#' deforestation prediction evaluation.
+#'
+#' @param merged_polygons Data frame or matrix containing True Positive (TP),
+#'        False Positive (FP), and False Negative (FN) counts
+#' @param prediction_date Character string representing the date of prediction
+#' @param verbose Logical; whether to print the metrics
+#'
+#' @details
+#' The function calculates:
+#' * Precision: TP / (TP + FP)
+#' * Recall: TP / (TP + FN)
+#' * F0.5 score: (1.25 * precision * recall) / (0.25 * precision + recall)
+#'
+#' F0.5 is used instead of F1 because in deforestation prediction, precision
+#' is generally considered more important than recall.
+#'
+#' @note
+#' The function only prints metrics if both verbose is TRUE and merged_polygons
+#' contains valid data.
+#'
+#' @noRd
+print_model_scoring <- function(merged_polygons, prediction_date, verbose){
+  if (verbose && has_value(merged_polygons)) {
+    # print the precision and recall and F0.5
+    precision <- sum(merged_polygons$TP, na.rm = TRUE) /
+      (sum(merged_polygons$TP, na.rm = TRUE) + sum(merged_polygons$FP, na.rm = TRUE))
+    recall <- sum(merged_polygons$TP, na.rm = TRUE) /
+      (sum(merged_polygons$TP, na.rm = TRUE) + sum(merged_polygons$FN, na.rm = TRUE))
+    ff_cat("date:", prediction_date, "precision:", precision, ",recall:", recall,
+           ",F0.5", (1.25 * precision * recall) / (0.25 * precision + recall),
+           color = "green"
+    )
+  }
+}
+
+#' Run Deforestation Predictions Across Multiple Dates and Tiles
+#'
+#' This function executes the prediction pipeline across multiple dates and geographical
+#' tiles, handling the prediction process, analysis, and output generation for each
+#' combination.
+#'
+#' @param ff_folder Path to the ForestForesight data folder
+#' @param shape SpatVector object representing the area of interest
+#' @param groundtruth_pattern String pattern for identifying groundtruth data
+#' @param prediction_dates Vector of dates for which to make predictions
+#' @param tiles Vector of tile identifiers to process
+#' @param filter_features Vector of feature names used for filtering
+#' @param filter_conditions Vector of conditions to apply to filter features
+#' @param ff_prep_parameters List of parameters for data preparation
+#' @param pretrained_model_path Path to the pretrained model to use
+#' @param certainty_threshold Numeric; threshold for binary classification
+#' @param accuracy_output_path Path to save accuracy metrics
+#' @param country ISO3 country code for the area
+#' @param predictions_save_path Path to save prediction outputs
+#' @param verbose Logical; whether to print progress messages
+#'
+#' @return A list containing:
+#'   \item{predictions}{A SpatRaster or RasterStack object containing the prediction time series}
+#'   \item{accuracy_polygons}{A SpatialPolygonsDataFrame containing accuracy metrics (True Positives,
+#'   False Positives, False Negatives) for each polygon in the analysis area. NULL if no
+#'   groundtruth data is available.}
+#'
+#' @details
+#' The function performs these steps for each date and tile:
+#' 1. Prepares prediction input data
+#' 2. Generates predictions using the provided model
+#' 3. Analyzes predictions against groundtruth if available
+#' 4. Merges predictions across tiles
+#' 5. Combines results into a time series
+#'
+#' The function handles both:
+#' * Spatial merging (across tiles)
+#' * Temporal stacking (across dates)
+#'
+#' @note
+#' Groundtruth data is required for accuracy assessment but not for making predictions.
+#' The function will skip accuracy assessment if groundtruth data is unavailable.
+#'
+#' @noRd
+run_predictions <- function(ff_folder,shape, groundtruth_pattern, prediction_dates, tiles,filter_features, filter_conditions, ff_prep_parameters,
+                            pretrained_model_path, certainty_threshold, accuracy_output_path, country, predictions_save_path, verbose){
+  if (prediction_dates[1] == "3000-01-01") {
+    # if no prediction dates were given the prediction date was set to 3000 but should not make
+    # actual predictions
+    invisible(NULL)
+  }
+  merged_polygons <- NULL
+  for (prediction_date in prediction_dates) {
+    raster_list <- list()
+    for (tile in tiles) {
+      # run the predict function if a model was not built but was provided by the function
+      prediction_input_data <- prepare_and_run_prediction(
+        ff_folder, tile, prediction_date,
+        groundtruth_pattern, filter_features, filter_conditions,
+        ff_prep_parameters, pretrained_model_path, verbose
+      )
+
+      prediction <- ff_predict(
+        model = pretrained_model_path, test_matrix = prediction_input_data$feature_dataset,
+        indices = prediction_input_data$test_indices,
+        templateraster = prediction_input_data$groundtruth_raster,
+        verbose = verbose, certainty = TRUE
+      )
+      raster_list[[tile]] <- prediction$predicted_raster
+      # Analyze prediction
+      merged_polygons <- analyze_predictions(
+        ff_folder, shape, tile, prediction, prediction_date,
+        filter_features, filter_conditions, prediction_input_data,
+        certainty_threshold, accuracy_output_path, country,
+        merged_polygons, verbose
+      )
+    }
+    print_model_scoring(merged_polygons, prediction_date, verbose)
+
+    merged_prediction <- merge_and_write_raster(
+      raster_list, shape,
+      prediction_date, predictions_save_path, prediction_dates, verbose
+    )
+    if (!exists("prediction_timeseries")) {
+      prediction_timeseries <- merged_prediction
+    } else {
+      prediction_timeseries <- c(prediction_timeseries, merged_prediction)
+    }
+  }
+  return(list(predictions = prediction_timeseries,
+              accuracy_polygons = merged_polygons))
+}
+
+#' Calculate Feature Importance for ForestForesight Model
+#'
+#' This function handles the calculation and optional saving of feature importance
+#' metrics from a ForestForesight model. It supports both newly trained and
+#' pretrained models.
+#'
+#' @param importance_output_path Character; path to save importance metrics CSV.
+#'        If NULL, importance is calculated but not saved.
+#' @param model_save_path Character; path to the newly trained model, if one exists
+#' @param pretrained_model_path Character; path to pretrained model, used if no new
+#'        model was trained
+#'
+#' @return Returns one of:
+#'   \itemize{
+#'     \item A data frame containing feature importance metrics if importance was calculated
+#'     \item NULL if no importance_output_path was provided
+#'   }
+#'
+#' @details
+#' The function prioritizes using a newly trained model (model_save_path) over a
+#' pretrained model when both are available. Feature importance is calculated using
+#' the ff_importance function with append mode enabled.
+#'
+#' @note
+#' The function requires at least one valid model path (either model_save_path or
+#' pretrained_model_path) when importance_output_path is provided.
+#'
+#' @noRd
+get_feature_importance <- function(importance_output_path, model_save_path, pretrained_model_path) {
+  if (!has_value(importance_output_path)) {
+    return(NULL)
+  }
+
+  if (has_value(model_save_path)) {
+    importance_dataframe <- ff_importance(model = model_save_path,
+                                          output_csv = importance_output_path,
+                                          append = TRUE)
+  } else {
+    importance_dataframe <- ff_importance(model = pretrained_model_path,
+                                          output_csv = importance_output_path,
+                                          append = TRUE)
+  }
+
+  return(importance_dataframe)
 }
