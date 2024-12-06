@@ -116,11 +116,11 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
 
   prediction_data <- run_predictions(ff_folder,shape, groundtruth_pattern, prediction_dates, tiles,filter_features, filter_conditions, ff_prep_parameters,
                               pretrained_model_path, certainty_threshold, accuracy_output_path, country, predictions_save_path, verbose)
-  return(list(prediction_timeseries = prediction_data$prediction_timeseries,
+  return(list(predictions = prediction_data$predictions,
               shape = shape,
               model = pretrained_model_path,
               accuracy_dataframe = prediction_data$accuracy_polygons,
-              importance_dataframe = importance_dataframe,
+              importance_dataframe = importance_dataframe
               ))
 }
 
