@@ -105,23 +105,28 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   shape <- shape_and_tiles$shape
   tiles <- shape_and_tiles$tiles
 
-  pretrained_model_path <- prepare_and_train_model(ff_folder, shape, corrected_date_input$train_dates,
-                                                   validation_dates, fixed_sample_size,
-                                                   model_save_path, filter_features, filter_conditions,
-                                                   groundtruth_pattern, corrected_date_input$validation,
-                                                   ff_prep_parameters, ff_train_parameters,
-                                                   pretrained_model_path, autoscale_sample, verbose)
+  pretrained_model_path <- prepare_and_train_model(
+    ff_folder, shape, corrected_date_input$train_dates,
+    validation_dates, fixed_sample_size,
+    model_save_path, filter_features, filter_conditions,
+    groundtruth_pattern, corrected_date_input$validation,
+    ff_prep_parameters, ff_train_parameters,
+    pretrained_model_path, autoscale_sample, verbose
+  )
 
   importance_dataframe <- get_feature_importance(importance_output_path, model_save_path, pretrained_model_path)
 
-  prediction_data <- run_predictions(ff_folder,shape, groundtruth_pattern, prediction_dates, tiles,filter_features, filter_conditions, ff_prep_parameters,
-                              pretrained_model_path, certainty_threshold, accuracy_output_path, country, predictions_save_path, verbose)
-  return(list(predictions = prediction_data$predictions,
-              shape = shape,
-              model = pretrained_model_path,
-              accuracy_dataframe = prediction_data$accuracy_polygons,
-              importance_dataframe = importance_dataframe
-              ))
+  prediction_data <- run_predictions(
+    ff_folder, shape, groundtruth_pattern, prediction_dates, tiles, filter_features, filter_conditions, ff_prep_parameters,
+    pretrained_model_path, certainty_threshold, accuracy_output_path, country, predictions_save_path, verbose
+  )
+  return(list(
+    predictions = prediction_data$predictions,
+    shape = shape,
+    model = pretrained_model_path,
+    accuracy_dataframe = prediction_data$accuracy_polygons,
+    importance_dataframe = importance_dataframe
+  ))
 }
 
 
@@ -255,7 +260,7 @@ check_dates <- function(train_dates, validation_dates, prediction_dates,
       if (is.na(months_back) || months_back <= 0) {
         months_back <- 6
         ff_cat(paste("Invalid or missing groundtruth_pattern:", groundtruth_pattern, ". Defaulting to 6 months."),
-               color = "yellow", verbose = TRUE
+          color = "yellow", verbose = TRUE
         )
       }
 
@@ -264,8 +269,8 @@ check_dates <- function(train_dates, validation_dates, prediction_dates,
           months(months_back, abbreviate = FALSE)
       )
       ff_cat("No train dates were given though a training was wanted, model will be trained on",
-             train_dates,
-             color = "yellow"
+        train_dates,
+        color = "yellow"
       )
     }
 
@@ -315,7 +320,7 @@ check_folder_and_input <- function(ff_folder, country, shape, train_dates, predi
   }
   if (has_value(shape)) {
     ForestForesight::check_spatvector(shape,
-                                      check_size = has_value(train_dates)
+      check_size = has_value(train_dates)
     )
   } else {
     data(countries, envir = environment())
@@ -375,7 +380,7 @@ determine_sample_fraction <- function(autoscale_sample, ff_folder, shape, train_
   # ff prep to determine the sample size
   if (autoscale_sample && has_value(filter_conditions)) {
     ff_cat("Finding optimal sample size based on filter conditions",
-           color = "green", verbose = verbose
+      color = "green", verbose = verbose
     )
     ff_prep_params_original <- list(
       datafolder = ff_folder, shape = shape, dates = train_dates,
@@ -408,7 +413,7 @@ determine_sample_fraction <- function(autoscale_sample, ff_folder, shape, train_
     }
 
     ff_cat("Autoscaled sample size:", round(sample_fraction, 2),
-           color = "green", verbose = verbose
+      color = "green", verbose = verbose
     )
     return(sample_fraction)
   } else {
@@ -472,7 +477,7 @@ prepare_validation_data <- function(train_input_data, train_dates,
                                     validation_dates, ff_prep_params_combined, verbose) {
   if (has_value(validation_dates)) {
     ff_cat("adding validation matrix for dates", paste(validation_dates, collapse = ", "), "\n",
-           color = "green", verbose = verbose
+      color = "green", verbose = verbose
     )
 
     ff_prep_params_combined["dates"] <- validation_dates
@@ -566,8 +571,8 @@ prepare_and_run_prediction <- function(ff_folder, tile, prediction_date,
       model_features <- list("inc_features" = get(load(gsub("\\.model", "\\.rda", pretrained_model_path))))
 
       ff_cat("pre-trained model only includes the following features:",
-             paste(model_features$inc_features, collapse = ", "),
-             color = "green", verbose = verbose
+        paste(model_features$inc_features, collapse = ", "),
+        color = "green", verbose = verbose
       )
 
       ff_prep_params_combined <- merge_lists(
@@ -610,12 +615,12 @@ create_forest_mask <- function(ff_folder, tile, prediction_date, filter_features
     operator <- gsub("[[:alnum:]]", "", filter_conditions[i])
     filter_value <- as.numeric(gsub("[^0-9.-]", "", filter_conditions[i]))
     current_feature_raster <- switch(operator,
-                                     ">" = current_feature_raster > filter_value,
-                                     "<" = current_feature_raster < filter_value,
-                                     "==" = current_feature_raster == filter_value,
-                                     "!=" = current_feature_raster != filter_value,
-                                     ">=" = current_feature_raster >= filter_value,
-                                     "<=" = current_feature_raster <= filter_value
+      ">" = current_feature_raster > filter_value,
+      "<" = current_feature_raster < filter_value,
+      "==" = current_feature_raster == filter_value,
+      "!=" = current_feature_raster != filter_value,
+      ">=" = current_feature_raster >= filter_value,
+      "<=" = current_feature_raster <= filter_value
     )
     if (i == 1) {
       forest_mask <- current_feature_raster
@@ -657,10 +662,10 @@ analyze_predictions <- function(ff_folder, shape, tile, prediction, prediction_d
 
     analysis_polygons <- terra::intersect(terra::vect(get(data("degree_polygons"))), terra::aggregate(shape))
     polygons <- ff_analyze(prediction$predicted_raster > certainty_threshold,
-                           groundtruth = prediction_input_data$groundtruth_raster,
-                           csv_filename = accuracy_output_path, tile = tile, date = prediction_date,
-                           append = TRUE, country = country,
-                           verbose = verbose, forest_mask = forest_mask, analysis_polygons = analysis_polygons
+      groundtruth = prediction_input_data$groundtruth_raster,
+      csv_filename = accuracy_output_path, tile = tile, date = prediction_date,
+      append = TRUE, country = country,
+      verbose = verbose, forest_mask = forest_mask, analysis_polygons = analysis_polygons
     )
     if (verbose) {
       if (!has_value(merged_polygons)) {
@@ -748,7 +753,7 @@ merge_and_write_raster <- function(raster_list, shape, prediction_date, predicti
 prepare_and_train_model <- function(ff_folder, shape, train_dates, validation_dates,
                                     fixed_sample_size, model_save_path, filter_features, filter_conditions,
                                     groundtruth_pattern, validation, ff_prep_parameters,
-                                    ff_train_parameters, pretrained_model_path, autoscale_sample, verbose){
+                                    ff_train_parameters, pretrained_model_path, autoscale_sample, verbose) {
   # Train model if not provided
   if (is.null(pretrained_model_path)) {
     sample_fraction <- determine_sample_fraction(
@@ -807,7 +812,7 @@ prepare_and_train_model <- function(ff_folder, shape, train_dates, validation_da
 #' contains valid data.
 #'
 #' @noRd
-print_model_scoring <- function(merged_polygons, prediction_date, verbose){
+print_model_scoring <- function(merged_polygons, prediction_date, verbose) {
   if (verbose && has_value(merged_polygons)) {
     # print the precision and recall and F0.5
     precision <- sum(merged_polygons$TP, na.rm = TRUE) /
@@ -815,8 +820,8 @@ print_model_scoring <- function(merged_polygons, prediction_date, verbose){
     recall <- sum(merged_polygons$TP, na.rm = TRUE) /
       (sum(merged_polygons$TP, na.rm = TRUE) + sum(merged_polygons$FN, na.rm = TRUE))
     ff_cat("date:", prediction_date, "precision:", precision, ",recall:", recall,
-           ",F0.5", (1.25 * precision * recall) / (0.25 * precision + recall),
-           color = "green"
+      ",F0.5", (1.25 * precision * recall) / (0.25 * precision + recall),
+      color = "green"
     )
   }
 }
@@ -865,8 +870,8 @@ print_model_scoring <- function(merged_polygons, prediction_date, verbose){
 #' The function will skip accuracy assessment if groundtruth data is unavailable.
 #'
 #' @noRd
-run_predictions <- function(ff_folder,shape, groundtruth_pattern, prediction_dates, tiles,filter_features, filter_conditions, ff_prep_parameters,
-                            pretrained_model_path, certainty_threshold, accuracy_output_path, country, predictions_save_path, verbose){
+run_predictions <- function(ff_folder, shape, groundtruth_pattern, prediction_dates, tiles, filter_features, filter_conditions, ff_prep_parameters,
+                            pretrained_model_path, certainty_threshold, accuracy_output_path, country, predictions_save_path, verbose) {
   if (prediction_dates[1] == "3000-01-01") {
     # if no prediction dates were given the prediction date was set to 3000 but should not make
     # actual predictions
@@ -910,8 +915,10 @@ run_predictions <- function(ff_folder,shape, groundtruth_pattern, prediction_dat
       prediction_timeseries <- c(prediction_timeseries, merged_prediction)
     }
   }
-  return(list(predictions = prediction_timeseries,
-              accuracy_polygons = merged_polygons))
+  return(list(
+    predictions = prediction_timeseries,
+    accuracy_polygons = merged_polygons
+  ))
 }
 
 #' Calculate Feature Importance for ForestForesight Model
@@ -948,13 +955,17 @@ get_feature_importance <- function(importance_output_path, model_save_path, pret
   }
 
   if (has_value(model_save_path)) {
-    importance_dataframe <- ff_importance(model = model_save_path,
-                                          output_csv = importance_output_path,
-                                          append = TRUE)
+    importance_dataframe <- ff_importance(
+      model = model_save_path,
+      output_csv = importance_output_path,
+      append = TRUE
+    )
   } else {
-    importance_dataframe <- ff_importance(model = pretrained_model_path,
-                                          output_csv = importance_output_path,
-                                          append = TRUE)
+    importance_dataframe <- ff_importance(
+      model = pretrained_model_path,
+      output_csv = importance_output_path,
+      append = TRUE
+    )
   }
 
   return(importance_dataframe)
