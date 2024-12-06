@@ -88,7 +88,7 @@ ff_prep <- function(datafolder = Sys.getenv("DATA_FOLDER"), country = NA, shape 
                     add_date = TRUE, verbose = TRUE, shrink = "none", window = NA,
                     label_threshold = 1, add_xy = FALSE) {
   ######## pre-conditions check########
-  if (!hasvalue(groundtruth_pattern)) {
+  if (!has_value(groundtruth_pattern)) {
     ff_cat("no environment variable for DEFAULT_GROUNDTRUTH, reverting to groundtruth6m",
       color = "yellow", verbose = verbose
     )
@@ -147,7 +147,7 @@ ff_prep <- function(datafolder = Sys.getenv("DATA_FOLDER"), country = NA, shape 
   feature_dataset <- validation_result$feature_dataset
   validation_matrix <- validation_result$validation_matrix
   ########## return data from prep function to main function####
-  if (hasvalue(feature_dataset$label) && sum(feature_dataset$label) == 0) {
+  if (has_value(feature_dataset$label) && sum(feature_dataset$label) == 0) {
     ff_cat("Data contains no actuals, all labels are 0", color = "yellow", verbose = verbose)
   }
 
@@ -163,15 +163,15 @@ ff_prep <- function(datafolder = Sys.getenv("DATA_FOLDER"), country = NA, shape 
 
 check_pre_conditions <- function(dates, country, shape, tiles, shrink, inc_features, exc_features, verbose, datafolder) {
   ff_cat("Checking ff_prep function input", verbose = verbose)
-  if (!hasvalue(datafolder)) {
+  if (!has_value(datafolder)) {
     stop("no environment variable for DATA_FOLDER found and no other option given")
   }
   # Check date validity
-  if (!hasvalue(dates) || any(is.na(dates)) || any(dates == "")) {
+  if (!has_value(dates) || any(is.na(dates)) || any(dates == "")) {
     stop("No dates were given")
   }
   earliest_date <- Sys.getenv("EARLIEST_DATA_DATE")
-  if (!hasvalue(earliest_date)) {
+  if (!has_value(earliest_date)) {
     ff_cat("no environment variable for EARLIEST_DATA_DATE, reverting to 2021-01-01",
       color = "yellow", verbose = verbose
     )
@@ -182,22 +182,22 @@ check_pre_conditions <- function(dates, country, shape, tiles, shrink, inc_featu
   }
 
   # Check input parameters validity
-  if (!hasvalue(tiles) && !hasvalue(country) && !hasvalue(shape)) {
+  if (!has_value(tiles) && !has_value(country) && !has_value(shape)) {
     stop("Unknown what to process since no tiles, country, or shape were given")
   }
-  if (hasvalue(shape)) {
+  if (has_value(shape)) {
     shape <- check_spatvector(shape)
   }
-  if (!hasvalue(country) && !hasvalue(shape) && shrink != "none") {
+  if (!has_value(country) && !has_value(shape) && shrink != "none") {
     stop("Shrink parameter must be 'none' when neither country nor shape are provided")
   }
-  if (all(c(hasvalue(inc_features), hasvalue(exc_features)))) {
+  if (all(c(has_value(inc_features), has_value(exc_features)))) {
     stop("Only supply either inc_features or exc_features, not both")
   }
 }
 
 get_tiles_and_shape <- function(country, shape, tiles_vector, tiles, verbose) {
-  if (hasvalue(country)) {
+  if (has_value(country)) {
     ff_cat("Selecting based on country", verbose = verbose)
     countries <- terra::vect(get(data("countries", envir = environment())))
     shape <- countries[which(countries$iso3 %in% country)]
@@ -206,7 +206,7 @@ get_tiles_and_shape <- function(country, shape, tiles_vector, tiles, verbose) {
       tiles <- tiles_vector
     }
     ff_cat("Processing tiles:", paste(tiles, collapse = ", "), verbose = verbose)
-  } else if (hasvalue(shape)) {
+  } else if (has_value(shape)) {
     if (!terra::is.lonlat(shape)) {
       shape <- terra::project(shape, "epsg:4326")
     }
@@ -253,7 +253,7 @@ list_and_filter_tile_files <- function(datafolder = NA, tiles, groundtruth_patte
 }
 
 filter_files_by_features <- function(list_of_feature_files, exc_features, inc_features, groundtruth_pattern, verbose) {
-  if (hasvalue(exc_features)) {
+  if (has_value(exc_features)) {
     ff_cat("Excluding features", verbose = verbose)
     # Find indices of files that end its basename with a feature in exc_features
     exc_indices <- unique(unlist(sapply(exc_features, function(x) {
@@ -264,7 +264,7 @@ filter_files_by_features <- function(list_of_feature_files, exc_features, inc_fe
     }
   }
 
-  if (hasvalue(inc_features)) {
+  if (has_value(inc_features)) {
     # Find indices of files that end its basename with a feature in inc_features
     inc_indices <- unique(unlist(sapply(c(inc_features, groundtruth_pattern), function(x) {
       which(endsWith(gsub(".tif", "", basename(list_of_feature_files)), x))
@@ -367,7 +367,7 @@ append_date_based_features <- function(feature_dataset, date) {
   return(as.matrix(feature_dataset))
 }
 
-sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices) {
+sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices, verbose) {
   # take a random sample if that was applied
   if (sample_size < 1) {
     sample_indices <- sample(seq_len(nrow(current_tile_feature_dataset)), max(round(nrow(current_tile_feature_dataset) * sample_size), 1))
@@ -375,7 +375,7 @@ sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_
     filtered_indices <- filtered_indices[sample_indices]
   }
 
-  if (hasvalue(dim(current_tile_feature_dataset))) {
+  if (has_value(dim(current_tile_feature_dataset))) {
     if (first_loop_iteration) {
       feature_dataset <- current_tile_feature_dataset
       pixel_indices <- filtered_indices
@@ -420,7 +420,7 @@ split_feature_and_label_data <- function(feature_dataset, groundtruth_pattern, l
   if (length(groundtruth_index) == 1) {
     data_label <- feature_dataset[, groundtruth_index]
 
-    if (hasvalue(label_threshold)) {
+    if (has_value(label_threshold)) {
       data_label <- as.numeric(data_label >= label_threshold)
       if (inherits(groundtruth_raster, "SpatRaster")) {
         groundtruth_raster <- as.numeric(groundtruth_raster >= label_threshold)
@@ -499,7 +499,7 @@ process_tile_dates <- function(tiles, tile, current_tile_files, shape, shrink, w
     current_tile_feature_dataset <- feature_filter_result$filtered_matrix
     filtered_indices <- feature_filter_result$filtered_indices
 
-    combine_result <- sample_and_combine_data(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices)
+    combine_result <- sample_and_combine_data(date, current_tile_feature_dataset, feature_dataset, filtered_indices, sample_size, first_loop_iteration, pixel_indices, verbose = verbose)
     feature_dataset <- combine_result$feature_dataset
     pixel_indices <- combine_result$pixel_indices
     first_loop_iteration <- combine_result$first_loop_iteration

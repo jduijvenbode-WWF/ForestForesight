@@ -1,5 +1,3 @@
-#' Get Information About a Spatial Shape or Country
-#'
 #' This function provides information about a given spatial shape or country,
 #' including the number of tiles it covers, available features, area, bounding box,
 #' overlapping countries, and country groups.
@@ -45,93 +43,113 @@
 #' country_groups <- result_shape$country_groups
 #' }
 #'
-#' @import terra
-#' @importFrom tools file_path_sans_ext
-#'
+#' @return List containing spatial information (invisibly)
 #' @export
 get_info <- function(shape_or_iso, ff_dir = NULL, verbose = TRUE) {
-  extract_feature_name <- function(filename) {
-    parts <- strsplit(filename, "_")[[1]]
-    last_part <- parts[length(parts)]
-    feature_name <- tools::file_path_sans_ext(last_part)
-    return(feature_name)
+  shape <- get_spatial_shape(shape_or_iso)
+  country_info <- get_country_info(shape)
+  tile_info <- get_tile_info(shape, ff_dir)
+  spatial_info <- get_spatial_metrics(shape)
+
+  results <- c(tile_info, spatial_info, country_info)
+
+  if (verbose) {
+    print_info(results)
   }
 
-  # Load countries data
+  invisible(results)
+}
+
+get_spatial_shape <- function(shape_or_iso) {
   countries <- terra::vect(get(data("countries", envir = environment())))
 
-  # Check if input is ISO code or SpatVector
   if (is.character(shape_or_iso) && nchar(shape_or_iso) == 3) {
     shape <- countries[countries$iso3 == shape_or_iso, ]
     if (nrow(shape) == 0) {
       stop("Invalid ISO code: no matching country found")
     }
-    country_name <- shape$name
-    country_groups <- unique(shape$group)
-  } else if (inherits(shape_or_iso, "SpatVector")) {
-    shape <- shape_or_iso
-    overlapping <- terra::relate(countries, terra::buffer(shape, -1), "intersects")
-    overlapping_countries <- countries$name[overlapping]
-    country_groups <- unique(countries$group[overlapping])
-  } else {
-    stop("Input must be either a 3-digit ISO code or a terra SpatVector object")
+    return(shape)
   }
 
-  # Load gfw_tiles data
+  if (inherits(shape_or_iso, "SpatVector")) {
+    return(shape_or_iso)
+  }
+
+  stop("Input must be either a 3-digit ISO code or a terra SpatVector object")
+}
+
+get_country_info <- function(shape) {
+  countries <- terra::vect(get(data("countries", envir = environment())))
+
+  if ("iso3" %in% names(shape)) {
+    return(list(
+      overlapping_countries = shape$name,
+      country_groups = unique(shape$group)
+    ))
+  }
+
+  overlapping <- terra::relate(countries, terra::buffer(shape, -1), "intersects")
+  list(
+    overlapping_countries = countries$name[overlapping],
+    country_groups = unique(countries$group[overlapping])
+  )
+}
+
+get_tile_info <- function(shape, ff_dir) {
   gfw_tiles <- terra::vect(get(data("gfw_tiles", envir = environment())))
-
-  # Find intersecting tiles
-  intersecting_tiles <- terra::relate(gfw_tiles, shape, "intersects")
+  intersecting_tiles <- terra::relate(gfw_tiles, aggregate(shape), "intersects")
   covered_tiles <- gfw_tiles[intersecting_tiles, ]
-
-  # Get tile IDs
   tile_ids <- covered_tiles$tile_id
 
-  # Check available features
-  if (!is.null(ff_dir)) {
-    available_features <- unlist(sapply(tile_ids, function(x) {
-      list.files(file.path(ff_dir, "preprocessed/input", x), full.names = FALSE)
-    }))
-    available_features <- sort(unique(sapply(available_features, function(x) extract_feature_name(x))))
+  available_features <- if (!is.null(ff_dir)) {
+    get_available_features(tile_ids, ff_dir)
   } else {
-    available_features <- NULL
+    NULL
   }
 
-  # Calculate area
-  area <- terra::expanse(shape) / 10000
-
-  # Get bounding box
-  bbox <- terra::ext(shape)
-
-  # Prepare results
-  results <- list(
+  list(
     num_tiles = length(tile_ids),
     tile_ids = tile_ids,
-    available_features = available_features,
-    area = area,
-    bbox = as.vector(bbox),
-    overlapping_countries = if (exists("overlapping_countries")) overlapping_countries else country_name,
-    country_groups = country_groups
+    available_features = available_features
   )
+}
 
-  # Print verbose output if requested
-  if (verbose) {
-    cat("Shape Information:\n")
-    cat("Number of tiles covered:", results$num_tiles, "\n")
-    cat("Tile IDs:", paste(results$tile_ids, collapse = ", "), "\n")
-    if (!is.null(available_features)) {
-      cat("Available features:", paste(results$available_features, collapse = ", "), "\n")
-    }
-    cat("Area:", format(results$area, scientific = FALSE), "hectares\n")
-    cat("Bounding box (xmin, xmax, ymin, ymax):", paste(round(results$bbox, 5), collapse = ", "), "\n")
-    if (exists("overlapping_countries")) {
-      cat("Overlapping countries:", paste(results$overlapping_countries, collapse = ", "), "\n")
-    } else {
-      cat("Country:", results$overlapping_countries, "\n")
-    }
-    cat("Country group(s):", paste(results$country_groups, collapse = ", "), "\n")
+get_available_features <- function(tile_ids, ff_dir) {
+  feature_files <- unlist(lapply(tile_ids, function(x) {
+    list.files(file.path(ff_dir, "preprocessed/input", x), full.names = FALSE)
+  }))
+
+  feature_names <- tools::file_path_sans_ext(basename(feature_files))
+
+  if (length(feature_names) > 0) {
+    feature_names <- sort(unique(feature_names))
+  } else {
+    ff_cat("no features found for this area in given folder",
+      color = "yellow", verbose = TRUE
+    )
   }
 
-  # Return results invisibly
-  invisible(results)
+  return(feature_names)
+}
+
+get_spatial_metrics <- function(shape) {
+  list(
+    area = terra::expanse(shape) / 10000,
+    bbox = as.vector(terra::ext(shape))
+  )
+}
+
+print_info <- function(results) {
+  ff_cat("Shape Information:")
+  ff_cat("Number of tiles covered:", results$num_tiles)
+  ff_cat("Tile IDs:", paste(results$tile_ids, collapse = ", "))
+
+  if (!is.null(results$available_features)) {
+    ff_cat("Available features:", paste(results$available_features, collapse = ", "))
+  }
+
+  ff_cat("Area:", format(sum(results$area), scientific = FALSE), "hectares")
+  ff_cat("Bounding box (xmin, xmax, ymin, ymax):", paste(round(results$bbox, 5), collapse = ", "))
+  ff_cat("Countries:", paste(results$overlapping_countries, collapse = ", "))
+  ff_cat("Country group(s):", paste(results$country_groups, collapse = ", "))
 }

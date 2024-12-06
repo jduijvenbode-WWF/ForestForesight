@@ -2,7 +2,9 @@
 % Please edit documentation in R/get_info.R
 \name{get_info}
 \alias{get_info}
-\title{Get Information About a Spatial Shape or Country}
+\title{This function provides information about a given spatial shape or country,
+including the number of tiles it covers, available features, area, bounding box,
+overlapping countries, and country groups.}
 \usage{
 get_info(shape_or_iso, ff_dir = NULL, verbose = TRUE)
 }
@@ -25,6 +27,8 @@ An invisible list containing:
   \item{bbox}{Bounding box of the shape (xmin, xmax, ymin, ymax)}
   \item{overlapping_countries}{Vector of countries that overlap with the shape}
   \item{country_groups}{Vector of country groups the shape belongs to}
+
+List containing spatial information (invisibly)
 }
 \description{
 This function provides information about a given spatial shape or country,

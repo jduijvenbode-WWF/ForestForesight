@@ -2,22 +2,38 @@
 % Please edit documentation in R/ff_dqc.R
 \name{ff_dqc}
 \alias{ff_dqc}
-\title{Data quality control}
+\title{Data quality control for raster folders}
 \usage{
 ff_dqc(folder_path, return_values = TRUE)
 }
 \arguments{
-\item{folder_path}{The path to the folder containing TIF files.}
+\item{folder_path}{Character string. The path to the folder containing TIF files.}
 
-\item{return_values}{Should the values of the rasters also be returned.}
+\item{return_values}{Logical. Should the actual values of the rasters be returned.
+Default is TRUE.}
+}
+\value{
+A list containing:
+\itemize{
+  \item tile: The base name of the folder
+  \item byfeature: Data frame with quality metrics for each feature
+  \item all: Data frame with raw values for all files
+  \item equalextent: Logical indicating if all files have same extent
+  \item equaldaterange: Logical indicating if date ranges are consistent
+  \item incorrect_dateformats: Count of files with incorrect date formats
+  \item minextent: SpatExtent object with minimum overlap extent
+}
 }
 \description{
-This function loops through all tif files in a given folder and gives a summary
-and total overview of the quality of the rasters
+This function analyzes all TIF files in a given folder and provides a comprehensive
+quality assessment of the rasters, including temporal and spatial consistency checks.
 }
 \examples{
 \dontrun{
-# Example usage:
-result <- process_tif_files("path/to/tif_folder")
+result <- ff_dqc("path/to/tif_folder")
+# Access summary by feature
+print(result$byfeature)
+# Check if all files have same extent
+print(result$equalextent)
 }
 }

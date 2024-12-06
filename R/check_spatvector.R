@@ -113,8 +113,8 @@ check_country_overlap <- function(x) {
 #' Check overlap percentage
 #' @noRd
 check_overlap_percentage <- function(x, intersection) {
-  overlap_area <- terra::expanse(intersection)
-  shape_area <- terra::expanse(x)
+  overlap_area <- sum(terra::expanse(intersection))
+  shape_area <- sum(terra::expanse(x))
   overlap_percentage <- (overlap_area / shape_area) * 100
 
   if (overlap_percentage < 99.9) {
@@ -129,7 +129,7 @@ check_overlap_percentage <- function(x, intersection) {
 #' Check area bounds
 #' @noRd
 check_area_bounds <- function(x) {
-  area_ha <- terra::expanse(x) / 10000
+  area_ha <- sum(terra::expanse(x) / 10000)
 
   if (area_ha <= 0) {
     stop("Input SpatVector has zero or negative area")
