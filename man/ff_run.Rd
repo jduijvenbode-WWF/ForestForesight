@@ -11,19 +11,20 @@ ff_run(
   ff_folder,
   train_dates = NULL,
   validation_dates = NULL,
-  save_path = NULL,
-  save_path_predictions = NULL,
-  trained_model = NULL,
-  ff_prep_params = NULL,
-  ff_train_params = NULL,
-  threshold = 0.5,
+  model_save_path = NULL,
+  predictions_save_path = NULL,
+  pretrained_model_path = NULL,
+  ff_prep_parameters = NULL,
+  ff_train_parameters = NULL,
+  certainty_threshold = 0.5,
   filter_features = "initialforestcover",
   filter_conditions = ">0",
-  accuracy_csv = NULL,
-  importance_csv = NA,
+  accuracy_output_path = NULL,
+  importance_output_path = NA,
   verbose = TRUE,
   autoscale_sample = FALSE,
-  validation = FALSE
+  validation = FALSE,
+  groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH")
 )
 }
 \arguments{
@@ -41,18 +42,18 @@ dates should be a vector with the format YYYY-MM-DD with DD being 01}
 \item{validation_dates}{The dates for which you want to create a distinct validation matrix
 (if any, select validation = T to make a subsample of the same dates as the training data).}
 
-\item{save_path}{Path to save the trained model (with extension ".model"). Default is NULL.}
+\item{model_save_path}{Path to save the trained model (with extension ".model"). Default is NULL.}
 
-\item{save_path_predictions}{Path to save the predictions (with extension ".tif"). Default is NULL.}
+\item{predictions_save_path}{Path to save the predictions (with extension ".tif"). Default is NULL.}
 
-\item{trained_model}{Pre-trained model object or path to saved model.
+\item{pretrained_model_path}{Pre-trained model object or path to saved model.
 If NULL, a new model will be trained. Default is NULL.}
 
-\item{ff_prep_params}{List of parameters for data preprocessing. See `ff_prep` function for details.}
+\item{ff_prep_parameters}{List of parameters for data preprocessing. See `ff_prep` function for details.}
 
-\item{ff_train_params}{List of parameters for model training. See `ff_train` function for details.}
+\item{ff_train_parameters}{List of parameters for model training. See `ff_train` function for details.}
 
-\item{threshold}{Probability threshold for binary classification. Default is 0.5.}
+\item{certainty_threshold}{Probability certainty_threshold for binary classification. Default is 0.5.}
 
 \item{filter_features}{Feature dataset used for pre-filtering for training.
 Default is initialforestcover. Can be more than one}
@@ -60,9 +61,9 @@ Default is initialforestcover. Can be more than one}
 \item{filter_conditions}{The condition with value that is used to filter the training dataset based on mask features.
 Default is ">0". Can be more than one}
 
-\item{accuracy_csv}{Path to save accuracy metrics in CSV format. Default is NA (no CSV output).}
+\item{accuracy_output_path}{Path to save accuracy metrics in CSV format. Default is NA (no CSV output).}
 
-\item{importance_csv}{Path to save feature importance metrics in CSV format. Default is NA (no CSV output).}
+\item{importance_output_path}{Path to save feature importance metrics in CSV format. Default is NA (no CSV output).}
 
 \item{verbose}{Logical; whether to display progress messages. Default is TRUE.}
 
@@ -73,8 +74,15 @@ based on the size of the area and the length of the training period.}
 which is set at 0.25 of the training matrix. Should not be set if validation_dates is not NULL.}
 }
 \value{
-A SpatRaster object containing the predicted deforestation probabilities.
-If multiple prediction dates are given you receive a rasterstack with a raster per date
+A list containing:
+  \item{prediction_timeseries}{A SpatRaster object or RasterStack containing the predicted deforestation
+        probabilities for each prediction date}
+  \item{shape}{The SpatVector object used for analysis, either from direct input or derived from country code}
+  \item{model}{Path to the model used for predictions (either newly trained or pretrained)}
+  \item{accuracy_dataframe}{A SpatialPolygonsDataFrame containing accuracy metrics for each analyzed area.
+        NULL if no groundtruth data was available}
+  \item{importance_dataframe}{A data frame containing feature importance metrics.
+        NULL if importance calculation was not requested}
 }
 \description{
 This function trains an XGBoost model using historical data and then predicts deforestation
@@ -88,8 +96,8 @@ prediction <- ff_run(
   prediction_date = "2024-01-01",
   ff_folder = "path/to/forestforesight/data",
   train_dates = ForestForesight::daterange("2022-01-01", "2023-12-31"),
-  save_path = "path/to/save/model.model",
-  accuracy_csv = "path/to/save/accuracy.csv"
+  model_save_path = "path/to/save/model.model",
+  accuracy_output_path = "path/to/save/accuracy.csv"
 )
 
 # Plot the prediction
