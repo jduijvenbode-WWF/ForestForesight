@@ -115,7 +115,12 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
   )
 
   importance_dataframe <- get_feature_importance(importance_output_path, model_save_path, pretrained_model_path,
-                                                 name = if (has_value(country)){country}else{NA})
+    name = if (has_value(country)) {
+      country
+    } else {
+      NA
+    }
+  )
 
   prediction_data <- run_predictions(
     ff_folder, shape, groundtruth_pattern, prediction_dates, tiles, filter_features, filter_conditions, ff_prep_parameters,

@@ -105,10 +105,14 @@ check_file_naming <- function(files, tile, subfolder, silent_on_pass) {
 }
 
 check_date_files <- function(files, tile, check_date, subfolder, silent_on_pass, groundtruth_pattern) {
-  ewsdatasets = c("lastsixmonths", "lastmonth", "patchdensity", "confidence",
-                  "previoussameseason", "smoothedsixmonths", "smoothedtotaldeforestation")
-  has_check_date <- any(grepl(paste0("^", tile, "_", check_date, "_",
-                                     paste(ewsdatasets, collapse = "|"), ".tif$"), files))
+  ewsdatasets <- c(
+    "lastsixmonths", "lastmonth", "patchdensity", "confidence",
+    "previoussameseason", "smoothedsixmonths", "smoothedtotaldeforestation"
+  )
+  has_check_date <- any(grepl(paste0(
+    "^", tile, "_", check_date, "_",
+    paste(ewsdatasets, collapse = "|"), ".tif$"
+  ), files))
 
   if (subfolder != "groundtruth") {
     check_ews_features(has_check_date, check_date, subfolder, tile, silent_on_pass)

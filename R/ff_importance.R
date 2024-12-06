@@ -52,8 +52,8 @@ ff_importance <- function(model, output_csv = NULL, name = NA, append = TRUE) {
       append <- FALSE
     }
     write.table(importance_dataframe,
-                file = output_csv, sep = ",", row.names = FALSE,
-                col.names = !append, append = append
+      file = output_csv, sep = ",", row.names = FALSE,
+      col.names = !append, append = append
     )
   }
   # Return dataframe invisibly
