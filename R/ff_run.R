@@ -950,10 +950,6 @@ run_predictions <- function(ff_folder, shape, groundtruth_pattern, prediction_da
 #'
 #' @noRd
 get_feature_importance <- function(importance_output_path, model_save_path, pretrained_model_path) {
-  if (!has_value(importance_output_path)) {
-    return(NULL)
-  }
-
   if (has_value(model_save_path)) {
     importance_dataframe <- ff_importance(
       model = model_save_path,

@@ -28,7 +28,7 @@
 #' }
 #'
 #' @export
-ff_importance <- function(model, output_csv, name = NA, append = TRUE) {
+ff_importance <- function(model, output_csv = NULL, name = NA, append = TRUE) {
   if (!has_value(name)) {
     if (is.character(model)) {
       name <- sub("\\.model$", "", basename(model))
@@ -47,14 +47,15 @@ ff_importance <- function(model, output_csv, name = NA, append = TRUE) {
   )
 
   # Write to CSV
-  if (!file.exists(output_csv)) {
-    append <- FALSE
+  if (has_value(output_csv)) {
+    if (!file.exists(output_csv)) {
+      append <- FALSE
+    }
+    write.table(importance_dataframe,
+                file = output_csv, sep = ",", row.names = FALSE,
+                col.names = !append, append = append
+    )
   }
-  write.table(importance_dataframe,
-    file = output_csv, sep = ",", row.names = FALSE,
-    col.names = !append, append = append
-  )
-
   # Return dataframe invisibly
   invisible(importance_dataframe)
 }
