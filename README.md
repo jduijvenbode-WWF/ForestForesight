@@ -19,8 +19,14 @@ Find more information about Forest Foresight here:
 
 
 ## Acknowledgements
+Project Manager
  - [Jorn Dallinga](https://www.bing.com/ck/a?!&&p=12dd7504485fe85eJmltdHM9MTcwNjQ4NjQwMCZpZ3VpZD0zZWJlMjY2OC03YThkLTY1Y2EtMTk3MS0zNWRjN2JjNTY0MGQmaW5zaWQ9NTE5OA&ptn=3&ver=2&hsh=3&fclid=3ebe2668-7a8d-65ca-1971-35dc7bc5640d&psq=jorn+dallinga&u=a1aHR0cHM6Ly9ubC5saW5rZWRpbi5jb20vaW4vam9ybi1kYWxsaW5nYS01YjA5NmE5MA&ntb=1)
 
+Contributors
+ - Maas van Apeldoorn
+ - Amin Bakhshi
+ - Hasrul Maruf
+ 
 ## Support
 For support, email jduijvenbode@wwf.nl
 
