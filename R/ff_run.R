@@ -22,8 +22,8 @@
 #' Default is initialforestcover. Can be more than one
 #' @param filter_conditions The condition with value that is used to filter the training dataset based on mask features.
 #'  Default is ">0". Can be more than one
-#' @param accuracy_output_path Path to save accuracy metrics in CSV format. Default is NA (no CSV output).
-#' @param importance_output_path Path to save feature importance metrics in CSV format. Default is NA (no CSV output).
+#' @param accuracy_output_path Path to save accuracy metrics in CSV format. Default is NULL (no CSV output).
+#' @param importance_output_path Path to save feature importance metrics in CSV format. Default is NULL (no CSV output).
 #' @param verbose Logical; whether to display progress messages. Default is TRUE.
 #' @param autoscale_sample Logical; Whether to automatically scale the number of samples
 #' based on the size of the area and the length of the training period.
@@ -85,7 +85,7 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
                    filter_features = "initialforestcover",
                    filter_conditions = ">0",
                    accuracy_output_path = NULL,
-                   importance_output_path = NA,
+                   importance_output_path = NULL,
                    verbose = TRUE,
                    autoscale_sample = FALSE,
                    validation = FALSE,
@@ -114,7 +114,13 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
     pretrained_model_path, autoscale_sample, verbose
   )
 
-  importance_dataframe <- get_feature_importance(importance_output_path, model_save_path, pretrained_model_path)
+  importance_dataframe <- get_feature_importance(importance_output_path, model_save_path, pretrained_model_path,
+    name = if (has_value(country)) {
+      country
+    } else {
+      NA
+    }
+  )
 
   prediction_data <- run_predictions(
     ff_folder, shape, groundtruth_pattern, prediction_dates, tiles, filter_features, filter_conditions, ff_prep_parameters,
@@ -949,19 +955,17 @@ run_predictions <- function(ff_folder, shape, groundtruth_pattern, prediction_da
 #' pretrained_model_path) when importance_output_path is provided.
 #'
 #' @noRd
-get_feature_importance <- function(importance_output_path, model_save_path, pretrained_model_path) {
-  if (!has_value(importance_output_path)) {
-    return(NULL)
-  }
-
+get_feature_importance <- function(importance_output_path, model_save_path, pretrained_model_path, name = NA) {
   if (has_value(model_save_path)) {
     importance_dataframe <- ff_importance(
+      name = name,
       model = model_save_path,
       output_csv = importance_output_path,
       append = TRUE
     )
   } else {
     importance_dataframe <- ff_importance(
+      name = name,
       model = pretrained_model_path,
       output_csv = importance_output_path,
       append = TRUE

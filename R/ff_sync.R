@@ -161,6 +161,9 @@ ff_sync_get_features <- function(features, ff_folder) {
       feature_list <- features
     }
   }
+  if (!"initialforestcover" %in% feature_list) {
+    feature_list <- c(feature_list, "initialforestcover")
+  }
   return(feature_list)
 }
 
