@@ -18,14 +18,14 @@ test_that("check that ff_run can handle all the things", {
   testthat::expect_no_error(
     result2 <- ff_run(country = "BRN", prediction_dates = "2023-03-01", ff_folder = datadir, predictions_save_path = tiffile2, pretrained_model_path = modelfile, verbose = F)
   )
-  testthat::expect_equal(global(rast(tiffile), "sum",na.rm = T), global(rast(tiffile2), "sum",na.rm=T))
+  testthat::expect_equal(global(rast(tiffile), "sum", na.rm = T), global(rast(tiffile2), "sum", na.rm = T))
   countries <- terra::vect(get(data("countries")))
   countries <- countries[countries$iso3 == "BRN"]
   testthat::expect_no_error(result3 <- ff_run(shape = countries, prediction_dates = "2023-03-01", ff_folder = datadir, predictions_save_path = tiffile, pretrained_model_path = modelfile, verbose = F))
   testthat::expect_no_error(result4 <- ff_run(shape = countries, train_dates = "2023-02-01", ff_folder = datadir, model_save_path = modelfile, verbose = F))
   countries <- disagg(countries)
 
-  testthat::expect_no_error(result4 <- ff_run(shape = countries, train_dates = "2023-02-01",prediction_dates = "2023-03-01", ff_folder = datadir, model_save_path = modelfile, verbose = F))
+  testthat::expect_no_error(result4 <- ff_run(shape = countries, train_dates = "2023-02-01", prediction_dates = "2023-03-01", ff_folder = datadir, model_save_path = modelfile, verbose = F))
 })
 
 test_that("ff_run handles various input combinations and edge cases", {
@@ -209,4 +209,3 @@ test_that("ff_run handles various input combinations and edge cases", {
     )
   )
 })
-

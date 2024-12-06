@@ -196,5 +196,3 @@ fill_raster <- function(templateraster, predictions, indices, certainty, thresho
     return(NA)
   }
 }
-
-
