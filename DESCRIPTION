@@ -3,8 +3,28 @@ Type: Package
 Title: Package created to preprocess, model, predict and analyze deforestation according to the WWF-NL ForestForesight principles.
 Version: 4.0.0
 Date: 2024-10-15
-Author: Jonas van Duijvenbode, Zillah Calle
-Maintainer: Jonas van Duijvenbode <jduijvenbode@wwf.nl>
+Authors@R: 
+  c(person(given = "Jonas", 
+           family = "van Duijvenbode", 
+           email = "jduijvenbode@wwf.nl", 
+           role = c("aut", "cre"),
+           comment = structure("WWF-NL", .Names = "fnd")),
+    person(given = "Zillah", 
+           family = "Calle", 
+           role = "aut",
+           comment = structure("WWF-NL", .Names = "fnd")),
+    person(given = "Hasrul", 
+           family = "Maruf", 
+           role = "aut",
+           comment = structure("TU/e", .Names = "fnd")),
+    person(given = "Amin", 
+           family = "Bakhshi", 
+           role = "aut",
+           comment = structure("TU/e", .Names = "fnd")),
+    person(given = "Maas", 
+           family = "van Apeldoorn", 
+           role = "ctb",
+           comment = structure("TU/e", .Names = "fnd")))
 Description: This package is built for the ForestForesight programme and for any partners that want to do their own predictions for deforestation.
     With this package you can download among others the GFW-alerts, preprocess those alerts and process per 10x10 degree tile and per country the data. 
     This processing means: downloading, preprocessing, training an XGboost model and predicting future deforestation.It also allows you to style the result and export accuracy statistics. 
