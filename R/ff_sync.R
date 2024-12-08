@@ -341,7 +341,7 @@ prediction_downloader <- function(ff_folder, country_codes, dates_to_check, buck
 #' @noRd
 sync_initialize_and_check <- function(ff_folder, date_start, date_end, features) {
   if (!(casefold(features) %in%
-    c("Highest", "High", "Medium", "Low", "Everything", "Small Model"))) {
+        c("highest", "high", "medium", "low", "everything","small model"))) {
     stop("incorrect feature option given. please choose between:
          Highest, High, Medium, Low, Everything, Small Model")
   }
