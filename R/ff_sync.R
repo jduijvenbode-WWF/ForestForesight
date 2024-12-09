@@ -24,7 +24,6 @@
 #' @param bucket Character. Name of the S3 bucket. Default is "forestforesight-public".
 #' @param region Character. AWS region of the bucket. Default is "eu-west-1".
 #' @param verbose Logical. Whether the function should be verbose.
-#' @param sync_verbose Logical. Whether the syncing should also be verbose. Default
 #'
 #' @import aws.s3
 #' @import terra
@@ -45,7 +44,7 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
                     download_predictions = FALSE, download_groundtruth = TRUE,
                     groundtruth_pattern = "groundtruth6m",
                     bucket = Sys.getenv("AWS_BUCKET_NAME"), region = Sys.getenv("AWS_BUCKET_REGION"),
-                    verbose = TRUE, sync_verbose = FALSE) {
+                    verbose = TRUE) {
   # Validate and process dates
   sync_dates <- sync_initialize_and_check(ff_folder, date_start, date_end, features)
   date_start <- sync_dates$date_start
@@ -69,7 +68,7 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
   }
   # Download model if requested
   if (download_model) {
-    model_downloader(ff_folder, country_codes, bucket, region, verbose, sync_verbose)
+    model_downloader(ff_folder, country_codes, bucket, region, verbose)
   }
   # Sync input and ground truth data for each tile
   if (download_data || download_groundtruth) {
@@ -101,7 +100,7 @@ ff_sync <- function(ff_folder, identifier, features = "Everything",
     prediction_downloader(
       ff_folder = ff_folder, country_codes = country_codes,
       dates_to_check = dates_to_check, bucket = bucket, region = region,
-      verbose = verbose, sync_verbose = sync_verbose
+      verbose = verbose
     )
   }
 
@@ -186,9 +185,10 @@ groundtruth_downloader <- function(ff_folder, tile, dates_to_check, bucket, regi
   # Sync matched files
   for (file in matching_files) {
     if (!file.exists(file.path(ff_folder, file))) {
+      ff_cat(file, verbose = verbose)
       aws.s3::save_object(file,
         bucket = bucket, region = region,
-        file = file.path(ff_folder, file), verbose = verbose
+        file = file.path(ff_folder, file), verbose = FALSE
       )
     }
   }
@@ -228,7 +228,7 @@ get_tiles_and_country_codes <- function(identifier) {
   return(list(tiles = tiles, country_codes = country_codes))
 }
 
-model_downloader <- function(ff_folder, country_codes, bucket, region, verbose, sync_verbose) {
+model_downloader <- function(ff_folder, country_codes, bucket, region, verbose) {
   countries <- terra::vect(get(data("countries")))
   groups <- countries$group[countries$iso3 == country_codes]
   for (group in groups) {
@@ -242,7 +242,7 @@ model_downloader <- function(ff_folder, country_codes, bucket, region, verbose, 
       ff_cat(file, verbose = verbose)
       aws.s3::save_object(file,
         bucket = bucket, region = region,
-        file = file.path(ff_folder, file), verbose = TRUE
+        file = file.path(ff_folder, file), verbose = FALSE
       )
     }
   }
@@ -288,10 +288,9 @@ data_downloader <- function(ff_folder, tile, feature_list, dates_to_check, bucke
   }
 }
 
-prediction_downloader <- function(ff_folder, country_codes, dates_to_check, bucket, region, verbose, sync_verbose) {
+prediction_downloader <- function(ff_folder, country_codes, dates_to_check, bucket, region, verbose) {
   for (country_code in country_codes) {
     pred_folder <- file.path(ff_folder, "predictions", country_code)
-    ff_cat("Downloading predictions to", pred_folder, verbose = verbose)
     if (!dir.exists(pred_folder)) dir.create(pred_folder, recursive = TRUE)
     prefix <- file.path("predictions", country_code)
     s3_files <- aws.s3::get_bucket(bucket, prefix = prefix, region = region, max = Inf)
@@ -309,6 +308,15 @@ prediction_downloader <- function(ff_folder, country_codes, dates_to_check, buck
         # If no files within date range, get the latest available
         s3_files <- select_files_date(given_date = min(dates_to_check), listed_files = s3_files)
       }
+    }
+    if (has_value(s3_files)) {
+      ff_cat("Downloading predictions to", pred_folder,
+        verbose = verbose
+      )
+    } else {
+      ff_cat("no prediction files found for given dates",
+        color = "yellow", verbose = verbose
+      )
     }
     for (file in s3_files) {
       if (!file.exists(file.path(ff_folder, file))) {
