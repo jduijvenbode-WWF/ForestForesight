@@ -45,7 +45,8 @@ Only works when downloading for entire countries. Default is FALSE.}
 This should be turned off when you want to use your own data as groundtruth. Default is TRUE.}
 
 \item{groundtruth_pattern}{The pattern to search for.
-This is normally groundtruth6m for 6 months but can be set to groundtruth1m, groundtruth3m or groundtruth12m for one, three or twelve months respectively}
+This is normally groundtruth6m for 6 months but can be set to groundtruth1m, groundtruth3m
+or groundtruth12m for one, three or twelve months respectively}
 
 \item{bucket}{Character. Name of the S3 bucket. Default is "forestforesight-public".}
 

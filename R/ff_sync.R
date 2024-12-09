@@ -311,10 +311,12 @@ prediction_downloader <- function(ff_folder, country_codes, dates_to_check, buck
     }
     if (has_value(s3_files)) {
       ff_cat("Downloading predictions to", pred_folder,
-             verbose = verbose)
-    }else {
+        verbose = verbose
+      )
+    } else {
       ff_cat("no prediction files found for given dates",
-             color = "yellow", verbose = verbose)
+        color = "yellow", verbose = verbose
+      )
     }
     for (file in s3_files) {
       if (!file.exists(file.path(ff_folder, file))) {
