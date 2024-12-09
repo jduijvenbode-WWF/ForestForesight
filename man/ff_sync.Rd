@@ -17,8 +17,7 @@ ff_sync(
   groundtruth_pattern = "groundtruth6m",
   bucket = Sys.getenv("AWS_BUCKET_NAME"),
   region = Sys.getenv("AWS_BUCKET_REGION"),
-  verbose = TRUE,
-  sync_verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -53,8 +52,6 @@ This is normally groundtruth6m for 6 months but can be set to groundtruth1m, gro
 \item{region}{Character. AWS region of the bucket. Default is "eu-west-1".}
 
 \item{verbose}{Logical. Whether the function should be verbose.}
-
-\item{sync_verbose}{Logical. Whether the syncing should also be verbose. Default}
 }
 \value{
 Invisible NULL. The function is called for its side effects.
