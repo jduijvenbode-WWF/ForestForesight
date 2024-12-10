@@ -84,7 +84,7 @@ ff_polygonize <- function(input_raster,
   if (length(polygons) == 0) {
     ff_cat("Based on the chosen threshold no polygons were generated.
            Lower the threshold to get polygons for this area",
-      color = "yellow"
+      color = "yellow",log_level = "WARNING"
     )
     return(NULL)
   }
@@ -141,7 +141,7 @@ process_raster <- function(input_raster, threshold, window_size, verbose) {
     ff_cat("no values in this raster above 0.5 were found,
            which is the minimum threshold of predictions FF provides when using auto-thresholding.
            Use a value as threshold if you still want polygons",
-      color = "yellow"
+      color = "yellow",log_level = "WARNING"
     )
     return(NULL)
   }
@@ -173,7 +173,7 @@ process_raster <- function(input_raster, threshold, window_size, verbose) {
 #' Calculate raster statistics
 #' @noRd
 calculate_raster_stats <- function(input_raster) {
-  default_treshold <- Sys.getenv("DEFAULT_THRESHOLD")
+  default_treshold <- as.numeric(Sys.getenv("DEFAULT_THRESHOLD"))
   list(
     raster_average = as.numeric(terra::global(input_raster < default_treshold,
       fun = "mean",

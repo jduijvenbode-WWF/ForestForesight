@@ -32,7 +32,7 @@ ff_structurecheck <- function(shape = NULL,
     if (!has_value(country)) {
       stop("either a country should be given or a shape in the form of a SpatVector")
     }
-    countrylist <- get(data(countries, envir= environment()))
+    countrylist <- get(data(countries, envir = environment()))
     shape <- vect(countrylist)[which(countrylist$iso3 == country)]
     if (nrow(shape) == 0) {
       stop("incorrect country name, check iso-3 codes")
@@ -330,6 +330,7 @@ print_result <- function(...,
     invisible(NULL)
   } else {
     if (color == "red" && error_on_issue) {
+      ff_cat(statement,verbose = FALSE, log_level = "ERROR")
       stop(statement)
     } else {
       ff_cat(statement, color = color, verbose = TRUE)

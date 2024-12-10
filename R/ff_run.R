@@ -81,7 +81,7 @@ ff_run <- function(shape = NULL, country = Sys.getenv("DEFAULT_COUNTRY"), predic
                    pretrained_model_path = NULL,
                    ff_prep_parameters = NULL,
                    ff_train_parameters = NULL,
-                   certainty_threshold = Sys.getenv("DEFAULT_THRESHOLD"),
+                   certainty_threshold = as.numeric(Sys.getenv("DEFAULT_THRESHOLD")),
                    filter_features = Sys.getenv("FOREST_MASK"),
                    filter_conditions = Sys.getenv("FOREST_MASK_FILTER"),
                    accuracy_output_path = NULL,
@@ -266,7 +266,7 @@ check_dates <- function(train_dates, validation_dates, prediction_dates,
       if (is.na(months_back) || months_back <= 0) {
         months_back <- 6
         ff_cat(paste("Invalid or missing groundtruth_pattern:", groundtruth_pattern, ". Defaulting to 6 months."),
-          color = "yellow", verbose = TRUE
+          color = "yellow", verbose = TRUE,log_level = "WARNING"
         )
       }
 
@@ -276,15 +276,15 @@ check_dates <- function(train_dates, validation_dates, prediction_dates,
       )
       ff_cat("No train dates were given though a training was wanted, model will be trained on",
         train_dates,
-        color = "yellow"
+        color = "yellow",log_level = "WARNING"
       )
     }
 
     if (max(lubridate::ymd(train_dates)) > min(lubridate::ymd(prediction_dates))) {
-      ff_cat("(some) training dates are after prediction dates", color = "yellow")
+      ff_cat("(some) training dates are after prediction dates", color = "yellow",log_level = "WARNING")
     }
     if ((min(lubridate::ymd(prediction_dates)) - max(lubridate::ymd(train_dates))) < 170) {
-      ff_cat("There should be at least 6 months between training and testing/predicting", color = "yellow")
+      ff_cat("There should be at least 6 months between training and testing/predicting", color = "yellow",log_level = "WARNING")
     }
   }
   prediction_dates <- sort(prediction_dates)

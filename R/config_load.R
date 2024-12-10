@@ -9,8 +9,6 @@ config_load <- function(config_file_path = "") {
   }
 
   if (file.exists(config_file)) {
-
-
     # user_config_file is used by users to replace or supplement default configuration
     user_config_file <- file.path(get_config_dir(), "config.yml")
     if (file.exists(user_config_file)) { # optionally load the user config_file
@@ -27,7 +25,8 @@ config_load <- function(config_file_path = "") {
     stop("Default config file, env.yml does not exist. Please check the file path....")
   }
 }
-
+#' Loads the variables in the environment
+#' @noRd
 load_variables <- function(config_file) {
   library(yaml)
   # Load the YML file

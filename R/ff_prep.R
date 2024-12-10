@@ -56,7 +56,8 @@
 #'   \item{test_indices}{Indices of the filtered samples}
 #'   \item{groundtruth_raster}{A SpatRaster of the ground truth}
 #'   \item{features}{A vector of feature names}
-#'   \item{has_groundtruth}{A boolean stating that the groundtruthraster is actually the groundtruth and not just a template}
+#'   \item{has_groundtruth}{A boolean stating that the groundtruthraster is
+#'   actually the groundtruth and not just a template}
 #'
 #' @export
 #'
@@ -81,7 +82,8 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
-ff_prep <- function(datafolder = Sys.getenv("FF_FOLDER"), country = Sys.getenv("DEFAULT_COUNTRY"), shape = NA, tiles = NULL,
+ff_prep <- function(datafolder = Sys.getenv("FF_FOLDER"), country = Sys.getenv("DEFAULT_COUNTRY"),
+                    shape = NA, tiles = NULL,
                     groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), dates = "2023-01-01",
                     inc_features = NA, exc_features = NA, filter_features = NULL,
                     filter_conditions = NULL, sample_size = 0.3, validation_sample = 0,
@@ -90,7 +92,7 @@ ff_prep <- function(datafolder = Sys.getenv("FF_FOLDER"), country = Sys.getenv("
   ######## pre-conditions check########
   if (!has_value(groundtruth_pattern)) {
     ff_cat("no environment variable for DEFAULT_GROUNDTRUTH, reverting to groundtruth6m",
-      color = "yellow", verbose = verbose
+      color = "yellow", verbose = verbose,log_level = "WARNING"
     )
     groundtruth_pattern <- "groundtruth6m"
   }
@@ -148,7 +150,7 @@ ff_prep <- function(datafolder = Sys.getenv("FF_FOLDER"), country = Sys.getenv("
   validation_matrix <- validation_result$validation_matrix
   ########## return data from prep function to main function####
   if (has_value(feature_dataset$label) && sum(feature_dataset$label) == 0) {
-    ff_cat("Data contains no actuals, all labels are 0", color = "yellow", verbose = verbose)
+    ff_cat("Data contains no actuals, all labels are 0", color = "yellow", verbose = verbose,log_level = "WARNING")
   }
 
   return(list(
@@ -173,7 +175,7 @@ check_pre_conditions <- function(dates, country, shape, tiles, shrink, inc_featu
   earliest_date <- Sys.getenv("EARLIEST_DATA_DATE")
   if (!has_value(earliest_date)) {
     ff_cat("no environment variable for EARLIEST_DATA_DATE, reverting to 2021-01-01",
-      color = "yellow", verbose = verbose
+      color = "yellow", verbose = verbose,log_level = "WARNING"
     )
     earliest_date <- "2021-01-01"
   }
@@ -387,7 +389,7 @@ sample_and_combine_data <- function(date, current_tile_feature_dataset, feature_
       if (length(c(notin1, notin2)) > 0) {
         ff_cat(paste(date, ": the following columns are dropped because they are not present in the entire time series: ", paste(c(notin1, notin2),
           collapse = ", "
-        )), color = "yellow", verbose = verbose)
+        )), color = "yellow", verbose = verbose,log_level = "WARNING")
       }
 
       # Subset matrices based on common column names
@@ -429,7 +431,7 @@ split_feature_and_label_data <- function(feature_dataset, groundtruth_pattern, l
     # Remove groundtruth column from features
     feature_dataset <- feature_dataset[, -groundtruth_index]
   } else {
-    ff_cat("No groundtruth rasters found", color = "yellow", verbose = verbose)
+    ff_cat("No groundtruth rasters found", color = "yellow", verbose = verbose,log_level = "WARNING")
     data_label <- NA
   }
 
@@ -541,7 +543,7 @@ filter_by_feature <- function(filter_features, filter_conditions, matrix, verbos
       value <- as.numeric(gsub("[^0-9]", "", filter_conditions[i]))
       filtercolumn <- which(colnames(matrix) == filter_features[i])
       if (length(filtercolumn) == 0) {
-        ff_cat("The feature", filter_features[i], "was not found, skipping filtering for this feature", color = "yellow")
+        ff_cat("The feature", filter_features[i], "was not found, skipping filtering for this feature", color = "yellow",log_level = "WARNING")
         spatial_indices <- seq(dim(matrix)[1])
       } else {
         ff_cat("filtering feature", filter_features[i], "on", filter_conditions[i], verbose = verbose)

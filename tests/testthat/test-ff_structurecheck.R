@@ -8,12 +8,12 @@ test_that("ff_structurecheck handles folder structure correctly", {
   shape <- countries[countries$iso3 == "BRN"]
 
   # Create basic folder structure
-  expect_error(ff_structurecheck(shape, test_dir, error_on_issue = TRUE), regexp = "some main folders are missing")
+  expect_error(ff_structurecheck(shape = shape, folder_path = test_dir, error_on_issue = TRUE), regexp = "some main folders are missing")
 
-  dir.create(file.path(test_dir, "preprocessed"), recursive = TRUE)
+  dir.create(file.path(folder_path = test_dir, "preprocessed"), recursive = TRUE)
   dir.create(file.path(test_dir, "models"), recursive = TRUE)
   dir.create(file.path(test_dir, "predictions"), recursive = TRUE)
-  expect_error(ff_structurecheck(shape, test_dir, error_on_issue = TRUE), regexp = "subfolder in preprocessed")
+  expect_error(ff_structurecheck(shape = shape, folder_path = test_dir, error_on_issue = TRUE), regexp = "subfolder in preprocessed")
 
   dir.create(file.path(test_dir, "preprocessed", "input"), recursive = TRUE)
   dir.create(file.path(test_dir, "preprocessed", "groundtruth"), recursive = TRUE)
