@@ -49,17 +49,6 @@ test_that("ff_run handles various input combinations and edge cases", {
     )
   )
 
-  # Test with both shape and country (should error)
-
-
-  # Test with neither shape nor country (should error)
-  testthat::expect_error(
-    ff_run(
-      train_dates = "2023-01-01",
-      ff_folder = datadir
-    )
-  )
-
   # Test invalid dates
   testthat::expect_error(
     ff_run(

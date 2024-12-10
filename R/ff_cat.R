@@ -58,11 +58,6 @@ ff_cat <- function(...,
     }
     setup_logging(log_file)
   }
-
-
-  # Initialize logging if needed
-
-
   # Format the text
   text <- format_text(..., sep = sep, auto_newline = auto_newline)
 
@@ -92,13 +87,13 @@ ff_cat <- function(...,
 #' @noRd
 setup_logging <- function(log_file) {
   # Get or create logger
+  logging::removeHandler("basic.stdout", "")
   logger <- logging::getLogger("ForestForesight")
-
+  logging::removeHandler("console", logger)
   # If logger doesn't exist or has no handlers, set it up
-  if (!has_value(logger$handlers)) {
-    # Set up basic configuration with INFO level
+  if (!has_value(logging::getHandler("logging::writeToFile","ForestForesight"))) {
     logger <- logging::getLogger("ForestForesight")
-
+    logging::removeHandler("console", logger)
     # Configure file logging if log_file is specified
     if (!is.null(log_file)) {
       # Create log directory if it doesn't exist
