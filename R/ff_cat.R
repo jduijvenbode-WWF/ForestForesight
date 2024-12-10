@@ -29,7 +29,7 @@
 #' @import crayon
 #' @export
 ff_cat <- function(..., color = NULL, sep = " ", fill = FALSE, labels = NULL,
-                   append = FALSE, style = NULL, verbose = FALSE, logfile = NULL, timestamp = FALSE, auto_newline = TRUE) {
+                   append = FALSE, style = NULL, verbose = FALSE, logfile = Sys.getenv("LOGFILE_FOLDER"), timestamp = FALSE, auto_newline = TRUE) {
   # Combine all arguments into a single string
   text <- paste(..., sep = sep)
   if (auto_newline) {

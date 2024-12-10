@@ -81,7 +81,7 @@
 #'
 #' @keywords machine-learning data-preparation forestry
 
-ff_prep <- function(datafolder = Sys.getenv("DATA_FOLDER"), country = NA, shape = NA, tiles = NULL,
+ff_prep <- function(datafolder = Sys.getenv("FF_FOLDER"), country = Sys.getenv("DEFAULT_COUNTRY"), shape = NA, tiles = NULL,
                     groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"), dates = "2023-01-01",
                     inc_features = NA, exc_features = NA, filter_features = NULL,
                     filter_conditions = NULL, sample_size = 0.3, validation_sample = 0,

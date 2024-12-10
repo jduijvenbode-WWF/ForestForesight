@@ -173,20 +173,21 @@ process_raster <- function(input_raster, threshold, window_size, verbose) {
 #' Calculate raster statistics
 #' @noRd
 calculate_raster_stats <- function(input_raster) {
+  default_treshold <- Sys.getenv("DEFAULT_THRESHOLD")
   list(
-    raster_average = as.numeric(terra::global(input_raster < 0.5,
+    raster_average = as.numeric(terra::global(input_raster < default_treshold,
       fun = "mean",
       na.rm = TRUE
     )),
     high_threshold = as.numeric(terra::global(
       input_raster <
-        quantile(input_raster[input_raster > 0.5], 0.5),
+        quantile(input_raster[input_raster > default_treshold], 0.5),
       fun = "mean",
       na.rm = TRUE
     )),
     highest_threshold = as.numeric(terra::global(
       input_raster <
-        quantile(input_raster[input_raster > 0.5], 0.75),
+        quantile(input_raster[input_raster > default_treshold], 0.75),
       fun = "mean",
       na.rm = TRUE
     ))

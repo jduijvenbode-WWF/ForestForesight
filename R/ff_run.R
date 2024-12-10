@@ -72,8 +72,8 @@
 #'
 #' @keywords machine-learning prediction forestry raster
 
-ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
-                   ff_folder,
+ff_run <- function(shape = NULL, country = Sys.getenv("DEFAULT_COUNTRY"), prediction_dates = NULL,
+                   ff_folder = Sys.getenv("FF_FOLDER"),
                    train_dates = NULL,
                    validation_dates = NULL,
                    model_save_path = NULL,
@@ -81,9 +81,9 @@ ff_run <- function(shape = NULL, country = NULL, prediction_dates = NULL,
                    pretrained_model_path = NULL,
                    ff_prep_parameters = NULL,
                    ff_train_parameters = NULL,
-                   certainty_threshold = 0.5,
-                   filter_features = "initialforestcover",
-                   filter_conditions = ">0",
+                   certainty_threshold = Sys.getenv("DEFAULT_THRESHOLD"),
+                   filter_features = Sys.getenv("FOREST_MASK"),
+                   filter_conditions = Sys.getenv("FOREST_MASK_FILTER"),
                    accuracy_output_path = NULL,
                    importance_output_path = NULL,
                    verbose = TRUE,

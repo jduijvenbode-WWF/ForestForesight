@@ -191,7 +191,7 @@ validate_and_load_data <- function(predictions, groundtruth, forest_mask = NULL,
     ff_cat("The raster seems to be not classified, automatically reclassifying raster based on 0.5 threshold.
            If this is not wanted, please load the raster before using ff_analyze and classify it according
            to the wanted threshold", color = "yellow")
-    predictions <- predictions > 0.5
+    predictions <- predictions > Sys.getenv("DEFAULT_THRESHOLD")
   }
 
   # Load groundtruth
