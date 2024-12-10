@@ -38,7 +38,8 @@
 #' }
 #'
 #' @export
-ff_sync <- function(ff_folder = Sys.getenv("FF_FOLDER"), identifier = Sys.getenv("DEFAULT_COUNTRY"), features = "Everything",
+ff_sync <- function(ff_folder = Sys.getenv("FF_FOLDER"),
+                    identifier = Sys.getenv("DEFAULT_COUNTRY"), features = "Everything",
                     date_start = NULL, date_end = NULL,
                     download_model = FALSE, download_data = TRUE,
                     download_predictions = FALSE, download_groundtruth = TRUE,

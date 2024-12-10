@@ -190,7 +190,7 @@ validate_and_load_data <- function(predictions, groundtruth, forest_mask = NULL,
   if (terra::global(predictions, fun = "max", na.rm = TRUE) < 1) {
     ff_cat("The raster seems to be not classified, automatically reclassifying raster based on the default 0.5 threshold.
            If this is not wanted, please load the raster before using ff_analyze and classify it according
-           to the wanted threshold", color = "yellow",log_level = "WARNING")
+           to the wanted threshold", color = "yellow", log_level = "WARNING")
     predictions <- predictions > as.numeric(Sys.getenv("DEFAULT_THRESHOLD"))
   }
 
@@ -270,7 +270,7 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
     } else {
       if (!file.exists(csv_filename) && append && verbose) {
         ff_cat("the given file does not exist, while append was set to TRUE",
-          color = "yellow", verbose = verbose,log_level = "WARNING"
+          color = "yellow", verbose = verbose, log_level = "WARNING"
         )
       }
       write.csv(polygons_dataframe, csv_filename)

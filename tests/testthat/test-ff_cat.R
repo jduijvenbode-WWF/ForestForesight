@@ -10,17 +10,20 @@ setup_test_env <- function() {
   log_file <- file.path(temp_dir, "test.log")
 
   # Clean up any existing logger
-  tryCatch({
-    logger <- logging::getLogger("ForestForesight")
-    if (!is.null(logger)) {
-      # Remove all handlers from the logger
-      for (handler in logger$handlers) {
-        logging::removeHandler(handler, logger = "ForestForesight")
+  tryCatch(
+    {
+      logger <- logging::getLogger("ForestForesight")
+      if (!is.null(logger)) {
+        # Remove all handlers from the logger
+        for (handler in logger$handlers) {
+          logging::removeHandler(handler, logger = "ForestForesight")
+        }
       }
+    },
+    error = function(e) {
+      # If logger doesn't exist, that's fine
     }
-  }, error = function(e) {
-    # If logger doesn't exist, that's fine
-  })
+  )
 
   list(
     temp_dir = temp_dir,

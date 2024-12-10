@@ -38,21 +38,22 @@ ff_cat <- function(...,
                    log_file = NULL,
                    timestamp = as.logical(Sys.getenv("TIMESTAMP")),
                    auto_newline = TRUE) {
-  if (!has_value(timestamp)) {timestamp = TRUE}
+  if (!has_value(timestamp)) {
+    timestamp <- TRUE
+  }
   logging_enabled <- as.logical(Sys.getenv("LOGGING"))
   if (logging_enabled) {
-  if (!has_value(log_file)) {
-    log_directory <- Sys.getenv("LOGFILE_FOLDER")
-    if (has_value(log_directory)) {
+    if (!has_value(log_file)) {
+      log_directory <- Sys.getenv("LOGFILE_FOLDER")
+      if (has_value(log_directory)) {
 
+      } else {
+        logging_enabled <- FALSE
+      }
+      log_file <- file.path(log_directory, paste0("FF_", Sys.Date(), ".log"))
     } else {
-      logging_enabled <- FALSE
+      log_directory <- dirname(log_file)
     }
-    log_file <- file.path(log_directory, paste0("FF_",Sys.Date(),".log"))
-
-  } else {
-    log_directory <- dirname(log_file)
-  }
     if (!dir.exists(log_directory)) {
       dir.create(log_directory, recursive = TRUE)
     }
@@ -91,7 +92,7 @@ setup_logging <- function(log_file) {
   logger <- logging::getLogger("ForestForesight")
   logging::removeHandler("console", logger)
   # If logger doesn't exist or has no handlers, set it up
-  if (!has_value(logging::getHandler("logging::writeToFile","ForestForesight"))) {
+  if (!has_value(logging::getHandler("logging::writeToFile", "ForestForesight"))) {
     logger <- logging::getLogger("ForestForesight")
     logging::removeHandler("console", logger)
     # Configure file logging if log_file is specified
@@ -113,7 +114,7 @@ setup_logging <- function(log_file) {
         logging::writeToFile,
         file = log_file,
         logger = "ForestForesight",
-        level = "DEBUG",  # Allow all log levels for the handler
+        level = "DEBUG", # Allow all log levels for the handler
         layout = custom_layout
       )
     }
@@ -163,7 +164,6 @@ handle_output <- function(text,
                           labels = NULL,
                           log_level = "INFO",
                           logging_enabled = TRUE) {
-
   # Create console output text
   console_text <- if (timestamp) {
     paste(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), text)
@@ -192,18 +192,17 @@ handle_output <- function(text,
     cat(console_text, sep = "", fill = fill, labels = labels)
   }
   if (logging_enabled) {
-  # Logging
-  log_func <- switch(
-    toupper(log_level),
-    "DEBUG" = logging::logdebug,
-    "INFO"  = logging::loginfo,
-    "WARN"  = logging::logwarn,
-    "ERROR" = logging::logerror,
-    logging::loginfo
-  )
+    # Logging
+    log_func <- switch(toupper(log_level),
+      "DEBUG" = logging::logdebug,
+      "INFO"  = logging::loginfo,
+      "WARN"  = logging::logwarn,
+      "ERROR" = logging::logerror,
+      logging::loginfo
+    )
 
-  # Remove ANSI color codes for log file
-  clean_text <- gsub("\033\\[[0-9;]*m", "", text)
-  log_func(clean_text, logger = "ForestForesight")
+    # Remove ANSI color codes for log file
+    clean_text <- gsub("\033\\[[0-9;]*m", "", text)
+    log_func(clean_text, logger = "ForestForesight")
   }
 }

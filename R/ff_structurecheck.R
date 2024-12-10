@@ -170,7 +170,8 @@ check_groundtruth <- function(files, tile, check_date, silent_on_pass, groundtru
   }
 }
 
-check_preprocessed_folders <- function(folder_path, info, check_date, error_on_issue, silent_on_pass, groundtruth_pattern) {
+check_preprocessed_folders <- function(folder_path, info,
+                                       check_date, error_on_issue, silent_on_pass, groundtruth_pattern) {
   ff_cat("Checking preprocessed folder", verbose = !silent_on_pass)
   prep_subfolders <- c("input", "groundtruth")
 
@@ -185,7 +186,10 @@ check_preprocessed_folders <- function(folder_path, info, check_date, error_on_i
         color = "green",
         silent_on_pass = silent_on_pass
       )
-      check_tile_subfolders(folder, info, subfolder, check_date, error_on_issue, silent_on_pass, groundtruth_pattern = groundtruth_pattern)
+      check_tile_subfolders(folder, info, subfolder, check_date,
+        error_on_issue, silent_on_pass,
+        groundtruth_pattern = groundtruth_pattern
+      )
     }
   }
 }
@@ -330,7 +334,7 @@ print_result <- function(...,
     invisible(NULL)
   } else {
     if (color == "red" && error_on_issue) {
-      ff_cat(statement,verbose = FALSE, log_level = "ERROR")
+      ff_cat(statement, verbose = FALSE, log_level = "ERROR")
       stop(statement)
     } else {
       ff_cat(statement, color = color, verbose = TRUE)
