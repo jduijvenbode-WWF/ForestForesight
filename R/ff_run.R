@@ -322,7 +322,7 @@ check_folder_and_input <- function(ff_folder, country, shape, train_dates, predi
 
 
   if ((has_value(shape) + has_value(country)) != 1) {
-    stop("either input shape or country should be given, not neither and not both")
+    ff_cat("the input shape is given precedence over the country code")
   }
   if (has_value(shape)) {
     ForestForesight::check_spatvector(shape,
