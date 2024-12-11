@@ -126,7 +126,7 @@ get_config_dir <- function() {
   } else {
     path <- file.path(Sys.getenv("HOME"), ".forestforesight")
   }
-  if (!dir.exists(dirname(path))){
+  if (!dir.exists(dirname(path))) {
     path <- file.path(here::here())
   }
   if (!dir.exists(path)) dir.create(path, recursive = TRUE)
