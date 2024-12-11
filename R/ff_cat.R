@@ -46,16 +46,18 @@ ff_cat <- function(...,
     if (!has_value(log_file)) {
       log_directory <- Sys.getenv("LOGFILE_FOLDER")
       if (has_value(log_directory)) {
-
+        if (!dir.exists(log_directory)) {
+          dir.create(log_directory, recursive = TRUE)
+        }
       } else {
         logging_enabled <- FALSE
       }
       log_file <- file.path(log_directory, paste0("FF_", Sys.Date(), ".log"))
     } else {
       log_directory <- dirname(log_file)
-    }
-    if (!dir.exists(log_directory)) {
-      dir.create(log_directory, recursive = TRUE)
+      if (!dir.exists(log_directory)) {
+        dir.create(log_directory, recursive = TRUE)
+      }
     }
     setup_logging(log_file)
   }
