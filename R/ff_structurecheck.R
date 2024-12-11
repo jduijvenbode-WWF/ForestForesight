@@ -35,8 +35,8 @@ ff_structurecheck <- function(shape,
 
   check_main_folders(folder_path, error_on_issue, silent_on_pass)
   check_preprocessed_folders(folder_path, info, check_date, error_on_issue,
-    silent_on_pass,
-    groundtruth_pattern = groundtruth_pattern
+                             silent_on_pass,
+                             groundtruth_pattern = groundtruth_pattern
   )
   check_models_folder(folder_path, info, error_on_issue, silent_on_pass)
   check_predictions_folder(folder_path, info, error_on_issue, silent_on_pass)
@@ -48,17 +48,24 @@ check_main_folders <- function(folder_path, error_on_issue, silent_on_pass) {
   ff_cat("Checking main folder", verbose = !silent_on_pass)
   main_folders <- c("preprocessed", "models", "predictions")
   all_correct <- TRUE
-
   for (folder in main_folders) {
     if (!dir.exists(file.path(folder_path, folder))) {
-      all_correct <- FALSE
-      print_result("No", folder, "folder present",
-        color = "red"
-      )
+      if (error_on_issue && folder %in% main_folders[2:3]) {
+        dir.create(file.path(folder_path, folder))
+
+        print_result("No", folder, "folder present, automatically created",
+                     color = "yellow"
+        )
+      } else {
+        all_correct <- FALSE
+        print_result("No", folder, "folder present",
+                     color = "red"
+        )
+      }
     } else {
       print_result(folder, "folder present",
-        color = "green",
-        silent_on_pass = silent_on_pass
+                   color = "green",
+                   silent_on_pass = silent_on_pass
       )
     }
   }
@@ -72,7 +79,7 @@ check_tile_files <- function(folder, tile, subfolder, check_date, silent_on_pass
   files <- list.files(file.path(folder, tile), pattern = "\\.tif$")
   if (length(files) == 0) {
     print_result("No tif files in", subfolder, "for tile", tile,
-      color = "red", error_on_issue = TRUE
+                 color = "red", error_on_issue = TRUE
     )
     invisible(NULL)
   }
@@ -87,19 +94,19 @@ check_file_naming <- function(files, tile, subfolder, silent_on_pass) {
 
   if (length(incorrect_files) > 0) {
     print_result("Incorrect file naming in", subfolder, "for tile", tile, ":",
-      color = "red",
-      error_on_issue = FALSE
+                 color = "red",
+                 error_on_issue = FALSE
     )
     for (file in incorrect_files) {
       print_result("  ", basename(file),
-        color = "red"
+                   color = "red"
       )
     }
     stop("please fix issues above and try again")
   } else {
     print_result(paste("Correct file naming in", subfolder, "for tile", tile, "\n"),
-      color = "green",
-      silent_on_pass = silent_on_pass
+                 color = "green",
+                 silent_on_pass = silent_on_pass
     )
   }
 }
@@ -166,14 +173,17 @@ check_preprocessed_folders <- function(folder_path, info, check_date, error_on_i
     folder <- file.path(folder_path, "preprocessed", subfolder)
     if (!dir.exists(folder)) {
       print_result(paste("No", subfolder, "subfolder in preprocessed"),
-        color = "red", error_on_issue = error_on_issue
+                   color = "red", error_on_issue = error_on_issue
       )
     } else {
       print_result(subfolder, "subfolder present in preprocessed",
-        color = "green",
-        silent_on_pass = silent_on_pass
+                   color = "green",
+                   silent_on_pass = silent_on_pass
       )
-      check_tile_subfolders(folder, info, subfolder, check_date, error_on_issue, silent_on_pass, groundtruth_pattern = groundtruth_pattern)
+      check_tile_subfolders(folder, info, subfolder, check_date,
+                            error_on_issue, silent_on_pass,
+                            groundtruth_pattern = groundtruth_pattern
+      )
     }
   }
 }
@@ -183,16 +193,16 @@ check_tile_subfolders <- function(folder, info, subfolder, check_date,
   for (tile in info$tile_ids) {
     if (!dir.exists(file.path(folder, tile))) {
       print_result("No subfolder for tile", tile, "in", subfolder,
-        color = "red",
-        error_on_issue = error_on_issue
+                   color = "red",
+                   error_on_issue = error_on_issue
       )
     } else {
       print_result("Subfolder for tile", tile, "present in", subfolder,
-        color = "green",
-        silent_on_pass = silent_on_pass
+                   color = "green",
+                   silent_on_pass = silent_on_pass
       )
       check_tile_files(folder, tile, subfolder, check_date, silent_on_pass,
-        groundtruth_pattern = groundtruth_pattern
+                       groundtruth_pattern = groundtruth_pattern
       )
     }
     cat("\n")
@@ -209,16 +219,22 @@ check_models_folder <- function(folder_path, info, error_on_issue, silent_on_pas
 check_model_group <- function(folder_path, group, error_on_issue, silent_on_pass) {
   group_folder <- file.path(folder_path, "models", group)
   if (!dir.exists(group_folder)) {
-    print_result("No subfolder for group", group, "in models",
-      color = "red",
-      error_on_issue = error_on_issue
-    )
+    if (error_on_issue) {
+      dir.create(group_folder, recursive = TRUE)
+      print_result("No subfolder for group", group, "in models, automatically created",
+                   color = "yellow",
+                   error_on_issue = error_on_issue)
+    } else{
+      print_result("No subfolder for group", group, "in models",
+                   color = "red",
+                   error_on_issue = error_on_issue)
+    }
     invisible(NULL)
   }
 
   print_result("Subfolder for group", group, "present in models",
-    color = "green",
-    silent_on_pass = silent_on_pass
+               color = "green",
+               silent_on_pass = silent_on_pass
   )
 
   check_model_files(group_folder, group, error_on_issue, silent_on_pass)
@@ -230,30 +246,30 @@ check_model_files <- function(group_folder, group, error_on_issue, silent_on_pas
 
   if (!file.exists(model_file)) {
     print_result(paste("No .model file for group", group),
-      color = "yellow"
+                 color = "yellow"
     )
   } else {
     print_result(paste(".model file present for group", group),
-      color = "green",
-      silent_on_pass = silent_on_pass
+                 color = "green",
+                 silent_on_pass = silent_on_pass
     )
   }
 
   if (!file.exists(rda_file)) {
     if (file.exists(model_file)) {
       print_result(paste("No .rda file for group", group),
-        color = "red",
-        error_on_issue = error_on_issue
+                   color = "red",
+                   error_on_issue = error_on_issue
       )
     } else {
       print_result(paste("No .rda file for group", group),
-        color = "yellow"
+                   color = "yellow"
       )
     }
   } else {
     print_result(paste(".rda file present for group", group),
-      color = "green",
-      silent_on_pass = silent_on_pass
+                 color = "green",
+                 silent_on_pass = silent_on_pass
     )
   }
 }
@@ -271,16 +287,24 @@ check_country_predictions <- function(folder_path, cname, error_on_issue, silent
   iso3_folder <- file.path(folder_path, "predictions", iso3)
 
   if (!dir.exists(iso3_folder)) {
-    print_result(paste("No subfolder for ISO3 code", iso3, "in predictions"),
-      color = "red",
-      error_on_issue = error_on_issue
-    )
+    if (error_on_issue) {
+      dir.create(iso3_folder, recursive = TRUE)
+      print_result(paste("No subfolder for ISO3 code", iso3, "in predictions, automatically created"),
+                   color = "yellow",
+                   error_on_issue = error_on_issue
+      )
+    }else{
+      print_result(paste("No subfolder for ISO3 code", iso3, "in predictions"),
+                   color = "red",
+                   error_on_issue = error_on_issue
+      )
+    }
     invisible(NULL)
   }
 
   print_result(paste("Subfolder for ISO3 code", iso3, "present in predictions"),
-    color = "green",
-    silent_on_pass = silent_on_pass
+               color = "green",
+               silent_on_pass = silent_on_pass
   )
 
   check_prediction_files(iso3_folder, iso3, error_on_issue, silent_on_pass)
@@ -290,7 +314,7 @@ check_prediction_files <- function(iso3_folder, iso3, error_on_issue, silent_on_
   files <- list.files(iso3_folder, pattern = "\\.tif$")
   if (length(files) == 0) {
     print_result(paste("No tif files in predictions for ISO3 code", iso3),
-      color = "yellow"
+                 color = "yellow"
     )
     invisible(NULL)
   }
@@ -298,13 +322,13 @@ check_prediction_files <- function(iso3_folder, iso3, error_on_issue, silent_on_
   correct_name <- all(grepl(paste0("^", iso3, "_\\d{4}-\\d{2}-01\\.tif$"), files))
   if (!correct_name) {
     print_result("Incorrect file naming in predictions for ISO3 code", iso3,
-      color = "red",
-      error_on_issue = error_on_issue
+                 color = "red",
+                 error_on_issue = error_on_issue
     )
   } else {
     print_result("Correct file naming in predictions for ISO3 code", iso3,
-      color = "green",
-      silent_on_pass = silent_on_pass
+                 color = "green",
+                 silent_on_pass = silent_on_pass
     )
   }
 }
