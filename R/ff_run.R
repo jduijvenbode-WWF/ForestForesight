@@ -496,7 +496,7 @@ prepare_validation_data <- function(train_input_data, train_dates,
       color = "green", verbose = verbose
     )
 
-    ff_prep_params_combined["dates"] <- validation_dates
+    ff_prep_params_combined[["dates"]] <- validation_dates
     ff_prep_params_combined["sample_size"] <- 1 / 3 * ff_prep_params_combined$sample_size
     validation_data <- do.call(ff_prep, ff_prep_params_combined)
 
