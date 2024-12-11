@@ -60,13 +60,20 @@ check_main_folders <- function(folder_path, error_on_issue, silent_on_pass) {
   ff_cat("Checking main folder", verbose = !silent_on_pass)
   main_folders <- c("preprocessed", "models", "predictions")
   all_correct <- TRUE
-
   for (folder in main_folders) {
     if (!dir.exists(file.path(folder_path, folder))) {
-      all_correct <- FALSE
-      print_result("No", folder, "folder present",
-        color = "red"
-      )
+      if (error_on_issue && folder %in% main_folders[2:3]) {
+        dir.create(file.path(folder_path, folder))
+
+        print_result("No", folder, "folder present, automatically created",
+          color = "yellow"
+        )
+      } else {
+        all_correct <- FALSE
+        print_result("No", folder, "folder present",
+          color = "red"
+        )
+      }
     } else {
       print_result(folder, "folder present",
         color = "green",
@@ -225,10 +232,18 @@ check_models_folder <- function(folder_path, info, error_on_issue, silent_on_pas
 check_model_group <- function(folder_path, group, error_on_issue, silent_on_pass) {
   group_folder <- file.path(folder_path, "models", group)
   if (!dir.exists(group_folder)) {
-    print_result("No subfolder for group", group, "in models",
-      color = "red",
-      error_on_issue = error_on_issue
-    )
+    if (error_on_issue) {
+      dir.create(group_folder, recursive = TRUE)
+      print_result("No subfolder for group", group, "in models, automatically created",
+        color = "yellow",
+        error_on_issue = error_on_issue
+      )
+    } else {
+      print_result("No subfolder for group", group, "in models",
+        color = "red",
+        error_on_issue = error_on_issue
+      )
+    }
     invisible(NULL)
   }
 
@@ -287,10 +302,18 @@ check_country_predictions <- function(folder_path, cname, error_on_issue, silent
   iso3_folder <- file.path(folder_path, "predictions", iso3)
 
   if (!dir.exists(iso3_folder)) {
-    print_result(paste("No subfolder for ISO3 code", iso3, "in predictions"),
-      color = "red",
-      error_on_issue = error_on_issue
-    )
+    if (error_on_issue) {
+      dir.create(iso3_folder, recursive = TRUE)
+      print_result(paste("No subfolder for ISO3 code", iso3, "in predictions, automatically created"),
+        color = "yellow",
+        error_on_issue = error_on_issue
+      )
+    } else {
+      print_result(paste("No subfolder for ISO3 code", iso3, "in predictions"),
+        color = "red",
+        error_on_issue = error_on_issue
+      )
+    }
     invisible(NULL)
   }
 

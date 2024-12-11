@@ -23,12 +23,12 @@ test_that("ff_structurecheck handles folder structure correctly", {
   cat("test", file = file.path(test_dir, "preprocessed", "input", "10N_110E", "test.tif"))
   expect_error(ff_structurecheck(shape = shape, folder_path = test_dir, error_on_issue = TRUE), regexp = "please fix issues above and try again")
   file.remove(file.path(test_dir, "preprocessed", "input", "10N_110E", "test.tif"))
-  expect_error(ff_structurecheck(shape = shape, folder_path = test_dir, error_on_issue = TRUE), "No subfolder for group")
+
   dir.create(file.path(test_dir, "models", "South-Eastern Asia 1"), recursive = TRUE)
   cat("test", file = file.path(test_dir, "models", "South-Eastern Asia 1", "South-Eastern Asia 1.model"), recursive = TRUE)
   expect_error(ff_structurecheck(shape = shape, folder_path = test_dir, error_on_issue = TRUE), "No .rda file for group")
   cat("test", file = file.path(test_dir, "models", "South-Eastern Asia 1", "South-Eastern Asia 1.rda"), recursive = TRUE)
-  expect_error(ff_structurecheck(shape = shape, folder_path = test_dir, error_on_issue = TRUE), "No subfolder for ISO3 code")
+
   dir.create(file.path(test_dir, "predictions", "BRN"), recursive = TRUE)
   cat("test", file = file.path(test_dir, "predictions", "BRN", "incorrect.tif"), recursive = TRUE)
   expect_error(ff_structurecheck(shape = shape, folder_path = test_dir, error_on_issue = TRUE), "Incorrect file naming in predictions for ISO3 code")
