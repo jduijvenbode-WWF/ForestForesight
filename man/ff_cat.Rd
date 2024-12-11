@@ -14,7 +14,7 @@ ff_cat(
   verbose = TRUE,
   log_level = "INFO",
   log_file = NULL,
-  timestamp = Sys.getenv("TIMESTAMP"),
+  timestamp = as.logical(Sys.getenv("TIMESTAMP")),
   auto_newline = TRUE
 )
 }

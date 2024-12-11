@@ -16,7 +16,7 @@ ff_run(
   pretrained_model_path = NULL,
   ff_prep_parameters = NULL,
   ff_train_parameters = NULL,
-  certainty_threshold = Sys.getenv("DEFAULT_THRESHOLD"),
+  certainty_threshold = as.numeric(Sys.getenv("DEFAULT_THRESHOLD")),
   filter_features = Sys.getenv("FOREST_MASK"),
   filter_conditions = Sys.getenv("FOREST_MASK_FILTER"),
   accuracy_output_path = NULL,
