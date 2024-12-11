@@ -196,11 +196,11 @@ handle_output <- function(text,
   if (logging_enabled) {
     # Logging
     log_func <- switch(toupper(log_level),
-                       "DEBUG" = logging::logdebug,
-                       "INFO"  = logging::loginfo,
-                       "WARN"  = logging::logwarn,
-                       "ERROR" = logging::logerror,
-                       logging::loginfo
+      "DEBUG" = logging::logdebug,
+      "INFO"  = logging::loginfo,
+      "WARN"  = logging::logwarn,
+      "ERROR" = logging::logerror,
+      logging::loginfo
     )
 
     # Remove ANSI color codes for log file
