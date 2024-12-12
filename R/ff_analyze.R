@@ -224,6 +224,7 @@ validate_and_load_data <- function(predictions, groundtruth, forest_mask = NULL,
 #' @param date Character string containing the date
 #' @param method Character string containing the method name
 #' @param remove_empty Logical indicating whether to remove empty records
+#' @param threshold Numeric the threshold that was used to calculate the accuracy
 #' @param verbose Logical indicating whether to print progress messages
 #' @return Updated SpatVector object
 #' @noRd
