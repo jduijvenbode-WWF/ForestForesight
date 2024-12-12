@@ -38,9 +38,10 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
   predictions <- loaded_rasters$predictions
   groundtruth <- loaded_rasters$groundtruth
   forest_mask <- loaded_rasters$forest_mask
-  predictions <- reclassify_predictions(predictions = predictions, groundtruth = groundtruth,
+  predictions_and_threshold <- reclassify_predictions(predictions = predictions, groundtruth = groundtruth,
                                         forest_mask = forest_mask,calculate_best_threshold = calculate_best_threshold,
                                         verbose = verbose)
+  predictions <- predictions_and_threshold$threshold
   crosstable_raster <- create_crosstable(predictions, groundtruth, forest_mask, verbose)
 
   # Load or process analysis polygons
@@ -56,7 +57,7 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
 
   # Add metadata
   ff_cat("adding metadata", verbose = verbose)
-  polygons <- add_metadata(polygons, date, method, remove_empty, verbose)
+  polygons <- add_metadata(polygons, date, method, remove_empty, threshold = threshold, verbose)
 
   # Process output and write to file if specified
   process_and_write_output(polygons, csv_filename, append, add_wkt, verbose)
@@ -226,10 +227,10 @@ validate_and_load_data <- function(predictions, groundtruth, forest_mask = NULL,
 #' @param verbose Logical indicating whether to print progress messages
 #' @return Updated SpatVector object
 #' @noRd
-add_metadata <- function(polygons, date, method, remove_empty = TRUE, verbose = FALSE) {
+add_metadata <- function(polygons, date, method, remove_empty = TRUE, threshold, verbose = FALSE) {
   polygons$date <- date
   polygons$method <- method
-
+  polygons$threshold <- threshold
   if (remove_empty) {
     empty_indices <- which(rowSums(as.data.frame(polygons[, c("FP", "FN", "TP")]), na.rm = TRUE) == 0)
     if (length(empty_indices) > 0) {
@@ -298,14 +299,15 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
 #'
 #' @noRd
 reclassify_predictions <- function(predictions, groundtruth, forest_mask, calculate_best_threshold, verbose) {
+  threshold <- Sys.getenv("DEFAULT_THRESHOLD")
   # Check and reclassify predictions if needed. multiply by 100 because freq automatically turns to integer
   classified <- nrow(terra::freq(predictions, digits = 2)) < 3
   if (!classified && !calculate_best_threshold) {
     ff_cat("The raster seems to be not classified, automatically reclassifying raster
-    based on the default", Sys.getenv("DEFAULT_GROUNDTRUTH"), "threshold.
+    based on the default", threshold, "threshold.
            If this is not wanted, please load the raster before using ff_analyze and classify it according
            to the wanted threshold", color = "yellow", log_level = "WARNING")
-    predictions <- as.numeric(predictions > as.numeric(Sys.getenv("DEFAULT_THRESHOLD")))
+    predictions <- as.numeric(predictions > as.numeric())
   }
   if (classified && calculate_best_threshold) {
     stop("calculate_best_threshold was set to TRUE but the predictions raster has already been classified")
@@ -315,9 +317,10 @@ reclassify_predictions <- function(predictions, groundtruth, forest_mask, calcul
     if (has_value(forest_mask)) {
       optimal_values <- find_best_threshold(prediction = predictions * (forest_mask > 0),
                                             groundtruth = groundtruth * (forest_mask > 0))
-      ff_cat("automatically found optimal threshold:", round(optimal_values$best_threshold, 2))
-      predictions <- as.numeric(predictions > optimal_values$best_threshold)
+      threshold <- optimal_values$best_threshold
+      ff_cat("automatically found optimal threshold:", round(threshold, 2))
+      predictions <- as.numeric(predictions > threshold)
     }
   }
-  return(predictions)
+  return(list(predictions = predictions,threshold = threshold))
 }
