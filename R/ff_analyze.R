@@ -43,7 +43,7 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
     forest_mask = forest_mask, calculate_best_threshold = calculate_best_threshold,
     verbose = verbose
   )
-  predictions <- predictions_and_threshold$threshold
+  predictions <- predictions_and_threshold$predictions
   crosstable_raster <- create_crosstable(predictions, groundtruth, forest_mask, verbose)
 
   # Load or process analysis polygons
@@ -59,7 +59,7 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
 
   # Add metadata
   ff_cat("adding metadata", verbose = verbose)
-  polygons <- add_metadata(polygons, date, method, remove_empty, threshold = threshold, verbose)
+  polygons <- add_metadata(polygons, date, method, remove_empty, threshold = predictions_and_threshold$threshold, verbose)
 
   # Process output and write to file if specified
   process_and_write_output(polygons, csv_filename, append, add_wkt, verbose)
@@ -302,7 +302,7 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
 #'
 #' @noRd
 reclassify_predictions <- function(predictions, groundtruth, forest_mask, calculate_best_threshold, verbose) {
-  threshold <- Sys.getenv("DEFAULT_THRESHOLD")
+  threshold <- as.numeric(Sys.getenv("DEFAULT_THRESHOLD"))
   # Check and reclassify predictions if needed. multiply by 100 because freq automatically turns to integer
   classified <- nrow(terra::freq(predictions, digits = 2)) < 3
   if (!classified && !calculate_best_threshold) {
