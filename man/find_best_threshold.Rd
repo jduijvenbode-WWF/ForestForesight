@@ -16,9 +16,9 @@ find_best_threshold(
 )
 }
 \arguments{
-\item{prediction}{A vector of predictions (numeric).}
+\item{prediction}{A vector of predictions (numeric) or SpatRaster.}
 
-\item{groundtruth}{A vector of ground truth values (binary).}
+\item{groundtruth}{A vector of ground truth values (binary) or SpatRaster.}
 
 \item{optimize_function}{The evaluation function to optimize. Default is get_f_score.}
 
