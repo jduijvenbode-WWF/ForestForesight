@@ -310,7 +310,7 @@ reclassify_predictions <- function(predictions, groundtruth, forest_mask, calcul
     based on the default", threshold, "threshold.
            If this is not wanted, please load the raster before using ff_analyze and classify it according
            to the wanted threshold", color = "yellow", log_level = "WARNING")
-    predictions <- as.numeric(predictions > as.numeric())
+    predictions <- as.numeric(predictions > threshold)
   }
   if (classified && calculate_best_threshold) {
     stop("calculate_best_threshold was set to TRUE but the predictions raster has already been classified")
