@@ -2,8 +2,8 @@
 #'
 #' This function finds the best threshold for a given prediction function by maximizing the evaluation function.
 #'
-#' @param prediction A vector of predictions (numeric).
-#' @param groundtruth A vector of ground truth values (binary).
+#' @param prediction A vector of predictions (numeric) or SpatRaster.
+#' @param groundtruth A vector of ground truth values (binary) or SpatRaster.
 #' @param optimize_function The evaluation function to optimize. Default is get_f_score.
 #' @param a Initial guess for the lower bound of threshold search.
 #' @param b Initial guess for the upper bound of threshold search.
@@ -16,6 +16,8 @@
 #' @export
 find_best_threshold <- function(prediction, groundtruth, optimize_function = get_f_score,
                                 a = 0.45, b = 0.55, tol = 0.001, maxiter = 100, beta = 0.5) {
+  if (inherits(prediction,"SpatRaster")) {prediction <- as.vector(prediction)}
+  if (inherits(groundtruth,"SpatRaster")) {groundtruth <- as.vector(groundtruth)}
   # Golden ratio
   phi <- (1 + sqrt(5)) / 2
 
@@ -49,5 +51,5 @@ find_best_threshold <- function(prediction, groundtruth, optimize_function = get
   }
 
   # Return the best threshold and the corresponding F-score
-  return(list(bestThreshold = (a + b) / 2, maxFscore = optimize_function(groundtruth, prediction, ((a + b) / 2), beta)))
+  return(list(best_threshold = (a + b) / 2, max_f_score = optimize_function(groundtruth, prediction, ((a + b) / 2), beta)))
 }

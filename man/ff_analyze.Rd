@@ -17,6 +17,7 @@ ff_analyze(
   tile = NULL,
   method = NA,
   add_wkt = FALSE,
+  calculate_best_threshold = FALSE,
   verbose = FALSE
 )
 }
@@ -44,6 +45,10 @@ ff_analyze(
 \item{method}{Character string indicating the analysis method}
 
 \item{add_wkt}{Logical indicating whether to add WKT geometry to output}
+
+\item{calculate_best_threshold}{Logical Whether the optimal threshold
+should be calculated before reclassifying. Can only be used on continuous
+prediction values.}
 
 \item{verbose}{Logical indicating whether to print progress messages}
 }
