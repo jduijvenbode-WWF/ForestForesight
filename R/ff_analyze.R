@@ -38,9 +38,11 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = NULL, csv_filenam
   predictions <- loaded_rasters$predictions
   groundtruth <- loaded_rasters$groundtruth
   forest_mask <- loaded_rasters$forest_mask
-  predictions_and_threshold <- reclassify_predictions(predictions = predictions, groundtruth = groundtruth,
-                                        forest_mask = forest_mask,calculate_best_threshold = calculate_best_threshold,
-                                        verbose = verbose)
+  predictions_and_threshold <- reclassify_predictions(
+    predictions = predictions, groundtruth = groundtruth,
+    forest_mask = forest_mask, calculate_best_threshold = calculate_best_threshold,
+    verbose = verbose
+  )
   predictions <- predictions_and_threshold$threshold
   crosstable_raster <- create_crosstable(predictions, groundtruth, forest_mask, verbose)
 
@@ -118,20 +120,20 @@ retrieve_analysis_polygons <- function(analysis_polygons, predictions, country) 
 #' @noRd
 calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
   polygons$FP <- terra::extract(crosstable_raster == 1, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$FN <- terra::extract(crosstable_raster == 2, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TP <- terra::extract(crosstable_raster == 3, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TN <- terra::extract(crosstable_raster == 0, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
 
   # Calculate and print F0.5 score if verbose
@@ -142,7 +144,7 @@ calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
     recall <- sum(polygons$TP, na.rm = TRUE) /
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FN, na.rm = TRUE))
     ff_cat("F0.5 score is:", 1.25 * precision * recall / (0.25 * precision + recall),
-           verbose = verbose
+      verbose = verbose
     )
   }
   return(polygons)
@@ -269,7 +271,7 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
     } else {
       if (!file.exists(csv_filename) && append && verbose) {
         ff_cat("the given file does not exist, while append was set to TRUE",
-               color = "yellow", verbose = verbose, log_level = "WARNING"
+          color = "yellow", verbose = verbose, log_level = "WARNING"
         )
       }
       write.csv(polygons_dataframe, csv_filename)
@@ -316,12 +318,14 @@ reclassify_predictions <- function(predictions, groundtruth, forest_mask, calcul
   if (!classified && calculate_best_threshold) {
     ff_cat("calculalating optimal threshold", verbose = verbose)
     if (has_value(forest_mask)) {
-      optimal_values <- find_best_threshold(prediction = predictions * (forest_mask > 0),
-                                            groundtruth = groundtruth * (forest_mask > 0))
+      optimal_values <- find_best_threshold(
+        prediction = predictions * (forest_mask > 0),
+        groundtruth = groundtruth * (forest_mask > 0)
+      )
       threshold <- optimal_values$best_threshold
       ff_cat("automatically found optimal threshold:", round(threshold, 2))
       predictions <- as.numeric(predictions > threshold)
     }
   }
-  return(list(predictions = predictions,threshold = threshold))
+  return(list(predictions = predictions, threshold = threshold))
 }

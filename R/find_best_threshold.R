@@ -16,8 +16,12 @@
 #' @export
 find_best_threshold <- function(prediction, groundtruth, optimize_function = get_f_score,
                                 a = 0.45, b = 0.55, tol = 0.001, maxiter = 100, beta = 0.5) {
-  if (inherits(prediction,"SpatRaster")) {prediction <- as.vector(prediction)}
-  if (inherits(groundtruth,"SpatRaster")) {groundtruth <- as.vector(groundtruth)}
+  if (inherits(prediction, "SpatRaster")) {
+    prediction <- as.vector(prediction)
+  }
+  if (inherits(groundtruth, "SpatRaster")) {
+    groundtruth <- as.vector(groundtruth)
+  }
   # Golden ratio
   phi <- (1 + sqrt(5)) / 2
 
