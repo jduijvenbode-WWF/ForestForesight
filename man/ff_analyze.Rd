@@ -29,6 +29,9 @@ ff_analyze(
 
 \item{forest_mask}{Optional SpatRaster object or path to raster file representing the forest mask}
 
+\item{forest_mask_condition}{Character. Condition to apply to forest mask. default is the environment variable
+FOREST_MASK_FILTER, normally '>0'}
+
 \item{csv_filename}{Optional path to CSV file for writing results}
 
 \item{country}{Character string containing ISO3 code for filtering analysis polygons}

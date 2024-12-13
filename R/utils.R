@@ -54,15 +54,18 @@ get_variable <- function(variable_name, default_value = NULL) {
   # Convert based on variable type
   if (variable_name %in% c("EARLIEST_DATA_DATE", "FF_PREP_QC_DATE")) {
     # Convert to date
-    tryCatch({
-      result <- as.Date(value)
-      if (result < as.Date("2021-01-01")) {
-        ff_cat("Date is before 2021-01-01. This might affect data availability.",color="yellow")
+    tryCatch(
+      {
+        result <- as.Date(value)
+        if (result < as.Date("2021-01-01")) {
+          ff_cat("Date is before 2021-01-01. This might affect data availability.", color = "yellow")
+        }
+        return(result)
+      },
+      error = function(e) {
+        stop(sprintf("Invalid date format for %s. Must be YYYY-MM-DD", variable_name))
       }
-      return(result)
-    }, error = function(e) {
-      stop(sprintf("Invalid date format for %s. Must be YYYY-MM-DD", variable_name))
-    })
+    )
   } else if (variable_name == "DEFAULT_THRESHOLD") {
     # Convert to numeric and validate range
     result <- as.numeric(value)
@@ -202,10 +205,10 @@ has_value <- function(x) {
 
   # Handle different types of single values
   if (is.na(x) || # Handles all NA types
-      identical(x, "") || # Empty string
-      identical(x, logical(0)) || # Empty logical
-      identical(x, list()) || # Empty list
-      identical(x, numeric(0))) { # Empty numeric
+    identical(x, "") || # Empty string
+    identical(x, logical(0)) || # Empty logical
+    identical(x, list()) || # Empty list
+    identical(x, numeric(0))) { # Empty numeric
     return(FALSE)
   }
 
