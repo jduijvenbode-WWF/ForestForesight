@@ -7,7 +7,8 @@
 ff_analyze(
   predictions,
   groundtruth,
-  forest_mask = NULL,
+  forest_mask = get_variable("FOREST_MASK"),
+  forest_mask_condition = get_variable("FOREST_MASK_FILTER"),
   csv_filename = NULL,
   country = NULL,
   append = TRUE,

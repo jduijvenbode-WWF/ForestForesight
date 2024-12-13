@@ -173,7 +173,7 @@ process_raster <- function(input_raster, threshold, window_size, verbose) {
 #' Calculate raster statistics
 #' @noRd
 calculate_raster_stats <- function(input_raster) {
-  default_treshold <- as.numeric(Sys.getenv("DEFAULT_THRESHOLD"))
+  default_treshold <- get_variable("DEFAULT_THRESHOLD")
   list(
     raster_average = as.numeric(terra::global(input_raster < default_treshold,
       fun = "mean",

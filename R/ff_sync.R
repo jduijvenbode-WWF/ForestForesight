@@ -38,13 +38,13 @@
 #' }
 #'
 #' @export
-ff_sync <- function(ff_folder = Sys.getenv("FF_FOLDER"),
-                    identifier = Sys.getenv("DEFAULT_COUNTRY"), features = "Everything",
+ff_sync <- function(ff_folder = get_variable("FF_FOLDER"),
+                    identifier = get_variable("DEFAULT_COUNTRY"), features = "Everything",
                     date_start = NULL, date_end = NULL,
                     download_model = FALSE, download_data = TRUE,
                     download_predictions = FALSE, download_groundtruth = TRUE,
-                    groundtruth_pattern = Sys.getenv("DEFAULT_GROUNDTRUTH"),
-                    bucket = Sys.getenv("AWS_BUCKET_NAME"), region = Sys.getenv("AWS_BUCKET_REGION"),
+                    groundtruth_pattern = get_variable("DEFAULT_GROUNDTRUTH"),
+                    bucket = "forestforesight-public", region = "eu-west-1",
                     verbose = TRUE) {
   # Validate and process dates
   sync_dates <- sync_initialize_and_check(ff_folder, date_start, date_end, features)
