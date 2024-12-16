@@ -58,45 +58,60 @@ ff_log_model <- function(
     flavor = "xgboost",
     verbose = TRUE
 ) {
+  # Set Python environment path first
+  python_path <- file.path(Sys.getenv("USERPROFILE"), "Documents", "virtualenvs", "r-reticulate", "Scripts", "python.exe")
+  if (!file.exists(python_path)) {
+    stop("Python environment not found at: ", python_path,
+         "\nPlease ensure you have a virtual environment set up with MLflow installed.")
+  }
+
+  Sys.setenv(MLFLOW_PYTHON_BIN = python_path)
+  Sys.setenv(RETICULATE_PYTHON = python_path)
+
+  # Initialize reticulate with specific Python
+  reticulate::use_python(python_path, required = TRUE)
+
   # Check if required Python packages are available
-  required_packages <- c("mlflow")
   if (!reticulate::py_available(initialize = TRUE)) {
     stop("Python is not available. Please ensure Python is installed and configured.")
   }
-  missing_packages <- required_packages[!sapply(required_packages, reticulate::py_module_available)]
-  if (length(missing_packages) > 10) {
-    stop(sprintf("Required Python packages missing: %s", paste(missing_packages, collapse = ", ")))
+
+  # Check specifically for MLflow
+  if (!reticulate::py_module_available("mlflow")) {
+    stop("MLflow is not installed in the Python environment. Please install it using pip install mlflow")
   }
-  # Try to connect to MLflow server
+
+  # Rest of your original code remains the same
   tryCatch({
     mlflow::mlflow_set_tracking_uri("http://ec2-3-255-204-156.eu-west-1.compute.amazonaws.com:5000/")
   }, error = function(e) {
     stop("Cannot connect to MLflow tracking server: ", toString(e))
   })
   ff_cat("connected to server", verbose = verbose)
+
   # Validate region name
   regions <- get(data("countries", envir = environment()))$group
   if (!region_name %in% regions) {
     stop("region name is not in the regions defined by Forest Foresight")
   }
+
   mlflow::mlflow_set_experiment(experiment_name = region_name)
   ff_cat("switched to experiment", verbose = verbose)
-  # Start mlflow run with tags
-  mlflow::mlflow_start_run(
-  )
+
+  mlflow::mlflow_start_run()
   ff_cat("started run", verbose = verbose)
-  # Log all parameters one by one
+
   for (param_name in names(params_list)) {
     mlflow::mlflow_log_param(param_name, params_list[[param_name]])
   }
-  # Log current_date as additional parameter
+
   mlflow::mlflow_log_param("current_date", current_date)
-  # Log all metrics one by one
+
   for (metric_name in names(metrics_list)) {
     mlflow::mlflow_log_metric(metric_name, metrics_list[[metric_name]])
   }
   ff_cat("logged parameters and metrics", verbose = verbose)
-  # Log model if provided
+
   if (!missing(model) && !is.null(model)) {
     mlflow::mlflow_log_model(
       model = model,
@@ -105,18 +120,17 @@ ff_log_model <- function(
     )
   }
   ff_cat("saved model", verbose = verbose)
-  # Register model with version
+
   model_name <- paste(region_name, algorithm, sep = "_")
-  # Register model with version
   current_run <- mlflow::mlflow_get_run()
-  # Try to create registered model - if it fails, model already exists
+
   tryCatch({
     mlflow::mlflow_create_registered_model(model_name)
     ff_cat("registered model", verbose = verbose)
   }, error = function(e) {
     # Ignore error - model already exists
   })
-  # Create new version
+
   mlflow::mlflow_create_model_version(
     name = model_name,
     source = paste("runs:/", current_run$run_id, "/model", sep = ""),
@@ -126,8 +140,10 @@ ff_log_model <- function(
       "algorithm" = algorithm
     )
   )
-  mlflow::mlflow_set_tag(key = "algorithm",value=method_iteration,run_id = current_run)
+
+  mlflow::mlflow_set_tag(key = "algorithm", value = method_iteration, run_id = current_run$run_id)
   ff_cat("created model version", verbose = verbose)
+
   return(list(
     success = TRUE,
     run_id = current_run$run_id,
