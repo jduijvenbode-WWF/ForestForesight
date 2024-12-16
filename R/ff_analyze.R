@@ -27,7 +27,7 @@
 #'
 #' @export
 ff_analyze <- function(predictions, groundtruth, forest_mask = get_variable("FOREST_MASK"),
-                       forest_mask_condition = get_variable("FOREST_MASK_FILTER"),  csv_filename = NULL,
+                       forest_mask_condition = get_variable("FOREST_MASK_FILTER"), csv_filename = NULL,
                        country = NULL, append = TRUE, analysis_polygons = NULL,
                        remove_empty = TRUE, date = NULL, tile = NULL, method = NA,
                        add_wkt = FALSE, calculate_best_threshold = FALSE, verbose = FALSE) {
@@ -35,7 +35,7 @@ ff_analyze <- function(predictions, groundtruth, forest_mask = get_variable("FOR
   if (is.null(date)) {
     date <- get_date_from_files(predictions, groundtruth)
   }
-  forest_mask <- resolve_forest_mask(groundtruth,forest_mask)
+  forest_mask <- resolve_forest_mask(groundtruth, forest_mask)
   # Validate and load input data
   loaded_rasters <- validate_and_load_data(predictions, groundtruth, forest_mask, verbose = verbose)
   predictions <- loaded_rasters$predictions
@@ -124,20 +124,20 @@ retrieve_analysis_polygons <- function(analysis_polygons, predictions, country) 
 #' @noRd
 calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
   polygons$FP <- terra::extract(crosstable_raster == 1, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$FN <- terra::extract(crosstable_raster == 2, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TP <- terra::extract(crosstable_raster == 3, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TN <- terra::extract(crosstable_raster == 0, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
 
   # Calculate and print F0.5 score if verbose
@@ -148,7 +148,7 @@ calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
     recall <- sum(polygons$TP, na.rm = TRUE) /
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FN, na.rm = TRUE))
     ff_cat("F0.5 score is:", 1.25 * precision * recall / (0.25 * precision + recall),
-           verbose = verbose
+      verbose = verbose
     )
   }
   return(polygons)
@@ -275,7 +275,7 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
     } else {
       if (!file.exists(csv_filename) && append && verbose) {
         ff_cat("the given file does not exist, while append was set to TRUE",
-               color = "yellow", verbose = verbose, log_level = "WARNING"
+          color = "yellow", verbose = verbose, log_level = "WARNING"
         )
       }
       write.csv(polygons_dataframe, csv_filename)
@@ -325,8 +325,8 @@ reclassify_predictions <- function(predictions, groundtruth, forest_mask, calcul
     ff_cat("calculalating optimal threshold", verbose = verbose)
     if (has_value(forest_mask)) {
       optimal_values <- find_best_threshold(
-        prediction = predictions * filter_raster_by_condition(forest_mask,filter_condition),
-        groundtruth = groundtruth * filter_raster_by_condition(forest_mask,filter_condition)
+        prediction = predictions * filter_raster_by_condition(forest_mask, filter_condition),
+        groundtruth = groundtruth * filter_raster_by_condition(forest_mask, filter_condition)
       )
       threshold <- optimal_values$best_threshold
       ff_cat("automatically found optimal threshold:", round(threshold, 2))
@@ -386,7 +386,7 @@ resolve_forest_mask <- function(groundtruth, forest_mask) {
   }
 
   # Get the directory containing the predictions file
-  groundtruth_dir <- gsub("groundtruth","input",dirname(groundtruth))
+  groundtruth_dir <- gsub("groundtruth", "input", dirname(groundtruth))
 
   # Get all .tif files in the directory
   tif_files <- list.files(
@@ -403,13 +403,13 @@ resolve_forest_mask <- function(groundtruth, forest_mask) {
     stop(sprintf(
       "No forest mask file containing pattern '%s' found in directory: %s",
       mask_pattern,
-      gsub("groundtruth","input",groundtruth_dir)
+      gsub("groundtruth", "input", groundtruth_dir)
     ))
   } else if (length(mask_files) > 1) {
     stop(sprintf(
       "Multiple forest mask files found matching pattern '%s' in directory: %s\nFiles: %s",
       mask_pattern,
-      gsub("groundtruth","input",groundtruth_dir),
+      gsub("groundtruth", "input", groundtruth_dir),
       paste(basename(mask_files), collapse = ", ")
     ))
   }
@@ -437,21 +437,20 @@ resolve_forest_mask <- function(groundtruth, forest_mask) {
 #' }
 #'
 #' @noRd
-filter_raster_by_condition <- function(input_raster, filter_condition,  verbose = TRUE) {
-
+filter_raster_by_condition <- function(input_raster, filter_condition, verbose = TRUE) {
   operator <- gsub("[[:alnum:]\\.-]", "", filter_condition)
   value <- as.numeric(gsub("[^0-9\\.-]", "", filter_condition))
 
   ff_cat("filtering on condition", filter_condition, verbose = verbose)
 
   input_raster <- switch(operator,
-                 ">" = input_raster > value,
-                 "<" = input_raster < value,
-                 "==" = input_raster == value,
-                 "!=" = input_raster != value,
-                 ">=" = input_raster >= value,
-                 "<=" = input_raster <= value,
-                 input_raster
+    ">" = input_raster > value,
+    "<" = input_raster < value,
+    "==" = input_raster == value,
+    "!=" = input_raster != value,
+    ">=" = input_raster >= value,
+    "<=" = input_raster <= value,
+    input_raster
   )
 
 
