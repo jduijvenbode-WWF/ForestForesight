@@ -1,52 +1,3 @@
-#' Log a Machine Learning Model to MLflow
-#'
-#' @description
-#' Logs a machine learning model, its parameters, and metrics to MLflow. The function includes
-#' validation checks for the environment, MLflow connection, and required Python packages.
-#'
-#' @param region_name Character string specifying the region name. Must be one of the regions
-#'        defined by Forest Foresight.
-#' @param algorithm Character string specifying the algorithm name (default: "xgboost").
-#' @param method_iteration Character string describing the iteration or version of the method.
-#' @param model The trained model object to be logged.
-#' @param params_list List of model parameters to be logged.
-#' @param metrics_list List of model metrics to be logged.
-#' @param current_date Date object specifying the training date (default: Sys.Date()).
-#' @param flavor Character string specifying the MLflow flavor to use (default: "xgboost").
-#'
-#' @return A list containing:
-#'   \itemize{
-#'     \item success: Logical indicating if the logging was successful
-#'     \item run_id: Character string of the MLflow run ID if successful
-#'     \item metrics: List of logged metrics if successful
-#'     \item error: Error message if the logging failed
-#'   }
-#'
-#' @examples
-#' \dontrun{
-#' params_list <- list(
-#'   eta = 0.1,
-#'   max_depth = 6,
-#'   nrounds = 1000
-#' )
-#'
-#' metrics_list <- list(
-#'   auc = 0.85,
-#'   precision = 0.76
-#' )
-#'
-#' result <- ff_log_model(
-#'   region_name = "Melanesia",
-#'   method_iteration = "full model",
-#'   model = model,
-#'   params_list = params_list,
-#'   metrics_list = metrics_list
-#' )
-#' }
-#'
-#' @import mlflow
-#' @importFrom reticulate py_available py_module_available
-#' @export
 ff_log_model <- function(
     region_name,
     algorithm = "xgboost",
@@ -58,10 +9,12 @@ ff_log_model <- function(
     flavor = "xgboost",
     verbose = TRUE
 ) {
+  library(mlflow)
   current_run <- NULL
   run_successful <- FALSE
 
-  # First check/setup Python environment
+  # Helper function to safely end any active run
+    # First check/setup Python environment
   env_check <- check_python_env()
   if (!env_check) {
     stop("Python environment setup failed. Cannot proceed with model logging.")
@@ -101,13 +54,8 @@ ff_log_model <- function(
           warning("Failed to delete run: ", toString(e))
         })
       }
-      # Always end the run
-      tryCatch({
-        mlflow::mlflow_end_run()
-        ff_cat("ended run", verbose = verbose)
-      }, error = function(e) {
-        warning("Failed to end run: ", toString(e))
-      })
+      # Always try to end the run
+      mlflow::end_run()
     }, add = TRUE)
 
     # Log parameters
