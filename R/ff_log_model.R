@@ -55,7 +55,7 @@ ff_log_model <- function(
         })
       }
       # Always try to end the run
-      mlflow::end_run()
+      mlflow::mlflow_end_run()
     }, add = TRUE)
 
     # Log parameters

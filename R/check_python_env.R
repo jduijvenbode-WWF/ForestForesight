@@ -1,4 +1,4 @@
-check_python_env <- function(pkgname = "forestforesight") {
+check_python_env <- function(pkgname = "forestforesight", verbose = TRUE) {
   required_packages <- c("numpy", "pandas", "mlflow", "torch", "boto3")
 
   # Set environment path
@@ -18,16 +18,16 @@ check_python_env <- function(pkgname = "forestforesight") {
   # Helper function for package installation with verbose output
   install_packages <- function(packages, venv) {
     for (pkg in packages) {
-      message(sprintf("Installing %s...", pkg))
+      ff_cat(sprintf("Installing %s...", pkg), verbose = verbose)
       result <- tryCatch({
         # Try pip install with verbose output
         py_path <- reticulate::py_config()$python
         cmd <- sprintf('"%s" -m pip install %s -v', py_path, pkg)
         output <- system(cmd, intern = TRUE)
-        message(paste(output, collapse = "\n"))
+        ff_cat(paste(output, collapse = "\n"), verbose = verbose)
         TRUE
       }, error = function(e) {
-        message(sprintf("Error installing %s: %s", pkg, e$message))
+        ff_cat(sprintf("Error installing %s: %s", pkg, e$message), verbose = verbose,level="ERROR")
         FALSE
       })
 
@@ -39,22 +39,22 @@ check_python_env <- function(pkgname = "forestforesight") {
   }
 
   if (env_missing) {
-    message("Python environment '", venv_name, "' not found.")
+    ff_cat("Python environment '", venv_name, "' not found.", verbose = TRUE)
     response <- readline(prompt = "Would you like to create it? (y/n): ")
     if (tolower(response) == "y") {
-      message("\nCreating Python environment...")
+      ff_cat("\nCreating Python environment...",verbose = TRUE)
       tryCatch({
         reticulate::virtualenv_create(venv_name)
-        message("Installing required packages...")
+        ff_cat("Installing required packages...", verbose = verbose)
         if (!install_packages(required_packages, venv_name)) {
           return(FALSE)
         }
       }, error = function(e) {
-        message("Error creating environment: ", e$message)
+        ff_cat("Error creating environment: ", e$message, verbose = TRUE, level = "ERROR")
         return(FALSE)
       })
     } else {
-      message("Environment creation cancelled.")
+      ff_cat("Environment creation cancelled.", verbose = TRUE)
       return(FALSE)
     }
   }
@@ -72,10 +72,10 @@ check_python_env <- function(pkgname = "forestforesight") {
     missing_pkgs <- required_packages[!tolower(required_packages) %in% tolower(installed_pkgs)]
 
     if (length(missing_pkgs) > 0) {
-      message("\nMissing packages detected: ", paste(missing_pkgs, collapse = ", "))
+      ff_cat("\nMissing packages detected: ", paste(missing_pkgs, collapse = ", "), verbose = TRUE)
       response <- readline(prompt = "Would you like to install them? (y/n): ")
       if (tolower(response) == "y") {
-        message("Installing missing packages...")
+        ff_cat("Installing missing packages...", verbose = TRUE)
         if (!install_packages(missing_pkgs, venv_name)) {
           return(FALSE)
         }
@@ -86,22 +86,22 @@ check_python_env <- function(pkgname = "forestforesight") {
         still_missing <- missing_pkgs[!tolower(missing_pkgs) %in% tolower(installed_pkgs)]
 
         if (length(still_missing) > 0) {
-          message("Failed to install packages: ", paste(still_missing, collapse = ", "))
+          ff_cat("Failed to install packages: ", paste(still_missing, collapse = ", "), verbose = TRUE, level = "ERROR")
           return(FALSE)
         }
 
-        message("Packages installed successfully!")
+        ff_cat("Packages installed successfully!", verbose = TRUE)
         return(TRUE)
       } else {
-        message("Package installation cancelled.")
+        ff_cat("Package installation cancelled.", verbose = TRUE)
         return(FALSE)
       }
     }
 
-    message("All required packages are installed!")
+    ff_cat("All required packages are installed!", verbose = verbose)
     return(TRUE)
   }, error = function(e) {
-    message("Error checking Python environment: ", e$message)
+    ff_cat("Error checking Python environment: ", e$message, verbose = TRUE)
     return(FALSE)
   })
 }
