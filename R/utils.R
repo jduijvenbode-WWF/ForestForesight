@@ -9,7 +9,7 @@
 #'                     Must be of the appropriate type for the variable.
 #'
 #' @return The environment variable converted to its appropriate type:
-#'   * Date for EARLIEST_DATA_DATE and FF_PREP_QC_DATE
+#'   * Date for EARLIEST_DATA_DATE and TEST_EARLIEST_DATA_DATE
 #'   * Logical for LOGGING and TIMESTAMP
 #'   * Numeric for DEFAULT_THRESHOLD
 #'   * Character for all other variables
@@ -17,7 +17,7 @@
 #' @details
 #' Handles the following ForestForesight environment variables with specific type conversions:
 #'   * EARLIEST_DATA_DATE: Converted to Date (must be YYYY-MM-DD format)
-#'   * FF_PREP_QC_DATE: Converted to Date (must be YYYY-MM-DD format)
+#'   * TEST_EARLIEST_DATA_DATE: Converted to Date (must be YYYY-MM-DD format)
 #'   * DEFAULT_THRESHOLD: Converted to numeric (must be between 0 and 1)
 #'   * LOGGING: Converted to logical
 #'   * TIMESTAMP: Converted to logical
@@ -52,7 +52,7 @@ get_variable <- function(variable_name, default_value = NULL) {
   }
 
   # Convert based on variable type
-  if (variable_name %in% c("EARLIEST_DATA_DATE", "FF_PREP_QC_DATE")) {
+  if (variable_name %in% c("EARLIEST_DATA_DATE", "TEST_EARLIEST_DATA_DATE")) {
     # Convert to date
     tryCatch(
       {
