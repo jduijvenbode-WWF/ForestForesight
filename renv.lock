@@ -582,18 +582,6 @@
       ],
       "Hash": "bd1297f9b5b1fc1372d19e2c4cd82215"
     },
-    "forge": {
-      "Package": "forge",
-      "Version": "0.2.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "magrittr",
-        "rlang"
-      ],
-      "Hash": "b98a63142d3aa952bb551968fea8a56c"
-    },
     "fs": {
       "Package": "fs",
       "Version": "1.6.5",
@@ -648,18 +636,6 @@
         "rlang"
       ],
       "Hash": "fbbbc48eba7a6626a08bb365e44b563b"
-    },
-    "git2r": {
-      "Package": "git2r",
-      "Version": "0.35.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "graphics",
-        "utils"
-      ],
-      "Hash": "8828605664949b92d0bf3f931e7c431b"
     },
     "gitcreds": {
       "Package": "gitcreds",
@@ -964,34 +940,6 @@
         "utils"
       ],
       "Hash": "fec5f52652d60615fdb3957b3d74324a"
-    },
-    "mlflow": {
-      "Package": "mlflow",
-      "Version": "2.18.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "base64enc",
-        "forge",
-        "fs",
-        "git2r",
-        "glue",
-        "httpuv",
-        "httr",
-        "ini",
-        "jsonlite",
-        "openssl",
-        "processx",
-        "purrr",
-        "rlang",
-        "swagger",
-        "tibble",
-        "withr",
-        "yaml",
-        "zeallot"
-      ],
-      "Hash": "08a7e58b5fd4170aff48bae1366dc76b"
     },
     "openssl": {
       "Package": "openssl",
@@ -1560,13 +1508,6 @@
       ],
       "Hash": "93a2b1beac2437bdcc4724f8bf867e2c"
     },
-    "swagger": {
-      "Package": "swagger",
-      "Version": "5.17.14.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "cd09053b2f1e87c0fa6c1c470e54ebb8"
-    },
     "sys": {
       "Package": "sys",
       "Version": "3.4.3",
@@ -1884,13 +1825,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "51dab85c6c98e50a18d7551e9d49f76c"
-    },
-    "zeallot": {
-      "Package": "zeallot",
-      "Version": "0.1.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "ee9b643aa8331c45d8d82eb3a137c9bc"
     },
     "zip": {
       "Package": "zip",
