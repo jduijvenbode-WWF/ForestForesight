@@ -124,20 +124,20 @@ retrieve_analysis_polygons <- function(analysis_polygons, predictions, country) 
 #' @noRd
 calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
   polygons$FP <- terra::extract(crosstable_raster == 1, polygons,
-    fun = "sum",
-    na.rm = TRUE, touches = FALSE
+                                fun = "sum",
+                                na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$FN <- terra::extract(crosstable_raster == 2, polygons,
-    fun = "sum",
-    na.rm = TRUE, touches = FALSE
+                                fun = "sum",
+                                na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TP <- terra::extract(crosstable_raster == 3, polygons,
-    fun = "sum",
-    na.rm = TRUE, touches = FALSE
+                                fun = "sum",
+                                na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TN <- terra::extract(crosstable_raster == 0, polygons,
-    fun = "sum",
-    na.rm = TRUE, touches = FALSE
+                                fun = "sum",
+                                na.rm = TRUE, touches = FALSE
   )[, 2]
 
   # Calculate and print F0.5 score if verbose
@@ -148,7 +148,7 @@ calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
     recall <- sum(polygons$TP, na.rm = TRUE) /
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FN, na.rm = TRUE))
     ff_cat("F0.5 score is:", 1.25 * precision * recall / (0.25 * precision + recall),
-      verbose = verbose
+           verbose = verbose
     )
   }
   return(polygons)
@@ -271,11 +271,22 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
       ff_cat("appending to existing dataset", verbose = verbose)
       previous_data <- read.csv(csv_filename)
       previous_data$X <- NULL
-      write.csv(rbind(previous_data, polygons_dataframe), csv_filename)
+      # Get all unique column names
+      all_columns <- unique(c(names(previous_data), names(polygons_dataframe)))
+
+      # Add missing columns to each dataframe with NA
+      previous_data[setdiff(all_columns, names(previous_data))] <- NA
+      polygons_dataframe[setdiff(all_columns, names(polygons_dataframe))] <- NA
+
+      # Now rbind will work without errors
+      polygons_dataframe <- rbind(previous_data, polygons_dataframe)
+      polygons_dataframe <- # Get all unique column names
+
+        write.csv(polygons_dataframe, csv_filename)
     } else {
       if (!file.exists(csv_filename) && append && verbose) {
         ff_cat("the given file does not exist, while append was set to TRUE",
-          color = "yellow", verbose = verbose, log_level = "WARNING"
+               color = "yellow", verbose = verbose, log_level = "WARNING"
         )
       }
       write.csv(polygons_dataframe, csv_filename)
@@ -367,7 +378,7 @@ reclassify_predictions <- function(predictions, groundtruth, forest_mask, calcul
 #' @noRd
 resolve_forest_mask <- function(groundtruth, forest_mask) {
   # Early return if forest_mask doesn't match environment variable
-  if (forest_mask != get_variable("FOREST_MASK")) {
+  if (!inherits(forest_mask,"character") || forest_mask != get_variable("FOREST_MASK")) {
     return(forest_mask)
   }
 
@@ -444,13 +455,13 @@ filter_raster_by_condition <- function(input_raster, filter_condition, verbose =
   ff_cat("filtering on condition", filter_condition, verbose = verbose)
 
   input_raster <- switch(operator,
-    ">" = input_raster > value,
-    "<" = input_raster < value,
-    "==" = input_raster == value,
-    "!=" = input_raster != value,
-    ">=" = input_raster >= value,
-    "<=" = input_raster <= value,
-    input_raster
+                         ">" = input_raster > value,
+                         "<" = input_raster < value,
+                         "==" = input_raster == value,
+                         "!=" = input_raster != value,
+                         ">=" = input_raster >= value,
+                         "<=" = input_raster <= value,
+                         input_raster
   )
 
 

@@ -53,7 +53,7 @@ ff_sync <- function(ff_folder = get_variable("FF_FOLDER"),
 
 
   # Process features parameter
-  feature_list <- ff_sync_get_features(features = features, ff_folder = ff_folder)
+
 
   # Create ff_folder if it doesn't exist
 
@@ -71,6 +71,7 @@ ff_sync <- function(ff_folder = get_variable("FF_FOLDER"),
   if (download_model) {
     model_downloader(ff_folder, country_codes, bucket, region, verbose)
   }
+  feature_list <- ff_sync_get_features(features = features, ff_folder = ff_folder)
   # Sync input and ground truth data for each tile
   if (download_data || download_groundtruth) {
     ff_cat("Downloading input and ground truth data", verbose = verbose)
