@@ -147,7 +147,9 @@ calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FP, na.rm = TRUE))
     recall <- sum(polygons$TP, na.rm = TRUE) /
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FN, na.rm = TRUE))
-    ff_cat("F0.5 score is:", 1.25 * precision * recall / (0.25 * precision + recall),
+    ff_cat("F0.5 score:", 1.25 * precision * recall / (0.25 * precision + recall),
+           "\nprecision:", precision,
+           "\nrecall:", recall,
            verbose = verbose
     )
   }
