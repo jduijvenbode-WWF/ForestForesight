@@ -124,20 +124,20 @@ retrieve_analysis_polygons <- function(analysis_polygons, predictions, country) 
 #' @noRd
 calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
   polygons$FP <- terra::extract(crosstable_raster == 1, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$FN <- terra::extract(crosstable_raster == 2, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TP <- terra::extract(crosstable_raster == 3, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
   polygons$TN <- terra::extract(crosstable_raster == 0, polygons,
-                                fun = "sum",
-                                na.rm = TRUE, touches = FALSE
+    fun = "sum",
+    na.rm = TRUE, touches = FALSE
   )[, 2]
 
   # Calculate and print F0.5 score if verbose
@@ -147,10 +147,9 @@ calculate_scores_crosstable <- function(crosstable_raster, polygons, verbose) {
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FP, na.rm = TRUE))
     recall <- sum(polygons$TP, na.rm = TRUE) /
       (sum(polygons$TP, na.rm = TRUE) + sum(polygons$FN, na.rm = TRUE))
-    ff_cat("F0.5 score:", round(1.25 * precision * recall / (0.25 * precision + recall),2),verbose = verbose)
-    ff_cat("precision:", round(precision,2),verbose = verbose)
-    ff_cat("recall:", round(recall,2),verbose = verbose)
-
+    ff_cat("F0.5 score:", round(1.25 * precision * recall / (0.25 * precision + recall), 2), verbose = verbose)
+    ff_cat("precision:", round(precision, 2), verbose = verbose)
+    ff_cat("recall:", round(recall, 2), verbose = verbose)
   }
   return(polygons)
 }
@@ -287,7 +286,7 @@ process_and_write_output <- function(polygons, csv_filename = NULL, append = TRU
     } else {
       if (!file.exists(csv_filename) && append && verbose) {
         ff_cat("the given file does not exist, while append was set to TRUE",
-               color = "yellow", verbose = verbose, log_level = "WARNING"
+          color = "yellow", verbose = verbose, log_level = "WARNING"
         )
       }
       write.csv(polygons_dataframe, csv_filename)
@@ -379,7 +378,7 @@ reclassify_predictions <- function(predictions, groundtruth, forest_mask, calcul
 #' @noRd
 resolve_forest_mask <- function(groundtruth, forest_mask) {
   # Early return if forest_mask doesn't match environment variable
-  if (!inherits(forest_mask,"character") || forest_mask != get_variable("FOREST_MASK")) {
+  if (!inherits(forest_mask, "character") || forest_mask != get_variable("FOREST_MASK")) {
     return(forest_mask)
   }
 
@@ -456,13 +455,13 @@ filter_raster_by_condition <- function(input_raster, filter_condition, verbose =
   ff_cat("filtering on condition", filter_condition, verbose = verbose)
 
   input_raster <- switch(operator,
-                         ">" = input_raster > value,
-                         "<" = input_raster < value,
-                         "==" = input_raster == value,
-                         "!=" = input_raster != value,
-                         ">=" = input_raster >= value,
-                         "<=" = input_raster <= value,
-                         input_raster
+    ">" = input_raster > value,
+    "<" = input_raster < value,
+    "==" = input_raster == value,
+    "!=" = input_raster != value,
+    ">=" = input_raster >= value,
+    "<=" = input_raster <= value,
+    input_raster
   )
 
 
