@@ -140,7 +140,7 @@ ff_polygonize <- function(input_raster,
   if (length(polygons) == 0) {
     ff_cat("Based on the chosen threshold no polygons were generated.
            Lower the threshold to get polygons for this area",
-           color = "yellow", log_level = "WARNING"
+      color = "yellow", log_level = "WARNING"
     )
     return(NULL)
   }
@@ -154,7 +154,7 @@ ff_polygonize <- function(input_raster,
 
   if (!is.na(output_file)) {
     ff_cat("writing", length(polygons), "polygons to", output_file,
-           verbose = verbose
+      verbose = verbose
     )
     terra::writeVector(x = polygons, filename = output_file, overwrite = TRUE)
   }
@@ -197,17 +197,17 @@ process_raster <- function(input_raster, threshold, window_size, verbose) {
     ff_cat("no values in this raster above 0.5 were found,
            which is the minimum threshold of predictions FF provides when using auto-thresholding.
            Use a value as threshold if you still want polygons",
-           color = "yellow", log_level = "WARNING"
+      color = "yellow", log_level = "WARNING"
     )
     return(NULL)
   }
 
   # Apply focal mean
   smoothed_raster <- terra::focal(input_raster,
-                                  w = window_size,
-                                  fun = "mean",
-                                  na.policy = "omit",
-                                  na.rm = TRUE
+    w = window_size,
+    fun = "mean",
+    na.policy = "omit",
+    na.rm = TRUE
   )
 
   # Determine final threshold
@@ -232,8 +232,8 @@ calculate_raster_stats <- function(input_raster) {
   default_treshold <- get_variable("DEFAULT_THRESHOLD")
   list(
     raster_average = as.numeric(terra::global(input_raster < default_treshold,
-                                              fun = "mean",
-                                              na.rm = TRUE
+      fun = "mean",
+      na.rm = TRUE
     )),
     high_threshold = as.numeric(terra::global(
       input_raster <
@@ -258,23 +258,23 @@ determine_threshold <- function(threshold, smoothed_raster, raster_stats, verbos
   }
 
   final_threshold <- switch(threshold,
-                            "medium" = quantile(as.matrix(smoothed_raster),
-                                                probs = raster_stats$raster_average,
-                                                na.rm = TRUE
-                            ),
-                            "high" = quantile(as.matrix(smoothed_raster),
-                                              probs = raster_stats$high_threshold,
-                                              na.rm = TRUE
-                            ),
-                            "very high" = quantile(as.matrix(smoothed_raster),
-                                                   probs = raster_stats$highest_threshold,
-                                                   na.rm = TRUE
-                            )
+    "medium" = quantile(as.matrix(smoothed_raster),
+      probs = raster_stats$raster_average,
+      na.rm = TRUE
+    ),
+    "high" = quantile(as.matrix(smoothed_raster),
+      probs = raster_stats$high_threshold,
+      na.rm = TRUE
+    ),
+    "very high" = quantile(as.matrix(smoothed_raster),
+      probs = raster_stats$highest_threshold,
+      na.rm = TRUE
+    )
   )
 
   ff_cat("automatically determined threshold is",
-         round(final_threshold, 4),
-         verbose = verbose
+    round(final_threshold, 4),
+    verbose = verbose
   )
 
   return(final_threshold)
@@ -286,33 +286,37 @@ generate_polygons <- function(smoothed_raster,
                               minimum_pixel_count,
                               input_raster,
                               smoothness) {
-  conversion_factor <- if (terra::is.lonlat(input_raster)) {110000} else {1}
+  conversion_factor <- if (terra::is.lonlat(input_raster)) {
+    110000
+  } else {
+    1
+  }
   minimum_pixel_area <- minimum_pixel_count * (terra::res(input_raster)[1] * conversion_factor)^2
 
   clumped_raster <- terra::patches(smoothed_raster,
-                                   directions = 8,
-                                   zeroAsNA = TRUE
+    directions = 8,
+    zeroAsNA = TRUE
   )
 
   focus_polygons <- terra::as.polygons(clumped_raster,
-                                       values = FALSE,
-                                       aggregate = TRUE,
-                                       round = FALSE
+    values = FALSE,
+    aggregate = TRUE,
+    round = FALSE
   )
 
   suppressWarnings({
     focus_polygons <- smoothr::fill_holes(focus_polygons,
-                                          threshold = 5 * minimum_pixel_area
+      threshold = 5 * minimum_pixel_area
     )
     focus_polygons <- smoothr::smooth(focus_polygons,
-                                      method = "ksmooth",
-                                      smoothness = smoothness
+      method = "ksmooth",
+      smoothness = smoothness
     )
   })
 
   focus_polygons <- terra::disagg(focus_polygons)
   focus_polygons <- focus_polygons[order(terra::expanse(focus_polygons),
-                                         decreasing = TRUE
+    decreasing = TRUE
   )]
   return(list(focus_polygons = focus_polygons, minimum_pixel_area = minimum_pixel_area))
 }
@@ -357,7 +361,7 @@ apply_max_count_filter <- function(polygons,
     # Calculate raster coverage and area
     percentage_covered <- as.numeric(terra::global(!is.na(input_raster), "mean"))
     raster_area <- as.numeric(terra::expanse(input_raster)[2])
-    area_ha <- raster_area / 1e4  # Convert to hectares
+    area_ha <- raster_area / 1e4 # Convert to hectares
 
     # Calculate base polygon count using power function
     base_count <- 20 + (1980 * (area_ha / 8.5e8)^0.4)
@@ -405,8 +409,12 @@ add_polygon_attributes <- function(polygons, input_raster, threshold) {
     input_raster, polygons,
     fun = "mean", ID = FALSE
   ), 2)
-  conversion_factor <- if (terra::is.lonlat(polygons)) {110000} else {1}
-  polygons$size <- round(terra::expanse(polygons) / 10000)*conversion_factor^2
+  conversion_factor <- if (terra::is.lonlat(polygons)) {
+    110000
+  } else {
+    1
+  }
+  polygons$size <- round(terra::expanse(polygons) / 10000) * conversion_factor^2
   polygons$riskfactor <- round(polygons$size * polygons$risk)
   polygons$threshold <- threshold
   polygons$date <- as.character(as.Date(Sys.time()))
