@@ -2,7 +2,7 @@
 
 dates <- Sys.getenv("TEST_FF_PREP_QC_DATE")
 country <- Sys.getenv("TEST_COUNTRY")
-datafolder <- Sys.getenv("TEST_DATA_FOLDER")
+datafolder <- Sys.getenv("FF_FOLDER")
 shape <- NULL
 tiles <- NULL
 shrink <- "none"

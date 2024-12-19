@@ -72,7 +72,9 @@
 #'
 #' @keywords machine-learning prediction forestry raster
 
-ff_run <- function(shape = NULL, country = get_variable("DEFAULT_COUNTRY"), prediction_dates = NULL,
+ff_run <- function(shape = NULL,
+                   country = get_variable("DEFAULT_COUNTRY"),
+                   prediction_dates = NULL,
                    ff_folder = get_variable("FF_FOLDER"),
                    train_dates = NULL,
                    validation_dates = NULL,
@@ -401,7 +403,7 @@ determine_sample_fraction <- function(autoscale_sample, ff_folder, shape, train_
       color = "green", verbose = verbose
     )
     ff_prep_params_original <- list(
-      datafolder = ff_folder, shape = shape, dates = train_dates,
+      datafolder = ff_folder, shape = shape, country = NULL, dates = train_dates,
       filter_conditions = filter_conditions, filter_features = filter_features,
       sample_size = 1, shrink = "extract",
       groundtruth_pattern = groundtruth_pattern, label_threshold = 1
@@ -462,7 +464,7 @@ prepare_training_data <- function(ff_folder, shape, train_dates, filter_conditio
                                   sample_fraction, groundtruth_pattern, validation,
                                   ff_prep_parameters, verbose) {
   ff_prep_params_original <- list(
-    datafolder = ff_folder, shape = shape, dates = train_dates,
+    datafolder = ff_folder, shape = shape, country = NULL, dates = train_dates,
     filter_conditions = filter_conditions, filter_features = filter_features,
     sample_size = sample_fraction, verbose = verbose, shrink = "extract",
     groundtruth_pattern = groundtruth_pattern, label_threshold = 1

@@ -170,7 +170,7 @@ check_pre_conditions <- function(dates, country, shape, tiles, shrink,
                                  inc_features, exc_features, verbose, datafolder) {
   ff_cat("Checking ff_prep function input", verbose = verbose)
   if (!has_value(datafolder)) {
-    stop("no environment variable for DATA_FOLDER found and no other option given")
+    stop("no environment variable for FF_FOLDER found and no other option given")
   }
   # Check date validity
   if (!has_value(dates) || any(is.na(dates)) || any(dates == "")) {
@@ -203,7 +203,13 @@ check_pre_conditions <- function(dates, country, shape, tiles, shrink,
 }
 
 get_tiles_and_shape <- function(country, shape, tiles_vector, tiles, verbose) {
-  if (has_value(country)) {
+  if (has_value(shape)) {
+    if (!terra::is.lonlat(shape)) {
+      shape <- terra::project(shape, "epsg:4326")
+    }
+    tiles <- tiles_vector[shape]$tile_id
+    ff_cat("Selecting based on shape\nProcessing tiles:", paste(tiles, collapse = ", "), verbose = verbose)
+  } else if (has_value(country)) {
     ff_cat("Selecting based on country", verbose = verbose)
     countries <- terra::vect(get(data("countries", envir = environment())))
     shape <- countries[which(countries$iso3 %in% country)]
@@ -212,14 +218,6 @@ get_tiles_and_shape <- function(country, shape, tiles_vector, tiles, verbose) {
       tiles <- tiles_vector
     }
     ff_cat("Processing tiles:", paste(tiles, collapse = ", "), verbose = verbose)
-  } else if (has_value(shape)) {
-    if (!terra::is.lonlat(shape)) {
-      shape <- terra::project(shape, "epsg:4326")
-    }
-
-    tiles <- tiles_vector[shape]$tile_id
-
-    ff_cat("Selecting based on shape\nProcessing tiles:", paste(tiles, collapse = ", "), verbose = verbose)
   }
   return(list(shape = shape, tiles = tiles))
 }
